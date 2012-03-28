@@ -308,7 +308,7 @@ char *G_NewString( const char *string ) {
 	
 	l = strlen(string) + 1;
 
-	newb = G_Alloc( l );
+	newb = (char *)G_Alloc( l );
 
 	new_p = newb;
 
@@ -544,14 +544,19 @@ qboolean G_ParseSpawnVars( void ) {
 		if ( level.numSpawnVars == MAX_SPAWN_VARS ) {
 			G_Error( "G_ParseSpawnVars: MAX_SPAWN_VARS" );
 		}
-		level.spawnVars[ level.numSpawnVars ][0] = G_AddSpawnVarToken( keyname );
-		level.spawnVars[ level.numSpawnVars ][1] = G_AddSpawnVarToken( com_token );
-		level.numSpawnVars++;
+
+		G_SpawnAddVar(keyname, com_token);
 	}
 
 	return qtrue;
 }
 
+void G_SpawnAddVar(char *key, char *value)
+{
+	level.spawnVars[ level.numSpawnVars ][0] = G_AddSpawnVarToken( key );
+	level.spawnVars[ level.numSpawnVars ][1] = G_AddSpawnVarToken( value );
+	level.numSpawnVars++;
+}
 
 
 /*QUAKED worldspawn (0 0 0) ?

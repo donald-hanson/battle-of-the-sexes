@@ -963,6 +963,24 @@ gitem_t	*BG_FindItemForHoldable( holdable_t pw ) {
 	return NULL;
 }
 
+/*
+==============
+BG_FindItemForKey
+==============
+*/
+gitem_t	*BG_FindItemForKey( key_t key ) {
+	int		i;
+
+	for ( i = 0 ; i < bg_numItems ; i++ ) {
+		if ( bg_itemlist[i].giType == IT_KEY && bg_itemlist[i].giTag == key ) {
+			return &bg_itemlist[i];
+		}
+	}
+
+	Com_Error( ERR_DROP, "KeyItem not found" );
+
+	return NULL;
+}
 
 /*
 ===============

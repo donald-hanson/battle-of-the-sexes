@@ -67,6 +67,15 @@ typedef enum {
 typedef struct gentity_s gentity_t;
 typedef struct gclient_s gclient_t;
 
+#define MAX_CAPPADS 16
+
+typedef struct gcappad_s {
+	int teamPoints;
+	int promoPoints;
+	int techPoints;
+	int waitTime;
+} gcappad_t;
+
 struct gentity_s {
 	entityState_t	s;				// communicated by server to clients
 	entityShared_t	r;				// shared by both the server system and game
@@ -175,6 +184,11 @@ struct gentity_s {
 	float		random;
 
 	gitem_t		*item;			// for bonus items
+
+	team_t		bots_team;
+	class_t		bots_class;
+	int			keyDropTime;
+	gcappad_t	*capPad;	//non null if this entity is a capture pad
 };
 
 
@@ -225,6 +239,7 @@ typedef struct {
 // MUST be dealt with in G_InitSessionData() / G_ReadSessionData() / G_WriteSessionData()
 typedef struct {
 	team_t		sessionTeam;
+	class_t		sessionClass;
 	int			spectatorNum;		// for determining next-in-line to play
 	spectatorState_t	spectatorState;
 	int			spectatorClient;	// for chasecam and follow mode
@@ -413,6 +428,8 @@ typedef struct {
 #ifdef MISSIONPACK
 	int			portalSequence;
 #endif
+	gcappad_t	cappads[MAX_CAPPADS];
+	int			numCapPads;
 } level_locals_t;
 
 
@@ -425,6 +442,7 @@ qboolean	G_SpawnFloat( const char *key, const char *defaultString, float *out );
 qboolean	G_SpawnInt( const char *key, const char *defaultString, int *out );
 qboolean	G_SpawnVector( const char *key, const char *defaultString, float *out );
 void		G_SpawnEntitiesFromString( void );
+void		G_SpawnAddVar(char *key, char *value);
 char *G_NewString( const char *string );
 
 //
@@ -970,3 +988,65 @@ int		trap_GeneticParentsAndChildSelection(int numranks, float *ranks, int *paren
 
 void	trap_SnapVector( float *v );
 
+int Team_TouchOurFlag( gentity_t *ent, gentity_t *other, gentity_t *pad, int team );
+
+// BotS - bots_client
+void		BOTS_InitGame(void);
+void		BOTS_SetClass(gentity_t *ent, char *s);
+void		BOTS_ClientSpawn(gentity_t *ent);
+void		BOTS_PlayerDeath(gentity_t *killed, gentity_t *killedBy, gentity_t *killer, int damage, int meansOfDeath);
+char *		BOTS_ClassName(class_t cls);
+class_t		BOTS_ClassNumber(char *s);
+void		BOTS_Print(int clientNum, char* text);
+void		BOTS_Print_Team(team_t team, char *text);
+qboolean	BOTS_IsClassName(char *s);
+qboolean	BOTS_CanPickupWeapon(gentity_t *weapon, gentity_t *player);
+qboolean	BOTS_CanPickupAmmo(gentity_t *ammo, gentity_t *player);
+gentity_t *	BOTS_GetTeamCaptain(team_t team);
+gentity_t *	BOTS_GetTeamScientist(team_t team);
+void		BOTS_ClientCommand(int clientNum);
+gentity_t *	BOTS_GetTeamPromotionKey(team_t team);
+gentity_t *	BOTS_GetTeamTechKey(team_t team);
+void		BOTS_SetTeamPromotionKey(team_t team, gentity_t *key);
+void		BOTS_SetTeamTechKey(team_t team, gentity_t *key);
+void		BOTS_AddPromotionPoints(team_t team, int points);
+void		BOTS_AddTechPoints(team_t team, int points);
+void		BOTS_SetPromotionPoints(team_t team, int points);
+void		BOTS_SetTechPoints(team_t team, int points);
+int			BOTS_GetPromotionPoints(team_t team);
+int			BOTS_GetTechPoints(team_t team);
+void		BOTS_FlagCaptured(gentity_t *player, gentity_t *pad);
+void		BOTS_UpdateCaptainLevel(team_t team);
+void		BOTS_ClientDisconnect(int clientNum);
+void		BOTS_AutoDemote(int clientNum);
+void		BOTS_ClientSkin(gentity_t *ent, char *model, char *headModel);
+char *		BOTS_BuildTeamInfoConfigString(team_t team);
+void		BOTS_SyncScoresConfigStrings();
+
+// BotS - bots_common
+void		BOTS_Common_DropKey(int clientNum, qboolean launch, qboolean tech);
+void		BOTS_CommonCommand_LocatePromo(int clientNum);
+void		BOTS_CommonCommand_LocateTech(int clientNum);
+void		BOTS_CommonCommand_SetLevel(int clientNum);
+void		BOTS_CommonCommand_SetPromos(int clientNum);
+void		BOTS_CommonCommand_SetTechs(int clientNum);
+void		BOTS_Common_ApplyStriping(gentity_t *killed, gentity_t *killer);
+qboolean	BOTS_CanUseTeleporter(gentity_t *teleporter, gentity_t *player);
+qboolean	BOTS_CanUseMover(gentity_t *mover, gentity_t *player);
+qboolean	BOTS_CanTouchMulti(gentity_t *multi, gentity_t *player);
+qboolean	BOTS_CanUseJumppad(gentity_t *jumppad, gentity_t *player);
+qboolean	BOTS_CanTouchHurt(gentity_t *hurt, gentity_t *player);
+void		BOTS_RewriteSpawnVar(char *key, int keySize, char *value, int valueSize);
+
+// BotS - bots_captain
+void		BOTS_CaptainCommand_DropPromote(int clientNum);
+void		BOTS_CaptainCommand_Promote(int clientNum);
+void		BOTS_CaptainCommand_Demote(int clientNum);
+void		BOTS_CaptainSpawn(gentity_t *ent);
+void		BOTS_CaptainDeath(gentity_t *killed, gentity_t *killedBy, gentity_t *killer, int damage, int meansOfDeath);
+
+// BotS - bots_scientist
+void		BOTS_ScientistCommand_DropTech(int clientNum);
+void		BOTS_ScientistSpawn(gentity_t *ent);
+void		BOTS_ScientistDeath(gentity_t *killed, gentity_t *killedBy, gentity_t *killer, int damage, int meansOfDeath);
+void		BOTS_ScientistKiller(gentity_t *killer, gentity_t *killedBy, gentity_t *killed, int damage, int meansOfDeath);

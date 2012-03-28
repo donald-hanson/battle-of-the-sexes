@@ -686,7 +686,7 @@ void Team_DroppedFlagThink(gentity_t *ent) {
 Team_DroppedFlagThink
 ==============
 */
-int Team_TouchOurFlag( gentity_t *ent, gentity_t *other, int team ) {
+int Team_TouchOurFlag( gentity_t *ent, gentity_t *other, gentity_t *pad, int team ) {
 	int			i;
 	gentity_t	*player;
 	gclient_t	*cl = other->client;
@@ -889,7 +889,7 @@ int Pickup_Team( gentity_t *ent, gentity_t *other ) {
 #endif
 	// GT_CTF
 	if( team == cl->sess.sessionTeam) {
-		return Team_TouchOurFlag( ent, other, team );
+		return 0;
 	}
 	return Team_TouchEnemyFlag( ent, other, team );
 }

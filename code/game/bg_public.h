@@ -203,6 +203,7 @@ void Pmove (pmove_t *pmove);
 typedef enum {
 	STAT_HEALTH,
 	STAT_HOLDABLE_ITEM,
+	STAT_KEY,
 #ifdef MISSIONPACK
 	STAT_PERSISTANT_POWERUP,
 #endif
@@ -210,7 +211,8 @@ typedef enum {
 	STAT_ARMOR,				
 	STAT_DEAD_YAW,					// look this direction when dead (FIXME: get rid of?)
 	STAT_CLIENTS_READY,				// bit mask of clients wishing to exit the intermission (FIXME: configstring?)
-	STAT_MAX_HEALTH					// health / armor limit, changable by handicap
+	STAT_MAX_HEALTH,				// health limit
+	STAT_MAX_ARMOR					// armor limit
 } statIndex_t;
 
 
@@ -223,10 +225,11 @@ typedef enum {
 	PERS_HITS,						// total points damage inflicted so damage beeps can sound on change
 	PERS_RANK,						// player rank or team rank
 	PERS_TEAM,						// player team
+	PERS_CLASS,						// player class
+	PERS_LEVEL,						// player level
 	PERS_SPAWN_COUNT,				// incremented every respawn
 	PERS_PLAYEREVENTS,				// 16 bits that can be flipped for events
 	PERS_ATTACKER,					// clientnum of last damage inflicter
-	PERS_ATTACKEE_ARMOR,			// health/armor of last person we attacked
 	PERS_KILLED,					// count of the number of times you died
 	// player awards tracking
 	PERS_IMPRESSIVE_COUNT,			// two railgun hits in a row
@@ -289,6 +292,17 @@ typedef enum {
 } powerup_t;
 
 typedef enum {
+	KEY_NONE,
+
+	KEY_BLUE_PROMO,
+	KEY_RED_PROMO,
+	KEY_BLUE_TECH,
+	KEY_RED_TECH,
+
+	KEY_NUM_KEYS
+} key_t;
+
+typedef enum {
 	HI_NONE,
 
 	HI_TELEPORTER,
@@ -314,6 +328,7 @@ typedef enum {
 	WP_PLASMAGUN,
 	WP_BFG,
 	WP_GRAPPLING_HOOK,
+	WP_STINGER,
 #ifdef MISSIONPACK
 	WP_NAILGUN,
 	WP_PROX_LAUNCHER,
@@ -550,6 +565,22 @@ typedef enum {
 	TEAM_NUM_TEAMS
 } team_t;
 
+typedef enum {
+	CLASS_NONE,
+
+	CLASS_CAPTAIN,
+	CLASS_BODYGUARD,
+	CLASS_SNIPER,
+	CLASS_SOLDIER,
+	CLASS_BERZERKER,
+	CLASS_INFILTRATOR,
+	CLASS_KAMIKAZEE,
+	CLASS_NURSE,
+	CLASS_SCIENTIST,
+
+	CLASS_NUM_CLASSES
+} class_t;
+
 // Time between location updates
 #define TEAM_LOCATION_UPDATE_TIME		1000
 
@@ -618,6 +649,7 @@ typedef enum {
 	IT_HOLDABLE,			// single use, holdable item
 							// EFX: rotate + bob
 	IT_PERSISTANT_POWERUP,
+	IT_KEY,
 	IT_TEAM
 } itemType_t;
 

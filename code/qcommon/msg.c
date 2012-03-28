@@ -1218,6 +1218,7 @@ void MSG_WriteDeltaPlayerstate( msg_t *msg, struct playerState_s *from, struct p
 	int				statsbits;
 	int				persistantbits;
 	int				ammobits;
+	int				maxammobits;
 	int				powerupbits;
 	int				numFields;
 	netField_t		*field;
@@ -1300,6 +1301,12 @@ void MSG_WriteDeltaPlayerstate( msg_t *msg, struct playerState_s *from, struct p
 			ammobits |= 1<<i;
 		}
 	}
+	maxammobits = 0;
+	for (i=0 ; i<MAX_WEAPONS ; i++) {
+		if (to->maxammo[i] != from->maxammo[i]) {
+			maxammobits |= 1<<i;
+		}
+	}
 	powerupbits = 0;
 	for (i=0 ; i<MAX_POWERUPS ; i++) {
 		if (to->powerups[i] != from->powerups[i]) {
@@ -1307,7 +1314,7 @@ void MSG_WriteDeltaPlayerstate( msg_t *msg, struct playerState_s *from, struct p
 		}
 	}
 
-	if (!statsbits && !persistantbits && !ammobits && !powerupbits) {
+	if (!statsbits && !persistantbits && !ammobits && !maxammobits && !powerupbits) {
 		MSG_WriteBits( msg, 0, 1 );	// no change
 		oldsize += 4;
 		return;
@@ -1346,6 +1353,15 @@ void MSG_WriteDeltaPlayerstate( msg_t *msg, struct playerState_s *from, struct p
 		MSG_WriteBits( msg, 0, 1 );	// no change
 	}
 
+	if ( maxammobits ) {
+		MSG_WriteBits( msg, 1, 1 );	// changed
+		MSG_WriteBits( msg, maxammobits, MAX_WEAPONS );
+		for (i=0 ; i<MAX_WEAPONS ; i++)
+			if (maxammobits & (1<<i) )
+				MSG_WriteShort (msg, to->maxammo[i]);
+	} else {
+		MSG_WriteBits( msg, 0, 1 );	// no change
+	}
 
 	if ( powerupbits ) {
 		MSG_WriteBits( msg, 1, 1 );	// changed
@@ -1477,6 +1493,17 @@ void MSG_ReadDeltaPlayerstate (msg_t *msg, playerState_t *from, playerState_t *t
 			for (i=0 ; i<MAX_WEAPONS ; i++) {
 				if (bits & (1<<i) ) {
 					to->ammo[i] = MSG_ReadShort(msg);
+				}
+			}
+		}
+
+		// parse maxammo
+		if ( MSG_ReadBits( msg, 1 ) ) {
+			LOG("PS_MAX_AMMO");
+			bits = MSG_ReadBits (msg, MAX_WEAPONS);
+			for (i=0 ; i<MAX_WEAPONS ; i++) {
+				if (bits & (1<<i) ) {
+					to->maxammo[i] = MSG_ReadShort(msg);
 				}
 			}
 		}
