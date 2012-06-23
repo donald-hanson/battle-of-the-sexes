@@ -447,6 +447,8 @@ void player_die( gentity_t *self, gentity_t *inflictor, gentity_t *attacker, int
 		return;
 	}
 
+	BOTS_PlayerDeath(self, inflictor, attacker, damage, meansOfDeath);
+
 	// check for an almost capture
 	CheckAlmostCapture( self, attacker );
 	// check for a player that almost brought in cubes
@@ -840,7 +842,8 @@ void G_Damage( gentity_t *targ, gentity_t *inflictor, gentity_t *attacker,
 	// shootable doors / buttons don't actually have any health
 	if ( targ->s.eType == ET_MOVER ) {
 		if ( targ->use && targ->moverState == MOVER_POS1 ) {
-			targ->use( targ, inflictor, attacker );
+			if (BOTS_CanUseMover(targ, attacker))
+				targ->use( targ, inflictor, attacker );
 		}
 		return;
 	}

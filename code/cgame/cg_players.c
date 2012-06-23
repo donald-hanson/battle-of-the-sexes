@@ -87,7 +87,7 @@ Read a configuration file containing animation coutns and rates
 models/players/visor/animation.cfg, etc
 ======================
 */
-static qboolean	CG_ParseAnimationFile( const char *filename, clientInfo_t *ci ) {
+qboolean	CG_ParseAnimationFile( const char *filename, clientInfo_t *ci ) {
 	char		*text_p, *prev;
 	int			len;
 	int			i;
@@ -822,7 +822,7 @@ static void CG_SetDeferredClientInfo( int clientNum, clientInfo_t *ci ) {
 			continue;
 		}
 		// just load the real info cause it uses the same models and skins
-		CG_LoadClientInfo( clientNum, ci );
+		BOTS_LoadClientInfo( ci );
 		return;
 	}
 
@@ -845,7 +845,7 @@ static void CG_SetDeferredClientInfo( int clientNum, clientInfo_t *ci ) {
 		// an improper team skin.  This will cause a hitch for the first
 		// player, when the second enters.  Combat shouldn't be going on
 		// yet, so it shouldn't matter
-		CG_LoadClientInfo( clientNum, ci );
+		BOTS_LoadClientInfo( ci );
 		return;
 	}
 
@@ -864,7 +864,7 @@ static void CG_SetDeferredClientInfo( int clientNum, clientInfo_t *ci ) {
 	// we should never get here...
 	CG_Printf( "CG_SetDeferredClientInfo: no valid clients!\n" );
 
-	CG_LoadClientInfo( clientNum, ci );
+	BOTS_LoadClientInfo( ci );
 }
 
 
@@ -1052,7 +1052,7 @@ void CG_NewClientInfo( int clientNum ) {
 				newInfo.deferred = qfalse;
 			}
 		} else {
-			CG_LoadClientInfo( clientNum, &newInfo );
+			BOTS_LoadClientInfo( &newInfo );
 		}
 	}
 
@@ -1085,7 +1085,7 @@ void CG_LoadDeferredPlayers( void ) {
 				ci->deferred = qfalse;
 				continue;
 			}
-			CG_LoadClientInfo( i, ci );
+			BOTS_LoadClientInfo( ci );
 //			break;
 		}
 	}

@@ -436,10 +436,14 @@ void Touch_Item (gentity_t *ent, gentity_t *other, trace_t *trace) {
 	// call the item-specific pickup function
 	switch( ent->item->giType ) {
 	case IT_WEAPON:
+		if (!BOTS_CanPickupWeapon(ent, other))
+			return;
 		respawn = Pickup_Weapon(ent, other);
 //		predict = qfalse;
 		break;
 	case IT_AMMO:
+		if (!BOTS_CanPickupAmmo(ent, other))
+			return;
 		respawn = Pickup_Ammo(ent, other);
 //		predict = qfalse;
 		break;
@@ -464,6 +468,9 @@ void Touch_Item (gentity_t *ent, gentity_t *other, trace_t *trace) {
 	case IT_HOLDABLE:
 		respawn = Pickup_Holdable(ent, other);
 		break;
+	case IT_KEY:
+		BOTS_Pickup_Key(ent, other);
+		return;
 	default:
 		return;
 	}

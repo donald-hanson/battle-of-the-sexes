@@ -104,6 +104,34 @@ void BOTS_Common_DropKey(int clientNum, qboolean launch, qboolean tech)
 		BOTS_SetTeamPromotionKey(ent->client->sess.sessionTeam, drop);
 }
 
+void BOTS_CommonCommand_Class(int clientNum)
+{
+	class_t		oldClass;
+	char		s[MAX_TOKEN_CHARS];
+	gentity_t *ent = g_entities + clientNum;
+
+	if ( trap_Argc() != 2 ) {
+		oldClass = ent->client->sess.sessionClass;
+		trap_SendServerCommand( ent-g_entities, va("print \"%s\n\"", BOTS_ClassName(oldClass)) );
+		return;
+	}
+
+	if ( ent->client->switchClassTime > level.time ) {
+		trap_SendServerCommand( ent-g_entities, "print \"May not switch classes more than once per 5 seconds.\n\"" );
+		return;
+	}
+
+	// if they are playing a tournement game, count as a loss
+	if ( (g_gametype.integer == GT_TOURNAMENT )	&& ent->client->sess.sessionTeam == TEAM_FREE )
+		ent->client->sess.losses++;
+
+	trap_Argv( 1, s, sizeof( s ) );
+
+	BOTS_SetClass( ent, s );
+
+	ent->client->switchClassTime = level.time + 5000;	
+}
+
 void BOTS_CommonCommand_LocatePromo(int clientNum)
 {
 	gentity_t *ent = g_entities + clientNum;
@@ -508,4 +536,81 @@ void BOTS_SetClass(gentity_t *ent, char *s)
 			BOTS_Print(-1, va("%s" S_COLOR_WHITE " switched to %s.", client->pers.netname, BOTS_ClassName(cls)));
 		}
 	}
+}
+
+void BOTS_Pickup_Key(gentity_t *key, gentity_t *player )
+{
+	team_t keyTeam = key->item->giTag == KEY_RED_PROMO || key->item->giTag == KEY_RED_TECH ? TEAM_RED : TEAM_BLUE;
+	class_t keyClass = key->item->giTag == KEY_RED_PROMO || key->item->giTag == KEY_BLUE_PROMO ? CLASS_CAPTAIN : CLASS_SCIENTIST;
+	gentity_t *owner = keyClass == CLASS_CAPTAIN ? BOTS_GetTeamCaptain(keyTeam) : BOTS_GetTeamScientist(keyTeam);
+
+	if (level.time - key->keyDropTime < 1000)
+		return;
+
+	//teammate touched it
+	if (player->bots_team == keyTeam)
+	{
+		//key is a promo and the captain touched it or key is a tech and the scientist touched it
+		if (player->bots_class == keyClass)
+			player->client->ps.stats[STAT_KEY] = key->item->giTag;
+		else
+			return;
+	}
+	else
+	{
+		char *teamName = keyTeam == TEAM_RED ? "red" : "blue";
+		char *keyName = keyClass == CLASS_CAPTAIN ? "promotion" : "tech";
+		BOTS_Print(-1, va("%s" S_COLOR_WHITE " stole the %s team's %s key!", player->client->pers.netname, teamName, keyName));
+		//enemy touched it
+		if (owner != NULL && owner->client)
+		{
+			owner->client->ps.stats[STAT_KEY] = key->item->giTag;
+			G_AddEvent( owner, EV_ITEM_PICKUP, key->s.modelindex );
+		}
+	}
+
+	if (keyClass == CLASS_CAPTAIN)
+		BOTS_SetTeamPromotionKey(keyTeam, NULL);
+	else
+		BOTS_SetTeamTechKey(keyTeam, NULL);
+
+	G_AddEvent( player, EV_ITEM_PICKUP, key->s.modelindex );
+	G_FreeEntity(key);
+}
+
+void BOTS_Spawn_Goal(gentity_t *ent)
+{
+}
+
+void BOTS_SpawnSetup(gentity_t *ent)
+{
+		char	*bots_team;
+	char	*bots_class;
+	team_t	team;
+	class_t cls;
+
+	G_SpawnString( "bots_team", "", &bots_team);
+	if (!Q_stricmp(bots_team, "red") || !Q_stricmp(bots_team, "r"))
+		team = TEAM_RED;
+	else if (!Q_stricmp(bots_team, "blue") || !Q_stricmp(bots_team,"b"))
+		team = TEAM_BLUE;
+	else
+	{
+		G_SpawnInt("bots_team", "0", &team);
+		if (team != TEAM_RED && team != TEAM_BLUE)
+			team = TEAM_FREE;
+	}
+	ent->bots_team = team;
+
+	G_SpawnString("bots_class","", &bots_class);
+	cls = BOTS_ClassNumber(bots_class);
+	if (cls == CLASS_NONE)
+	{
+		G_SpawnInt("bots_class","0", &cls);
+		if (cls <= CLASS_NONE || cls >= CLASS_NUM_CLASSES)
+			cls = CLASS_NONE;
+	}
+	ent->bots_class = cls;
+
+	//G_DPrintf( "%s has team '%s' and class '%s' (%d,%d)\n", ent->classname, bots_team, bots_class, team, cls );
 }

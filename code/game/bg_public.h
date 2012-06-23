@@ -428,6 +428,7 @@ typedef enum {
 	EV_MISSILE_MISS_METAL,
 	EV_RAILTRAIL,
 	EV_SHOTGUN,
+	EV_STINGER,
 	EV_BULLET,				// otherEntity is the shooter
 
 	EV_PAIN,
@@ -603,6 +604,7 @@ typedef enum {
 typedef enum {
 	MOD_UNKNOWN,
 	MOD_SHOTGUN,
+	MOD_STINGER,
 	MOD_GAUNTLET,
 	MOD_MACHINEGUN,
 	MOD_GRENADE,

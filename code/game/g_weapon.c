@@ -439,11 +439,8 @@ weapon_railgun_fire
 =================
 */
 #define	MAX_RAIL_HITS	4
-void weapon_railgun_fire (gentity_t *ent) {
+int weapon_railgun_fire_real (gentity_t *ent, int mod, int ev, int baseDamage) {
 	vec3_t		end;
-#ifdef MISSIONPACK
-	vec3_t impactpoint, bouncedir;
-#endif
 	trace_t		trace;
 	gentity_t	*tent;
 	gentity_t	*traceEnt;
@@ -454,7 +451,7 @@ void weapon_railgun_fire (gentity_t *ent) {
 	int			passent;
 	gentity_t	*unlinkedEntities[MAX_RAIL_HITS];
 
-	damage = 100 * s_quadFactor;
+	damage = baseDamage * s_quadFactor;
 
 	VectorMA (muzzle, 8192, forward, end);
 
@@ -469,43 +466,12 @@ void weapon_railgun_fire (gentity_t *ent) {
 		}
 		traceEnt = &g_entities[ trace.entityNum ];
 		if ( traceEnt->takedamage ) {
-#ifdef MISSIONPACK
-			if ( traceEnt->client && traceEnt->client->invulnerabilityTime > level.time ) {
-				if ( G_InvulnerabilityEffect( traceEnt, forward, trace.endpos, impactpoint, bouncedir ) ) {
-					G_BounceProjectile( muzzle, impactpoint, bouncedir, end );
-					// snap the endpos to integers to save net bandwidth, but nudged towards the line
-					SnapVectorTowards( trace.endpos, muzzle );
-					// send railgun beam effect
-					tent = G_TempEntity( trace.endpos, EV_RAILTRAIL );
-					// set player number for custom colors on the railtrail
-					tent->s.clientNum = ent->s.clientNum;
-					VectorCopy( muzzle, tent->s.origin2 );
-					// move origin a bit to come closer to the drawn gun muzzle
-					VectorMA( tent->s.origin2, 4, right, tent->s.origin2 );
-					VectorMA( tent->s.origin2, -1, up, tent->s.origin2 );
-					tent->s.eventParm = 255;	// don't make the explosion at the end
-					//
-					VectorCopy( impactpoint, muzzle );
-					// the player can hit him/herself with the bounced rail
-					passent = ENTITYNUM_NONE;
-				}
-			}
-			else {
-				if( LogAccuracyHit( traceEnt, ent ) ) {
-					hits++;
-				}
-				G_Damage (traceEnt, ent, ent, forward, trace.endpos, damage, 0, MOD_RAILGUN);
-			}
-#else
-				if( LogAccuracyHit( traceEnt, ent ) ) {
-					hits++;
-				}
-				G_Damage (traceEnt, ent, ent, forward, trace.endpos, damage, 0, MOD_RAILGUN);
-#endif
+			if( LogAccuracyHit( traceEnt, ent ) )
+				hits++;
+			G_Damage (traceEnt, ent, ent, forward, trace.endpos, damage, 0, mod);
 		}
-		if ( trace.contents & CONTENTS_SOLID ) {
+		if ( trace.contents & CONTENTS_SOLID )
 			break;		// we hit something solid enough to stop the beam
-		}
 		// unlink this entity, so the next trace will go past it
 		trap_UnlinkEntity( traceEnt );
 		unlinkedEntities[unlinked] = traceEnt;
@@ -523,7 +489,7 @@ void weapon_railgun_fire (gentity_t *ent) {
 	SnapVectorTowards( trace.endpos, muzzle );
 
 	// send railgun beam effect
-	tent = G_TempEntity( trace.endpos, EV_RAILTRAIL );
+	tent = G_TempEntity( trace.endpos, ev );
 
 	// set player number for custom colors on the railtrail
 	tent->s.clientNum = ent->s.clientNum;
@@ -540,6 +506,13 @@ void weapon_railgun_fire (gentity_t *ent) {
 		tent->s.eventParm = DirToByte( trace.plane.normal );
 	}
 	tent->s.clientNum = ent->s.clientNum;
+
+	return hits;
+}
+
+void weapon_railgun_fire(gentity_t *ent)
+{
+	int hits = weapon_railgun_fire_real(ent, MOD_RAILGUN, EV_RAILTRAIL, 100);
 
 	// give the shooter a reward sound if they have made two railgun hits in a row
 	if ( hits == 0 ) {
@@ -558,7 +531,11 @@ void weapon_railgun_fire (gentity_t *ent) {
 		}
 		ent->client->accuracy_hits++;
 	}
+}
 
+void BOTS_Weapon_Stinger(gentity_t *ent)
+{
+	weapon_railgun_fire_real(ent, MOD_STINGER, EV_STINGER, 5);	
 }
 
 
@@ -842,6 +819,9 @@ void FireWeapon( gentity_t *ent ) {
 
 	// fire the specific weapon
 	switch( ent->s.weapon ) {
+	case WP_STINGER:
+		BOTS_Weapon_Stinger( ent );
+		break;
 	case WP_GAUNTLET:
 		Weapon_Gauntlet( ent );
 		break;

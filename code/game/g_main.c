@@ -445,6 +445,8 @@ void G_InitGame( int levelTime, int randomSeed, int restart ) {
 		G_Printf( "Not logging to disk.\n" );
 	}
 
+	BOTS_InitGame();
+
 	G_InitWorldSession();
 
 	// initialize all entities for this game
@@ -880,6 +882,9 @@ void CalculateRanks( void ) {
 			trap_SetConfigstring( CS_SCORES2, va("%i", level.clients[ level.sortedClients[1] ].ps.persistant[PERS_SCORE] ) );
 		}
 	}
+
+	// set the CS_SCORES1/2 configstrings, which will be visible to everyone
+	BOTS_SyncScoresConfigStrings();
 
 	// see if it is time to end the level
 	CheckExitRules();

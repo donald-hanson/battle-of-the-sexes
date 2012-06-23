@@ -1683,5 +1683,5 @@ void ClientCommand( int clientNum ) {
 	else if (Q_stricmp (cmd, "stats") == 0)
 		Cmd_Stats_f( ent );
 	else
-		trap_SendServerCommand( clientNum, va("print \"unknown cmd %s\n\"", cmd ) );
+		BOTS_ClientCommand(clientNum);
 }

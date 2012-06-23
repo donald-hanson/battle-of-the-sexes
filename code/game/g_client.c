@@ -864,6 +864,8 @@ void ClientUserinfoChanged( int clientNum ) {
 	strcpy(redTeam, Info_ValueForKey( userinfo, "g_redteam" ));
 	strcpy(blueTeam, Info_ValueForKey( userinfo, "g_blueteam" ));
 	
+	BOTS_ClientSkin(ent, model, headModel);
+
 	// send over a subset of the userinfo keys so other clients can
 	// print scoreboards, display models, and play custom sounds
 	if (ent->r.svFlags & SVF_BOT)
@@ -1173,19 +1175,7 @@ void ClientSpawn(gentity_t *ent) {
 
 	client->ps.clientNum = index;
 
-	client->ps.stats[STAT_WEAPONS] = ( 1 << WP_MACHINEGUN );
-	if ( g_gametype.integer == GT_TEAM ) {
-		client->ps.ammo[WP_MACHINEGUN] = 50;
-	} else {
-		client->ps.ammo[WP_MACHINEGUN] = 100;
-	}
-
-	client->ps.stats[STAT_WEAPONS] |= ( 1 << WP_GAUNTLET );
-	client->ps.ammo[WP_GAUNTLET] = -1;
-	client->ps.ammo[WP_GRAPPLING_HOOK] = -1;
-
-	// health will count down towards max_health
-	ent->health = client->ps.stats[STAT_HEALTH] = client->ps.stats[STAT_MAX_HEALTH] + 25;
+	BOTS_ClientSpawn(ent);
 
 	G_SetOrigin( ent, spawn_origin );
 	VectorCopy( spawn_origin, client->ps.origin );
@@ -1274,6 +1264,8 @@ void ClientDisconnect( int clientNum ) {
 	if ( !ent->client ) {
 		return;
 	}
+
+	BOTS_ClientDisconnect(clientNum);
 
 	// stop any following clients
 	for ( i = 0 ; i < level.maxclients ; i++ ) {

@@ -635,6 +635,9 @@ void Use_BinaryMover( gentity_t *ent, gentity_t *other, gentity_t *activator ) {
 	int		total;
 	int		partial;
 
+	if (!BOTS_CanUseMover(ent, activator))
+			return;
+
 	// only the master should be used
 	if ( ent->flags & FL_TEAMSLAVE ) {
 		Use_BinaryMover( ent->teammaster, other, activator );
@@ -1033,6 +1036,10 @@ void Touch_Plat( gentity_t *ent, gentity_t *other, trace_t *trace ) {
 		return;
 	}
 
+	//if the player standing on it can't use it, return to original position
+	if (!BOTS_CanUseMover(ent, other))
+		return;
+
 	// delay return-to-pos1 by one second
 	if ( ent->moverState == MOVER_POS2 ) {
 		ent->nextthink = level.time + 1000;
@@ -1050,6 +1057,9 @@ void Touch_PlatCenterTrigger(gentity_t *ent, gentity_t *other, trace_t *trace ) 
 	if ( !other->client ) {
 		return;
 	}
+
+	if (!BOTS_CanUseMover(ent->parent, other))
+		return;
 
 	if ( ent->parent->moverState == MOVER_POS1 ) {
 		Use_BinaryMover( ent->parent, ent, other );
@@ -1175,6 +1185,9 @@ void Touch_Button(gentity_t *ent, gentity_t *other, trace_t *trace ) {
 	if ( !other->client ) {
 		return;
 	}
+
+	if (!BOTS_CanUseMover(ent, other))
+		return;
 
 	if ( ent->moverState == MOVER_POS1 ) {
 		Use_BinaryMover( ent, other, other );

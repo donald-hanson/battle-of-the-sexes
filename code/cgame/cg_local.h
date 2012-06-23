@@ -1663,3 +1663,7 @@ extern qboolean		initparticles;
 int CG_NewParticleArea ( int num );
 
 
+//BotS
+
+void BOTS_StingerTrail(clientInfo_t *ci, vec3_t start, vec3_t end);
+void BOTS_LoadClientInfo(clientInfo_t *ci);

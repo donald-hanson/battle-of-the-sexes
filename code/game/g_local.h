@@ -324,7 +324,8 @@ struct gclient_s {
 	qboolean	fireHeld;			// used for hook
 	gentity_t	*hook;				// grapple hook if out
 
-	int			switchTeamTime;		// time the player switched teams
+	int			switchTeamTime;		// time the player may switch teams again
+	int			switchClassTime;	// time the player may switch classes again
 
 	// timeResidual is used to handle events that happen every second
 	// like health / armor countdowns and regeneration
@@ -1025,6 +1026,7 @@ void		BOTS_SyncScoresConfigStrings();
 
 // BotS - bots_common
 void		BOTS_Common_DropKey(int clientNum, qboolean launch, qboolean tech);
+void		BOTS_CommonCommand_Class(int clientNum);
 void		BOTS_CommonCommand_LocatePromo(int clientNum);
 void		BOTS_CommonCommand_LocateTech(int clientNum);
 void		BOTS_CommonCommand_SetLevel(int clientNum);
@@ -1037,6 +1039,9 @@ qboolean	BOTS_CanTouchMulti(gentity_t *multi, gentity_t *player);
 qboolean	BOTS_CanUseJumppad(gentity_t *jumppad, gentity_t *player);
 qboolean	BOTS_CanTouchHurt(gentity_t *hurt, gentity_t *player);
 void		BOTS_RewriteSpawnVar(char *key, int keySize, char *value, int valueSize);
+void		BOTS_Pickup_Key(gentity_t *key, gentity_t *player );
+void		BOTS_SpawnSetup(gentity_t *ent);
+void		BOTS_Spawn_Goal(gentity_t *ent);
 
 // BotS - bots_captain
 void		BOTS_CaptainCommand_DropPromote(int clientNum);

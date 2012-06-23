@@ -18,6 +18,7 @@ typedef struct classInfo_s {
 } classInfo_t;
 
 classCommandInfo_t g_commonCommands[] = {
+	{ "class", BOTS_CommonCommand_Class },
 	{ "locatepromo", BOTS_CommonCommand_LocatePromo },
 	{ "locatetech", BOTS_CommonCommand_LocateTech },
 	{ "level", BOTS_CommonCommand_SetLevel },
@@ -229,9 +230,15 @@ void BOTS_ClientSpawn(gentity_t *ent)
 		client->ps.stats[STAT_WEAPONS] = ( 1 << classInfo.primaryWeapon );
 		defaultAmmo = BG_FindItemForWeapon(classInfo.primaryWeapon)->quantity;
 		if (defaultAmmo == 0)
+		{
 			defaultAmmo = -1;
+			maxAmmo = -1;
+		}
 		else
+		{
 			defaultAmmo *= 10;
+			maxAmmo = defaultAmmo * 1.5;
+		}
 
 		if (currentLevel > 0)
 				defaultAmmo = maxAmmo;

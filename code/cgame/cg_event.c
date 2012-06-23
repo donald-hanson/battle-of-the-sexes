@@ -1222,6 +1222,18 @@ void CG_EntityEvent( centity_t *cent, vec3_t position ) {
 		CG_Beam( cent );
 		break;
 
+	case EV_STINGER:
+		DEBUGNAME("EV_STINGER");
+		cent->currentState.weapon = WP_STINGER;
+		BOTS_StingerTrail(ci, es->origin2, es->pos.trBase);
+		// if the end was on a nomark surface, don't make an explosion
+		if ( es->eventParm != 255 ) {
+			ByteToDir( es->eventParm, dir );
+			CG_MissileHitWall( es->weapon, es->clientNum, position, dir,IMPACTSOUND_DEFAULT );
+		}
+		break;
+
+
 	default:
 		DEBUGNAME("UNKNOWN");
 		CG_Error( "Unknown event: %i", event );

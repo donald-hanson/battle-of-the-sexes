@@ -212,10 +212,11 @@ static void CG_NailgunEjectBrass( centity_t *cent ) {
 CG_RailTrail
 ==========================
 */
-void CG_RailTrail (clientInfo_t *ci, vec3_t start, vec3_t end) {
-	vec3_t axis[36], move, move2, vec, temp;
+void CG_RailTrail_Real (clientInfo_t *ci, vec3_t start, vec3_t end) {
+	vec3_t axis[36], move, next_move, vec, temp;
 	float  len;
-	int    i, j, skip;
+	int    i;
+	float *color;
  
 	localEntity_t *le;
 	refEntity_t   *re;
@@ -225,6 +226,13 @@ void CG_RailTrail (clientInfo_t *ci, vec3_t start, vec3_t end) {
 #define SPACING  5
  
 	start[2] -= 4;
+	VectorCopy (start, move);
+	VectorSubtract (end, start, vec);
+	len = VectorNormalize (vec);
+	PerpendicularVector(temp, vec);
+	for (i = 0 ; i < 36; i++) {
+		RotatePointAroundVector(axis[i], vec, temp, i * 10);//banshee 2.4 was 10
+	}
  
 	le = CG_AllocLocalEntity();
 	re = &le->refEntity;
@@ -240,86 +248,38 @@ void CG_RailTrail (clientInfo_t *ci, vec3_t start, vec3_t end) {
  
 	VectorCopy(start, re->origin);
 	VectorCopy(end, re->oldorigin);
- 
-	re->shaderRGBA[0] = ci->color1[0] * 255;
-	re->shaderRGBA[1] = ci->color1[1] * 255;
-	re->shaderRGBA[2] = ci->color1[2] * 255;
-	re->shaderRGBA[3] = 255;
 
-	le->color[0] = ci->color1[0] * 0.75;
-	le->color[1] = ci->color1[1] * 0.75;
-	le->color[2] = ci->color1[2] * 0.75;
-	le->color[3] = 1.0f;
+	color = CG_TeamColor(ci->team);
+ 
+	re->shaderRGBA[0] = color[0] * 255;
+    re->shaderRGBA[1] = color[1] * 255;
+    re->shaderRGBA[2] = color[2] * 255;
+    re->shaderRGBA[3] = 255;
+
+	le->color[0] = color[0];
+	le->color[1] = color[1];
+	le->color[2] = color[2];
+	le->color[3] = color[3];
 
 	AxisClear( re->axis );
  
-	if (cg_oldRail.integer)
-	{
-		// nudge down a bit so it isn't exactly in center
-		re->origin[2] -= 8;
-		re->oldorigin[2] -= 8;
-		return;
-	}
-
-	VectorCopy (start, move);
-	VectorSubtract (end, start, vec);
-	len = VectorNormalize (vec);
-	PerpendicularVector(temp, vec);
-	for (i = 0 ; i < 36; i++)
-	{
-		RotatePointAroundVector(axis[i], vec, temp, i * 10);//banshee 2.4 was 10
-	}
-
 	VectorMA(move, 20, vec, move);
+	VectorCopy(move, next_move);
 	VectorScale (vec, SPACING, vec);
 
-	skip = -1;
- 
-	j = 18;
-	for (i = 0; i < len; i += SPACING)
-	{
-		if (i != skip)
-		{
-			skip = i + SPACING;
-			le = CG_AllocLocalEntity();
-			re = &le->refEntity;
-			le->leFlags = LEF_PUFF_DONT_SCALE;
-			le->leType = LE_MOVE_SCALE_FADE;
-			le->startTime = cg.time;
-			le->endTime = cg.time + (i>>1) + 600;
-			le->lifeRate = 1.0 / (le->endTime - le->startTime);
+	// nudge down a bit so it isn't exactly in center
+	re->origin[2] -= 8;
+	re->oldorigin[2] -= 8;
+}
 
-			re->shaderTime = cg.time / 1000.0f;
-			re->reType = RT_SPRITE;
-			re->radius = 1.1f;
-			re->customShader = cgs.media.railRingsShader;
+void CG_RailTrail (clientInfo_t *ci, vec3_t start, vec3_t end)
+{
+	CG_RailTrail_Real(ci,start,end);
+}
 
-			re->shaderRGBA[0] = ci->color2[0] * 255;
-			re->shaderRGBA[1] = ci->color2[1] * 255;
-			re->shaderRGBA[2] = ci->color2[2] * 255;
-			re->shaderRGBA[3] = 255;
-
-			le->color[0] = ci->color2[0] * 0.75;
-			le->color[1] = ci->color2[1] * 0.75;
-			le->color[2] = ci->color2[2] * 0.75;
-			le->color[3] = 1.0f;
-
-			le->pos.trType = TR_LINEAR;
-			le->pos.trTime = cg.time;
-
-			VectorCopy( move, move2);
-			VectorMA(move2, RADIUS , axis[j], move2);
-			VectorCopy(move2, le->pos.trBase);
-
-			le->pos.trDelta[0] = axis[j][0]*6;
-			le->pos.trDelta[1] = axis[j][1]*6;
-			le->pos.trDelta[2] = axis[j][2]*6;
-		}
-
-		VectorAdd (move, vec, move);
-
-		j = (j + ROTATION) % 36;
-	}
+void BOTS_StingerTrail(clientInfo_t *ci, vec3_t start, vec3_t end)
+{
+	CG_RailTrail_Real(ci,start,end);
 }
 
 /*

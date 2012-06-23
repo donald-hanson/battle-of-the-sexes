@@ -81,6 +81,10 @@ void Touch_Multi( gentity_t *self, gentity_t *other, trace_t *trace ) {
 	if( !other->client ) {
 		return;
 	}
+
+	if (!BOTS_CanTouchMulti(self, other))
+		return;
+
 	multi_trigger( self, other );
 }
 
@@ -145,6 +149,9 @@ void trigger_push_touch (gentity_t *self, gentity_t *other, trace_t *trace ) {
 	if ( !other->client ) {
 		return;
 	}
+
+	if (!BOTS_CanUseJumppad(self, other))
+		return;
 
 	BG_TouchJumpPad( &other->client->ps, &self->s );
 }
@@ -283,6 +290,8 @@ void trigger_teleporter_touch (gentity_t *self, gentity_t *other, trace_t *trace
 		return;
 	}
 
+	if (!BOTS_CanUseTeleporter(self,other))
+		return;
 
 	dest = 	G_PickTarget( self->target );
 	if (!dest) {
@@ -361,6 +370,9 @@ void hurt_touch( gentity_t *self, gentity_t *other, trace_t *trace ) {
 	if ( self->timestamp > level.time ) {
 		return;
 	}
+
+	if (!BOTS_CanTouchHurt(self, other))
+		return;
 
 	if ( self->spawnflags & 16 ) {
 		self->timestamp = level.time + 1000;
