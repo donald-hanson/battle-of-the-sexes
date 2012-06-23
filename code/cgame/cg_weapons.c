@@ -518,7 +518,9 @@ void CG_GrappleTrail( centity_t *ent, const weaponInfo_t *wi ) {
 	entityState_t	*es;
 	vec3_t			forward, up;
 	refEntity_t		beam;
-
+	float *color;
+	clientInfo_t *ci;
+	ci = &cgs.clientinfo[ ent->currentState.clientNum ];
 	es = &ent->currentState;
 
 	BG_EvaluateTrajectory( &es->pos, cg.time, origin );
@@ -535,14 +537,16 @@ void CG_GrappleTrail( centity_t *ent, const weaponInfo_t *wi ) {
 	if (Distance( beam.origin, beam.oldorigin ) < 64 )
 		return; // Don't draw if close
 
-	beam.reType = RT_LIGHTNING;
-	beam.customShader = cgs.media.lightningShader;
+	beam.reType = RT_RAIL_CORE;
+	beam.customShader = cgs.media.railCoreShader;
+
+	color = CG_TeamColor(ci->team);
 
 	AxisClear( beam.axis );
-	beam.shaderRGBA[0] = 0xff;
-	beam.shaderRGBA[1] = 0xff;
-	beam.shaderRGBA[2] = 0xff;
-	beam.shaderRGBA[3] = 0xff;
+	beam.shaderRGBA[0] = color[0] * 255;
+	beam.shaderRGBA[1] = color[1] * 255;
+	beam.shaderRGBA[2] = color[2] * 255;
+	beam.shaderRGBA[3] = color[3] * 255;
 	trap_R_AddRefEntityToScene( &beam );
 }
 
@@ -656,14 +660,13 @@ void CG_RegisterWeapon( int weaponNum ) {
 		break;
 
 	case WP_GRAPPLING_HOOK:
-		MAKERGB( weaponInfo->flashDlightColor, 0.6f, 0.6f, 1.0f );
-		weaponInfo->missileModel = trap_R_RegisterModel( "models/ammo/rocket/rocket.md3" );
+		weaponInfo->missileModel = trap_R_RegisterModel( "models/ammo/hook/hook.md3" );
 		weaponInfo->missileTrailFunc = CG_GrappleTrail;
-		weaponInfo->missileDlight = 200;
-		MAKERGB( weaponInfo->missileDlightColor, 1, 0.75f, 0 );
+		MAKERGB( weaponInfo->flashDlightColor, 0, 0, 0 );
+		//weaponInfo->flashSound[0] = trap_S_RegisterSound( "sound/weapons/grapple/grappull.wav",qfalse );
+		//weaponInfo->firingSound = trap_S_RegisterSound( "sound/weapons/grapple/grappull.wav",qfalse );
+		//weaponInfo->missileSound = trap_S_RegisterSound( "sound/weapons/grapple/grappull.wav",qfalse );
 		weaponInfo->readySound = trap_S_RegisterSound( "sound/weapons/melee/fsthum.wav", qfalse );
-		weaponInfo->firingSound = trap_S_RegisterSound( "sound/weapons/melee/fstrun.wav", qfalse );
-		cgs.media.lightningShader = trap_R_RegisterShader( "lightningBoltNew");
 		break;
 
 #ifdef MISSIONPACK
