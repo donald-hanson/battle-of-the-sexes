@@ -495,24 +495,10 @@ void SetTeam( gentity_t *ent, char *s ) {
 
 	clientNum = client - level.clients;
 	specClient = 0;
-	specState = SPECTATOR_NOT;
-	if ( !Q_stricmp( s, "scoreboard" ) || !Q_stricmp( s, "score" )  ) {
+	if ( !Q_stricmp( s, "spectator" ) || !Q_stricmp( s, "s" ) ) {
 		team = TEAM_SPECTATOR;
-		specState = SPECTATOR_SCOREBOARD;
-	} else if ( !Q_stricmp( s, "follow1" ) ) {
-		team = TEAM_SPECTATOR;
-		specState = SPECTATOR_FOLLOW;
-		specClient = -1;
-	} else if ( !Q_stricmp( s, "follow2" ) ) {
-		team = TEAM_SPECTATOR;
-		specState = SPECTATOR_FOLLOW;
-		specClient = -2;
-	} else if ( !Q_stricmp( s, "spectator" ) || !Q_stricmp( s, "s" ) ) {
-		team = TEAM_SPECTATOR;
-		specState = SPECTATOR_FREE;
-	} else if ( g_gametype.integer >= GT_TEAM ) {
+	} else {
 		// if running a team game, assign player to one of the teams
-		specState = SPECTATOR_NOT;
 		if ( !Q_stricmp( s, "red" ) || !Q_stricmp( s, "r" ) ) {
 			team = TEAM_RED;
 		} else if ( !Q_stricmp( s, "blue" ) || !Q_stricmp( s, "b" ) ) {
@@ -530,30 +516,20 @@ void SetTeam( gentity_t *ent, char *s ) {
 
 			// We allow a spread of two
 			if ( team == TEAM_RED && counts[TEAM_RED] - counts[TEAM_BLUE] > 1 ) {
-				trap_SendServerCommand( clientNum, 
-					"cp \"Red team has too many players.\n\"" );
+				trap_SendServerCommand( clientNum, "cp \"Red team has too many players.\n\"" );
 				return; // ignore the request
 			}
 			if ( team == TEAM_BLUE && counts[TEAM_BLUE] - counts[TEAM_RED] > 1 ) {
-				trap_SendServerCommand( clientNum, 
-					"cp \"Blue team has too many players.\n\"" );
+				trap_SendServerCommand( clientNum, "cp \"Blue team has too many players.\n\"" );
 				return; // ignore the request
 			}
 
 			// It's ok, the team we are switching to has less or same number of players
 		}
-
-	} else {
-		// force them to spectators if there aren't any spots free
-		team = TEAM_FREE;
 	}
 
 	// override decision if limiting the players
-	if ( (g_gametype.integer == GT_TOURNAMENT)
-		&& level.numNonSpectatorClients >= 2 ) {
-		team = TEAM_SPECTATOR;
-	} else if ( g_maxGameClients.integer > 0 && 
-		level.numNonSpectatorClients >= g_maxGameClients.integer ) {
+	if ( g_maxGameClients.integer > 0 && level.numNonSpectatorClients >= g_maxGameClients.integer ) {
 		team = TEAM_SPECTATOR;
 	}
 
@@ -569,48 +545,9 @@ void SetTeam( gentity_t *ent, char *s ) {
 	// execute the team change
 	//
 
-	// if the player was dead leave the body
-	if ( client->ps.stats[STAT_HEALTH] <= 0 ) {
-		CopyToBodyQue(ent);
-	}
+	ent->next_team = team;
 
-	// he starts at 'base'
-	client->pers.teamState.state = TEAM_BEGIN;
-	if ( oldTeam != TEAM_SPECTATOR ) {
-		// Kill him (makes sure he loses flags, etc)
-		ent->flags &= ~FL_GODMODE;
-		ent->client->ps.stats[STAT_HEALTH] = ent->health = 0;
-		player_die (ent, ent, ent, 100000, MOD_SUICIDE);
-
-	}
-
-	// they go to the end of the line for tournements
-	if(team == TEAM_SPECTATOR && oldTeam != team)
-		AddTournamentQueue(client);
-
-	client->sess.sessionTeam = team;
-	client->sess.spectatorState = specState;
-	client->sess.spectatorClient = specClient;
-
-	client->sess.teamLeader = qfalse;
-	if ( team == TEAM_RED || team == TEAM_BLUE ) {
-		teamLeader = TeamLeader( team );
-		// if there is no team leader or the team leader is a bot and this client is not a bot
-		if ( teamLeader == -1 || ( !(g_entities[clientNum].r.svFlags & SVF_BOT) && (g_entities[teamLeader].r.svFlags & SVF_BOT) ) ) {
-			SetLeader( team, clientNum );
-		}
-	}
-	// make sure there is a team leader on the team the player came from
-	if ( oldTeam == TEAM_RED || oldTeam == TEAM_BLUE ) {
-		CheckTeamLeader( oldTeam );
-	}
-
-	BroadcastTeamChange( client, oldTeam );
-
-	// get and distribute relevent paramters
-	ClientUserinfoChanged( clientNum );
-
-	ClientBegin( clientNum );
+	BOTS_TryToPlay(ent);
 }
 
 /*
@@ -661,12 +598,6 @@ void Cmd_Team_f( gentity_t *ent ) {
 	if ( ent->client->switchTeamTime > level.time ) {
 		trap_SendServerCommand( ent-g_entities, "print \"May not switch teams more than once per 5 seconds.\n\"" );
 		return;
-	}
-
-	// if they are playing a tournement game, count as a loss
-	if ( (g_gametype.integer == GT_TOURNAMENT )
-		&& ent->client->sess.sessionTeam == TEAM_FREE ) {
-		ent->client->sess.losses++;
 	}
 
 	trap_Argv( 1, s, sizeof( s ) );

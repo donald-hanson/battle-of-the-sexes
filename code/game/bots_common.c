@@ -79,8 +79,8 @@ void BOTS_Common_DropKey(int clientNum, qboolean launch, qboolean tech)
 	if (launch)
 	{
 		AngleVectors( angles, velocity, NULL, NULL );
-		VectorScale( velocity, 150, velocity );
-		velocity[2] += 100;
+		VectorScale( velocity, 300, velocity );
+		velocity[2] += 200;
 	}
 	else
 		VectorSet(velocity, 0, 0, 0);
@@ -471,25 +471,94 @@ void SP_bots_goal(gentity_t *goal)
 	trap_LinkEntity (goal);
 }
 
+void BOTS_TryToPlay(gentity_t *ent)
+{
+	int	teamLeader;
+	gentity_t *	captain;
+	gentity_t *	scientist;
+	qboolean changedTeams = qfalse;
+	qboolean changedClasses = qfalse;
+	team_t oldTeam = ent->bots_team;
+	class_t oldClass = ent->bots_class;
+	gclient_t *	client = ent->client;
+	int clientNum = client - level.clients;
+
+	if (ent->next_team != TEAM_SPECTATOR && changedClasses)
+	{
+		if (ent->next_class == CLASS_CAPTAIN) 
+		{
+			// and i want to do it on the other team?!
+			captain = BOTS_GetTeamCaptain(changedTeams ? ent->next_team : ent->bots_team);
+			if (captain)
+				ent->next_class = CLASS_SOLDIER;
+		}
+		else if(ent->next_class == CLASS_SCIENTIST)
+		{
+			scientist = BOTS_GetTeamScientist(changedTeams ? ent->next_team : ent->bots_team);
+			if (scientist)
+				ent->next_class = CLASS_SOLDIER;
+		}
+	}
+		
+	changedTeams = oldTeam != ent->next_team ? qtrue : qfalse;
+	changedClasses = oldClass != ent->next_class ? qtrue : qfalse;
+
+	trap_Printf(va("Current Team: %s Next Team: %s Current Class: %s Next Class: %s\n", TeamName(ent->bots_team), TeamName(ent->next_team), BOTS_ClassName(ent->bots_class), BOTS_ClassName(ent->next_class)));
+
+	if (ent->next_team == TEAM_SPECTATOR || 
+			((ent->next_team == TEAM_RED || ent->next_team == TEAM_BLUE) && ent->next_class != CLASS_NONE && (changedClasses || changedTeams)))
+	{
+
+		// if the player was dead leave the body
+		if ( client->ps.stats[STAT_HEALTH] <= 0 ) {
+			CopyToBodyQue(ent);
+		}
+
+		if ( client->sess.sessionTeam != TEAM_SPECTATOR ) 
+		{
+			// Kill him (makes sure he loses flags, etc)
+			ent->flags &= ~FL_GODMODE;
+			ent->client->ps.stats[STAT_HEALTH] = ent->health = -999;
+			player_die (ent, ent, ent, 100000, MOD_SUICIDE);
+		}
+
+		client->sess.sessionTeam = ent->bots_team = ent->next_team;
+		client->pers.teamState.state = TEAM_BEGIN;
+		client->sess.spectatorState = ent->next_team == TEAM_SPECTATOR ? SPECTATOR_FREE : SPECTATOR_NOT;
+		client->sess.spectatorClient = 0;
+		client->sess.sessionClass = ent->bots_class = ent->next_class;
+
+		if ( ent->bots_team == TEAM_RED || ent->bots_team == TEAM_BLUE ) {
+			teamLeader = TeamLeader( ent->bots_team );
+			// if there is no team leader or the team leader is a bot and this client is not a bot
+			if ( teamLeader == -1 || ( !(g_entities[clientNum].r.svFlags & SVF_BOT) && (g_entities[teamLeader].r.svFlags & SVF_BOT) ) ) {
+				SetLeader( ent->bots_team, clientNum );
+			}
+		}
+		// make sure there is a team leader on the team the player came from
+		if ( oldTeam == TEAM_RED || oldTeam == TEAM_BLUE ) {
+			CheckTeamLeader( oldTeam );
+		}
+
+		ClientUserinfoChanged( clientNum );
+		ClientBegin( clientNum );
+		ClientRespawn( ent );
+
+		BOTS_Print(-1, va("%s" S_COLOR_WHITE " is now playing a %s on the %s team.", client->pers.netname, BOTS_ClassName(ent->bots_class), TeamName(ent->bots_team)));
+	}
+}
+
 void BOTS_SetClass(gentity_t *ent, char *s)
 {
-	int			clientNum;
 	class_t		cls;
 	gentity_t *	captain;
 	gentity_t *	scientist;
 	gclient_t *	client = ent->client;
 	if (client)
 	{
-		clientNum = client - level.clients;
 		cls = BOTS_ClassNumber(s);
 		if (cls != CLASS_NONE)
 		{
-			if (ent->bots_team != TEAM_RED && ent->bots_team != TEAM_BLUE)
-			{
-				SetTeam(ent,"s");
-				return;
-			}
-
 			if (cls == CLASS_CAPTAIN)
 			{
 				captain = BOTS_GetTeamCaptain(ent->bots_team);
@@ -514,26 +583,10 @@ void BOTS_SetClass(gentity_t *ent, char *s)
 					return;
 				}
 			}
-			
-			if ( client->sess.sessionTeam != TEAM_SPECTATOR ) 
-			{
-				// Kill him (makes sure he loses flags, etc)
-				ent->flags &= ~FL_GODMODE;
-				ent->client->ps.stats[STAT_HEALTH] = ent->health = -999;
-				player_die (ent, ent, ent, 100000, MOD_SUICIDE);
-			}
 
-			client->sess.sessionTeam = ent->bots_team;
-			client->pers.teamState.state = TEAM_BEGIN;
-			client->sess.spectatorState = SPECTATOR_NOT;
-			client->sess.spectatorClient = 0;
-			client->sess.sessionClass = ent->bots_class = cls;
+			ent->next_class = cls;
 
-			ClientUserinfoChanged( clientNum );
-			ClientBegin( clientNum );
-			ClientRespawn( ent );
-
-			BOTS_Print(-1, va("%s" S_COLOR_WHITE " switched to %s.", client->pers.netname, BOTS_ClassName(cls)));
+			BOTS_TryToPlay(ent);
 		}
 	}
 }

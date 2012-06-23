@@ -187,6 +187,10 @@ struct gentity_s {
 
 	team_t		bots_team;
 	class_t		bots_class;
+
+	team_t		next_team;	// the team the player wants to go to
+	class_t		next_class;	// the class the player wants to go to
+
 	int			keyDropTime;
 	gcappad_t	*capPad;	//non null if this entity is a capture pad
 };
@@ -1042,6 +1046,7 @@ void		BOTS_RewriteSpawnVar(char *key, int keySize, char *value, int valueSize);
 void		BOTS_Pickup_Key(gentity_t *key, gentity_t *player );
 void		BOTS_SpawnSetup(gentity_t *ent);
 void		BOTS_Spawn_Goal(gentity_t *ent);
+void		BOTS_TryToPlay(gentity_t *ent);
 
 // BotS - bots_captain
 void		BOTS_CaptainCommand_DropPromote(int clientNum);

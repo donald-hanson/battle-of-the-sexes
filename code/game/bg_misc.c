@@ -347,6 +347,22 @@ gitem_t	bg_itemlist[] =
 /* sounds */ ""
 	},
 
+/*QUAKED weapon_stinger (.3 .3 1) (-16 -16 -16) (16 16 16) suspended
+*/
+	{
+		"weapon_stinger", 
+		"sound/misc/w_pkup.wav",
+        { "models/weapons2/machinegun/machinegun.md3", 
+		NULL, NULL, NULL},
+/* icon */		"icons/iconw_machinegun",
+/* pickup */	"Stinger",
+		0,
+		IT_WEAPON,
+		WP_STINGER,
+/* precache */ "",
+/* sounds */ ""
+	},
+
 	//
 	// AMMO ITEMS
 	//
@@ -514,6 +530,50 @@ gitem_t	bg_itemlist[] =
 /* precache */ "",
 /* sounds */ "sound/items/use_medkit.wav"
 	},
+
+
+	//
+	// KEY ITEMS
+	//
+	{
+		"item_blue_promo", 
+		"sound/items/quaddamage.wav",
+		{ "models/powerups/instant/quad.md3",  NULL, NULL, NULL },
+		"icons/quad",
+		"Blue Promotion Key",
+		0, IT_KEY, KEY_BLUE_PROMO, "",
+		""
+	},
+	{
+		"item_blue_tech", 
+		"sound/items/quaddamage.wav",
+		{ "models/powerups/instant/quad.md3",  NULL, NULL, NULL },
+		"icons/quad",
+		"Blue Tech Key",
+		0, IT_KEY, KEY_BLUE_TECH, "",
+		""
+	},
+
+	{
+		"item_red_promo", 
+		"sound/items/quaddamage.wav",
+		{ "models/powerups/instant/quad.md3",  NULL, NULL, NULL },
+		"icons/quad",
+		"Red Promotion Key",
+		0, IT_KEY, KEY_RED_PROMO, "",
+		""
+	},
+
+	{
+		"item_red_tech", 
+		"sound/items/quaddamage.wav",
+		{ "models/powerups/instant/quad.md3",  NULL, NULL, NULL },
+		"icons/quad",
+		"Red Tech Key",
+		0, IT_KEY, KEY_RED_TECH, "",
+		""
+	},
+
 
 	//
 	// POWERUP ITEMS
@@ -1046,6 +1106,21 @@ qboolean	BG_PlayerTouchesItem( playerState_t *ps, entityState_t *item, int atTim
 
 
 
+qboolean BG_CanKeyBeGrabbed(int gametype, gitem_t *item, const entityState_t *ent, const playerState_t *ps) {
+	team_t itemTeam = item->giTag == KEY_RED_PROMO || item->giTag == KEY_RED_TECH ? TEAM_RED : TEAM_BLUE;
+	class_t itemClass = item->giTag == KEY_RED_PROMO || item->giTag == KEY_BLUE_PROMO ? CLASS_CAPTAIN : CLASS_SCIENTIST;
+	team_t playerTeam = (team_t)ps->persistant[PERS_TEAM];
+	class_t playerClass = (class_t)ps->persistant[PERS_CLASS];
+
+	if (ps->commandTime - ent->pos.trTime < 1000)
+		return qfalse;
+	if (itemTeam != playerTeam)
+		return qtrue;
+	if (itemClass == playerClass)
+		return qtrue;
+	return qfalse;
+}
+
 /*
 ================
 BG_CanItemBeGrabbed
@@ -1067,6 +1142,10 @@ qboolean BG_CanItemBeGrabbed( int gametype, const entityState_t *ent, const play
 	item = &bg_itemlist[ent->modelindex];
 
 	switch( item->giType ) {
+
+	case IT_KEY:
+		return BG_CanKeyBeGrabbed(gametype, item, ent, ps);
+
 	case IT_WEAPON:
 		return qtrue;	// weapons are always picked up
 
