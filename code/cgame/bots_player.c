@@ -123,3 +123,39 @@ void BOTS_LoadClientInfo(clientInfo_t *ci)
 		}
 	}
 }
+
+void BOTS_Laser( centity_t* cent, int entType )
+{
+	refEntity_t		beam;
+	clientInfo_t	*ci;
+	float*			color;
+
+	ci = &cgs.clientinfo[ cent->currentState.clientNum ];
+
+	memset( &beam, 0, sizeof( beam ) );
+
+	// set the start and end of beam from previously set start/end points
+	VectorCopy(cent->currentState.origin, beam.origin);
+	VectorCopy(cent->currentState.origin2, beam.oldorigin);
+
+	if (entType == ET_BOTS_LASER)
+	{
+		beam.reType = RT_RAIL_CORE;
+		beam.customShader = cgs.media.railCoreShader;
+	}
+	else
+	{
+		beam.reType = RT_RAIL_RINGS;
+		beam.customShader = cgs.media.railRingsShader;
+	}
+
+	AxisClear( beam.axis );
+
+	color = CG_TeamColor(ci->team);
+	beam.shaderRGBA[0] = color[0] * 255;
+	beam.shaderRGBA[1] = color[1] * 255;
+	beam.shaderRGBA[2] = color[2] * 255;
+	beam.shaderRGBA[3] = color[3] * 255;
+
+	trap_R_AddRefEntityToScene( &beam );
+}

@@ -128,6 +128,9 @@
     <ClCompile Include="..\..\code\game\bots_scientist.c">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\code\game\bots_bodyguard.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\code\game\ai_chat.h">

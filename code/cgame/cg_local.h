@@ -83,13 +83,13 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 #define TEAM_OVERLAY_MAXNAME_WIDTH	12
 #define TEAM_OVERLAY_MAXLOCATION_WIDTH	16
 
-#define	DEFAULT_MODEL			"sarge"
+#define	DEFAULT_MODEL			"male"
 #ifdef MISSIONPACK
 #define	DEFAULT_TEAM_MODEL		"james"
 #define	DEFAULT_TEAM_HEAD		"*james"
 #else
-#define	DEFAULT_TEAM_MODEL		"sarge"
-#define	DEFAULT_TEAM_HEAD		"sarge"
+#define	DEFAULT_TEAM_MODEL		"male"
+#define	DEFAULT_TEAM_HEAD		"male"
 #endif
 
 #define DEFAULT_REDTEAM_NAME		"Stroggs"
@@ -1667,3 +1667,4 @@ int CG_NewParticleArea ( int num );
 
 void BOTS_StingerTrail(clientInfo_t *ci, vec3_t start, vec3_t end);
 void BOTS_LoadClientInfo(clientInfo_t *ci);
+void BOTS_Laser( centity_t* cent, int entType );

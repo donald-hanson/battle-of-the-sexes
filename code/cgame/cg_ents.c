@@ -986,6 +986,9 @@ static void CG_AddCEntity( centity_t *cent ) {
 	case ET_TEAM:
 		CG_TeamBase( cent );
 		break;
+	case ET_BOTS_LASER:
+		BOTS_Laser( cent, ET_BOTS_LASER );
+		break;
 	}
 }
 

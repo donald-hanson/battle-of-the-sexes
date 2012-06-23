@@ -1060,3 +1060,9 @@ void		BOTS_ScientistCommand_DropTech(int clientNum);
 void		BOTS_ScientistSpawn(gentity_t *ent);
 void		BOTS_ScientistDeath(gentity_t *killed, gentity_t *killedBy, gentity_t *killer, int damage, int meansOfDeath);
 void		BOTS_ScientistKiller(gentity_t *killer, gentity_t *killedBy, gentity_t *killed, int damage, int meansOfDeath);
+
+// BotS - bots_bodyfuard
+void		BOTS_BodyguardCommand_Laser(int clientNum);
+void		BOTS_BodyguardCommand_LaserOff(int clientNum);
+void		BOTS_BodyguardCommand_LaserOn(int clientNum);
+void		BOTS_BodyguardCommand_LaserKill(int clientNum);
