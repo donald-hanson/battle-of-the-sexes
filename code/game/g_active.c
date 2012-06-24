@@ -1002,6 +1002,8 @@ void ClientThink_real( gentity_t *ent ) {
 		return;
 	}
 
+	BOTS_Grenade_HandleKeyPress(ent);
+
 	// perform once-a-second actions
 	ClientTimerActions( ent, msec );
 }

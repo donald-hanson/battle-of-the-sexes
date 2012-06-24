@@ -542,9 +542,10 @@ void TossClientCubes( gentity_t *self );
 // g_missile.c
 //
 void G_RunMissile( gentity_t *ent );
+void G_ExplodeMissile( gentity_t *ent );
 
 gentity_t *fire_plasma (gentity_t *self, vec3_t start, vec3_t aimdir);
-gentity_t *fire_grenade (gentity_t *self, vec3_t start, vec3_t aimdir);
+gentity_t *fire_grenade (gentity_t *self, vec3_t start, vec3_t aimdir, int velocity);
 gentity_t *fire_rocket (gentity_t *self, vec3_t start, vec3_t dir);
 gentity_t *fire_bfg (gentity_t *self, vec3_t start, vec3_t dir);
 gentity_t *fire_grapple (gentity_t *self, vec3_t start, vec3_t dir);
@@ -581,6 +582,7 @@ void DropPortalDestination( gentity_t *ent );
 //
 qboolean LogAccuracyHit( gentity_t *target, gentity_t *attacker );
 void CalcMuzzlePoint ( gentity_t *ent, vec3_t forward, vec3_t right, vec3_t up, vec3_t muzzlePoint );
+void CalcMuzzlePointOrigin ( gentity_t *ent, vec3_t origin, vec3_t forward, vec3_t right, vec3_t up, vec3_t muzzlePoint );
 void SnapVectorTowards( vec3_t v, vec3_t to );
 qboolean CheckGauntletAttack( gentity_t *ent );
 void Weapon_HookFree (gentity_t *ent);
@@ -1027,6 +1029,7 @@ void		BOTS_AutoDemote(int clientNum);
 void		BOTS_ClientSkin(gentity_t *ent, char *model, char *headModel);
 char *		BOTS_BuildTeamInfoConfigString(team_t team);
 void		BOTS_SyncScoresConfigStrings();
+grenadeType_t BOTS_GetGrenadeType(class_t cls);
 
 // BotS - bots_common
 void		BOTS_Common_DropKey(int clientNum, qboolean launch, qboolean tech);
@@ -1049,6 +1052,7 @@ void		BOTS_Spawn_Goal(gentity_t *ent);
 void		BOTS_TryToPlay(gentity_t *ent);
 int			BOTS_Common_CalculateDamageKnockback(gentity_t *targ, gentity_t *attacker, int damage);
 void		BOTS_Common_ApplyBodyguardProtection(gentity_t **targ, gentity_t *attacker, int *damage, int mod);
+qboolean	BOTS_Common_Visible( gentity_t *ent1, gentity_t *ent2 ) ;
 
 // BotS - bots_captain
 void		BOTS_CaptainCommand_DropPromote(int clientNum);
@@ -1063,10 +1067,15 @@ void		BOTS_ScientistSpawn(gentity_t *ent);
 void		BOTS_ScientistDeath(gentity_t *killed, gentity_t *killedBy, gentity_t *killer, int damage, int meansOfDeath);
 void		BOTS_ScientistKiller(gentity_t *killer, gentity_t *killedBy, gentity_t *killed, int damage, int meansOfDeath);
 
-// BotS - bots_bodyfgard
+// BotS - bots_bodyguard
 void		BOTS_BodyguardCommand_Laser(int clientNum);
 void		BOTS_BodyguardCommand_LaserOff(int clientNum);
 void		BOTS_BodyguardCommand_LaserOn(int clientNum);
 void		BOTS_BodyguardCommand_LaserKill(int clientNum);
 void		BOTS_BodyguardCommand_Protect(int clientNum);
 gentity_t	*BOTS_Bodyguard_FindNearByProtector(gentity_t *ent);
+
+// BotS - bots_grenade
+void		BOTS_Grenade_HandleKeyPress(gentity_t *ent);
+void		BOTS_Grenade_ExplodeNearByGrenades(gentity_t *ent);
+qboolean	BOTS_Grenade_TryToStick(gentity_t *ent, gentity_t *other, trace_t *trace);

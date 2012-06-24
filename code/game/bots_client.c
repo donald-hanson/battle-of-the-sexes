@@ -11,6 +11,7 @@ typedef struct classInfo_s {
 	weapon_t primaryWeapon;
 	int hasHook;
 	qboolean hasStinger;
+	grenadeType_t offhandGrenadeType;
 	void (*spawnHandler)(gentity_t *ent);
 	void (*deathHandler)(gentity_t *killed, gentity_t *killedBy, gentity_t *killer, int damage, int meansOfDeath);
 	void (*killerHandler)(gentity_t *killer, gentity_t *killedBy, gentity_t *killed, int damage, int meansOfDeath);
@@ -68,18 +69,18 @@ classCommandInfo_t g_scientistCommands[] = {
 };
 
 classInfo_t g_classList[] = {
-	// value,				name,			primaryWeapon,			hasHook,	hasStinger,	spawnHandler,	deathHandler,		killerHandler,				commandList
-	{ CLASS_NONE,			"None",			WP_NONE,				-1,			qfalse,		NULL,				NULL,				NULL,					g_noneCommands			},
-	{ CLASS_CAPTAIN,		"Captain",		WP_BFG,					2,			qtrue,		BOTS_CaptainSpawn,	BOTS_CaptainDeath,	NULL,					g_captainCommands		},
-	{ CLASS_BODYGUARD,		"Bodyguard",	WP_SHOTGUN,				0,			qtrue,		NULL,				NULL,				NULL,					g_bodyguardCommands		},
-	{ CLASS_SNIPER,			"Sniper",		WP_RAILGUN,				0,			qtrue,		NULL,				NULL,				NULL,					g_sniperCommands		},
-	{ CLASS_SOLDIER,		"Soldier",		WP_ROCKET_LAUNCHER,		-1,			qtrue,		NULL,				NULL,				NULL,					g_soldierCommands		},
-	{ CLASS_BERZERKER,		"Berzerker",	WP_GAUNTLET,			-1,			qfalse,		NULL,				NULL,				NULL,					g_berzerkerCommands		},
-	{ CLASS_INFILTRATOR,	"Infiltrator",	WP_PLASMAGUN,			0,			qtrue,		NULL,				NULL,				NULL,					g_infiltratorCommands	},
-	{ CLASS_KAMIKAZEE,		"Kamikazee",	WP_GRENADE_LAUNCHER,	0,			qtrue,		NULL,				NULL,				NULL,					g_kamikazeeCommands		},
-	{ CLASS_NURSE,			"Nurse",		WP_MACHINEGUN,			0,			qtrue,		NULL,				NULL,				NULL,					g_nurseCommands			},
-	{ CLASS_SCIENTIST,		"Scientist",	WP_LIGHTNING,			0,			qtrue,		BOTS_ScientistSpawn,BOTS_ScientistDeath,BOTS_ScientistKiller,	g_scientistCommands		},
-	{ CLASS_NUM_CLASSES,	NULL,			WP_NUM_WEAPONS,			-1,			qfalse,		NULL,				NULL,				NULL,					g_noneCommands			}
+	// value,				name,			primaryWeapon,			hasHook,	hasStinger,	offhandGrenadeType,	spawnHandler,	deathHandler,		killerHandler,				commandList
+	{ CLASS_NONE,			"None",			WP_NONE,				-1,			qfalse,		GRENADE_NORMAL,		NULL,				NULL,				NULL,					g_noneCommands			},
+	{ CLASS_CAPTAIN,		"Captain",		WP_BFG,					2,			qtrue,		GRENADE_PROXIMITY,	BOTS_CaptainSpawn,	BOTS_CaptainDeath,	NULL,					g_captainCommands		},
+	{ CLASS_BODYGUARD,		"Bodyguard",	WP_SHOTGUN,				0,			qtrue,		GRENADE_PROXIMITY,	NULL,				NULL,				NULL,					g_bodyguardCommands		},
+	{ CLASS_SNIPER,			"Sniper",		WP_RAILGUN,				0,			qtrue,		GRENADE_NORMAL,		NULL,				NULL,				NULL,					g_sniperCommands		},
+	{ CLASS_SOLDIER,		"Soldier",		WP_ROCKET_LAUNCHER,		-1,			qtrue,		GRENADE_NORMAL,		NULL,				NULL,				NULL,					g_soldierCommands		},
+	{ CLASS_BERZERKER,		"Berzerker",	WP_GAUNTLET,			-1,			qfalse,		GRENADE_NORMAL,		NULL,				NULL,				NULL,					g_berzerkerCommands		},
+	{ CLASS_INFILTRATOR,	"Infiltrator",	WP_PLASMAGUN,			0,			qtrue,		GRENADE_DECOY,		NULL,				NULL,				NULL,					g_infiltratorCommands	},
+	{ CLASS_KAMIKAZEE,		"Kamikazee",	WP_GRENADE_LAUNCHER,	0,			qtrue,		GRENADE_NORMAL,		NULL,				NULL,				NULL,					g_kamikazeeCommands		},
+	{ CLASS_NURSE,			"Nurse",		WP_MACHINEGUN,			0,			qtrue,		GRENADE_FLASH,		NULL,				NULL,				NULL,					g_nurseCommands			},
+	{ CLASS_SCIENTIST,		"Scientist",	WP_LIGHTNING,			0,			qtrue,		GRENADE_FREEZE,		BOTS_ScientistSpawn,BOTS_ScientistDeath,BOTS_ScientistKiller,	g_scientistCommands		},
+	{ CLASS_NUM_CLASSES,	NULL,			WP_NUM_WEAPONS,			-1,			qfalse,		GRENADE_NORMAL,		NULL,				NULL,				NULL,					g_noneCommands			}
 };
 
 //the health/armor values are based on the following:
@@ -328,6 +329,11 @@ void BOTS_ClientDisconnect(int clientNum)
 char *BOTS_ClassName(class_t cls)
 {
 	return g_classList[cls].name;
+}
+
+grenadeType_t BOTS_GetGrenadeType(class_t cls)
+{
+	return g_classList[cls].offhandGrenadeType;
 }
 
 class_t BOTS_ClassNumber(char *s)

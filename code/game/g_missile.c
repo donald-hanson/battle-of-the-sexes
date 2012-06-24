@@ -89,6 +89,8 @@ void G_ExplodeMissile( gentity_t *ent ) {
 		}
 	}
 
+	BOTS_Grenade_ExplodeNearByGrenades(ent);
+
 	trap_LinkEntity( ent );
 }
 
@@ -276,6 +278,9 @@ void G_MissileImpact( gentity_t *ent, trace_t *trace ) {
 #endif
 	other = &g_entities[trace->entityNum];
 
+	if (BOTS_Grenade_TryToStick(ent, other, trace))
+		return;
+
 	// check for bounce
 	if ( !other->takedamage &&
 		( ent->s.eFlags & ( EF_BOUNCE | EF_BOUNCE_HALF ) ) ) {
@@ -437,6 +442,8 @@ void G_MissileImpact( gentity_t *ent, trace_t *trace ) {
 		}
 	}
 
+	BOTS_Grenade_ExplodeNearByGrenades(ent);
+
 	trap_LinkEntity( ent );
 }
 
@@ -560,7 +567,7 @@ gentity_t *fire_plasma (gentity_t *self, vec3_t start, vec3_t dir) {
 fire_grenade
 =================
 */
-gentity_t *fire_grenade (gentity_t *self, vec3_t start, vec3_t dir) {
+gentity_t *fire_grenade (gentity_t *self, vec3_t start, vec3_t dir, int velocity) {
 	gentity_t	*bolt;
 
 	VectorNormalize (dir);
@@ -586,7 +593,7 @@ gentity_t *fire_grenade (gentity_t *self, vec3_t start, vec3_t dir) {
 	bolt->s.pos.trType = TR_GRAVITY;
 	bolt->s.pos.trTime = level.time - MISSILE_PRESTEP_TIME;		// move a bit on the very first frame
 	VectorCopy( start, bolt->s.pos.trBase );
-	VectorScale( dir, 700, bolt->s.pos.trDelta );
+	VectorScale( dir, velocity, bolt->s.pos.trDelta );
 	SnapVector( bolt->s.pos.trDelta );			// save net bandwidth
 
 	VectorCopy (start, bolt->r.currentOrigin);

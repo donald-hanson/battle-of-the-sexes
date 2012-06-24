@@ -339,6 +339,7 @@ gentity_t *BOTS_Bodyguard_FindNearByProtector(gentity_t *ent)
 	{
 		bodyguard = g_entities + i;
 		if (bodyguard && 
+			bodyguard->inuse &&
 			bodyguard != ent && 
 			bodyguard->client && 
 			bodyguard->health > 0 &&

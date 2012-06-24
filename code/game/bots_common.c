@@ -678,3 +678,17 @@ void BOTS_Common_ApplyBodyguardProtection(gentity_t **targ, gentity_t *attacker,
 		trap_Printf(va("Bodyguard: %s protected %s from %d damage\n", bodyguard->client->pers.netname, currentTarget->client->pers.netname, *damage));
 	}
 }
+
+/////////////////////////////////////////////////////////////////
+// visible - totally ripped from:
+// http://quakestyle.telefragged.com/quake3/tutorial11.htm
+// (NOBODY): Code helper function
+//
+qboolean BOTS_Common_Visible( gentity_t *ent1, gentity_t *ent2 ) 
+{
+    trace_t	trace;
+    trap_Trace (&trace, ent1->s.pos.trBase, NULL, NULL, ent2->s.pos.trBase, ent1->s.number, MASK_SHOT );
+    if ( trace.contents & CONTENTS_SOLID )
+		return qfalse;
+    return qtrue;
+}
