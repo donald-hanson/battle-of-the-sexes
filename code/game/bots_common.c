@@ -482,24 +482,11 @@ void BOTS_TryToPlay(gentity_t *ent)
 	class_t oldClass = ent->bots_class;
 	gclient_t *	client = ent->client;
 	int clientNum = client - level.clients;
+	static int	seed = 0x92;
 
-	if (ent->next_team != TEAM_SPECTATOR && changedClasses)
-	{
-		if (ent->next_class == CLASS_CAPTAIN) 
-		{
-			// and i want to do it on the other team?!
-			captain = BOTS_GetTeamCaptain(changedTeams ? ent->next_team : ent->bots_team);
-			if (captain)
-				ent->next_class = CLASS_SOLDIER;
-		}
-		else if(ent->next_class == CLASS_SCIENTIST)
-		{
-			scientist = BOTS_GetTeamScientist(changedTeams ? ent->next_team : ent->bots_team);
-			if (scientist)
-				ent->next_class = CLASS_SOLDIER;
-		}
-	}
-		
+	if (ent->r.svFlags & SVF_BOT && ent->next_class == CLASS_NONE)
+		ent->next_class = (class_t)(((CLASS_NURSE - CLASS_BODYGUARD + 1) * Q_random( &seed )) + CLASS_BODYGUARD);
+
 	changedTeams = oldTeam != ent->next_team ? qtrue : qfalse;
 	changedClasses = oldClass != ent->next_class ? qtrue : qfalse;
 
@@ -666,4 +653,28 @@ void BOTS_SpawnSetup(gentity_t *ent)
 	ent->bots_class = cls;
 
 	//G_DPrintf( "%s has team '%s' and class '%s' (%d,%d)\n", ent->classname, bots_team, bots_class, team, cls );
+}
+
+int BOTS_Common_CalculateDamageKnockback(gentity_t *targ, gentity_t *attacker, int damage)
+{
+	return damage;
+}
+
+void BOTS_Common_ApplyBodyguardProtection(gentity_t **targ, gentity_t *attacker, int *damage, int mod)
+{
+	int level = 0;
+	gentity_t *currentTarget = *targ;
+	gentity_t *bodyguard = BOTS_Bodyguard_FindNearByProtector(currentTarget);
+	if (bodyguard && mod != MOD_SUICIDE && currentTarget != attacker)
+	{
+		if (bodyguard == attacker && (mod == MOD_SHOTGUN || mod == MOD_STINGER || mod == MOD_GRAPPLE))
+			return;
+
+		*targ = bodyguard;
+		level = bodyguard->client->ps.persistant[PERS_LEVEL];
+		if (level > 0)
+			*damage =  *damage / level;
+
+		trap_Printf(va("Bodyguard: %s protected %s from %d damage\n", bodyguard->client->pers.netname, currentTarget->client->pers.netname, *damage));
+	}
 }

@@ -41,6 +41,7 @@ classCommandInfo_t g_bodyguardCommands[] = {
 	{ "laseroff", BOTS_BodyguardCommand_LaserOff },
 	{ "laseron", BOTS_BodyguardCommand_LaserOn },
 	{ "laserkill", BOTS_BodyguardCommand_LaserKill },
+	{ "protect", BOTS_BodyguardCommand_Protect },
 	{ NULL, NULL }
 };
 classCommandInfo_t g_sniperCommands[] = {

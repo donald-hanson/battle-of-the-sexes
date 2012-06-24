@@ -12,9 +12,15 @@ typedef struct laserState_s {
 
 typedef struct bodyguardState_s {
 	laserState_t lasers[MAX_LASERS];
+	qboolean protect;
 } bodyguardState_t;
 
 bodyguardState_t bodyguardStates[MAX_CLIENTS];
+
+bodyguardState_t *BOTS_Bodyguard_GetState(int clientNum)
+{
+	return &bodyguardStates[clientNum];
+}
 
 void BOTS_Bodyguard_LaserBeam_Think(gentity_t* self) 
 {
@@ -243,7 +249,7 @@ void BOTS_BodyguardCommand_Laser(int clientNum)
 	int i = 0;
 	laserState_t *laserState;
 	gentity_t *ent = g_entities + clientNum;
-	bodyguardState_t *state = &bodyguardStates[clientNum];
+	bodyguardState_t *state = BOTS_Bodyguard_GetState(clientNum);
 
 	for (i=0;i<MAX_LASERS;i++)
 	{
@@ -262,7 +268,7 @@ void BOTS_BodyguardCommand_LaserOn(int clientNum)
 {
 	int i = 0;
 	laserState_t *laserState;
-	bodyguardState_t *state = &bodyguardStates[clientNum];
+	bodyguardState_t *state = BOTS_Bodyguard_GetState(clientNum);
 
 	for (i=0;i<MAX_LASERS;i++)
 	{
@@ -279,7 +285,7 @@ void BOTS_BodyguardCommand_LaserOff(int clientNum)
 {
 	int i = 0;
 	laserState_t *laserState;
-	bodyguardState_t *state = &bodyguardStates[clientNum];
+	bodyguardState_t *state = BOTS_Bodyguard_GetState(clientNum);
 
 	for (i=0;i<MAX_LASERS;i++)
 	{
@@ -297,7 +303,7 @@ void BOTS_BodyguardCommand_LaserKill(int clientNum)
 {
 	int i = 0;
 	laserState_t *laserState;
-	bodyguardState_t *state = &bodyguardStates[clientNum];
+	bodyguardState_t *state = BOTS_Bodyguard_GetState(clientNum);
 
 	for (i=0;i<MAX_LASERS;i++)
 	{
@@ -312,4 +318,37 @@ void BOTS_BodyguardCommand_LaserKill(int clientNum)
 			laserState->active = qfalse;
 		}
 	}
+}
+
+void BOTS_BodyguardCommand_Protect(int clientNum)
+{
+	bodyguardState_t *state = BOTS_Bodyguard_GetState(clientNum);
+	state->protect = state->protect ? qfalse : qtrue;
+	if (state->protect)
+		trap_SendServerCommand( clientNum, "print \"Protection enabled.\n\"");
+	else
+		trap_SendServerCommand( clientNum, "print \"Protection disabled.\n\"");
+}
+
+gentity_t *BOTS_Bodyguard_FindNearByProtector(gentity_t *ent)
+{
+	gentity_t *bodyguard;
+	int i = 0;
+	vec_t dist;
+	for (i=0;i<MAX_GENTITIES;i++)
+	{
+		bodyguard = g_entities + i;
+		if (bodyguard && 
+			bodyguard != ent && 
+			bodyguard->client && 
+			bodyguard->health > 0 &&
+			bodyguard->client->ps.persistant[PERS_CLASS] == CLASS_BODYGUARD &&
+			bodyguard->client->ps.persistant[PERS_TEAM] == ent->bots_team &&
+			BOTS_Bodyguard_GetState(i)->protect && 
+			Distance(ent->client->ps.origin, bodyguard->client->ps.origin) <= 500.0)
+		{
+			return bodyguard;
+		}
+	}
+	return (gentity_t *)NULL;
 }

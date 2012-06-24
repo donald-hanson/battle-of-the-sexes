@@ -1047,6 +1047,8 @@ void		BOTS_Pickup_Key(gentity_t *key, gentity_t *player );
 void		BOTS_SpawnSetup(gentity_t *ent);
 void		BOTS_Spawn_Goal(gentity_t *ent);
 void		BOTS_TryToPlay(gentity_t *ent);
+int			BOTS_Common_CalculateDamageKnockback(gentity_t *targ, gentity_t *attacker, int damage);
+void		BOTS_Common_ApplyBodyguardProtection(gentity_t **targ, gentity_t *attacker, int *damage, int mod);
 
 // BotS - bots_captain
 void		BOTS_CaptainCommand_DropPromote(int clientNum);
@@ -1061,8 +1063,10 @@ void		BOTS_ScientistSpawn(gentity_t *ent);
 void		BOTS_ScientistDeath(gentity_t *killed, gentity_t *killedBy, gentity_t *killer, int damage, int meansOfDeath);
 void		BOTS_ScientistKiller(gentity_t *killer, gentity_t *killedBy, gentity_t *killed, int damage, int meansOfDeath);
 
-// BotS - bots_bodyfuard
+// BotS - bots_bodyfgard
 void		BOTS_BodyguardCommand_Laser(int clientNum);
 void		BOTS_BodyguardCommand_LaserOff(int clientNum);
 void		BOTS_BodyguardCommand_LaserOn(int clientNum);
 void		BOTS_BodyguardCommand_LaserKill(int clientNum);
+void		BOTS_BodyguardCommand_Protect(int clientNum);
+gentity_t	*BOTS_Bodyguard_FindNearByProtector(gentity_t *ent);
