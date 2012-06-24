@@ -1210,13 +1210,12 @@ typedef struct playerState_s {
 										// won't generate footsteps
 #define BUTTON_AFFIRMATIVE	32
 #define	BUTTON_NEGATIVE		64
-
 #define BUTTON_GETFLAG		128
 #define BUTTON_GUARDBASE	256
 #define BUTTON_PATROL		512
 #define BUTTON_FOLLOWME		1024
-
-#define	BUTTON_ANY			2048			// any key whatsoever
+#define BUTTON_GRENADE		2048
+#define	BUTTON_ANY			4096			// any key whatsoever
 
 #define	MOVE_RUN			120			// if forwardmove or rightmove are >= MOVE_RUN,
 										// then BUTTON_WALKING should be set

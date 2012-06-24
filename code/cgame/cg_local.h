@@ -1671,3 +1671,5 @@ int CG_NewParticleArea ( int num );
 void BOTS_StingerTrail(clientInfo_t *ci, vec3_t start, vec3_t end);
 void BOTS_LoadClientInfo(clientInfo_t *ci);
 void BOTS_Laser( centity_t* cent, int entType );
+void BOTS_Command_PlusGrenade();
+void BOTS_Command_MinusGrenade();

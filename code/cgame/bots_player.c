@@ -159,3 +159,13 @@ void BOTS_Laser( centity_t* cent, int entType )
 
 	trap_R_AddRefEntityToScene( &beam );
 }
+
+void BOTS_Command_PlusGrenade()
+{
+	trap_SendConsoleCommand("+button11");
+}
+
+void BOTS_Command_MinusGrenade()
+{
+	trap_SendConsoleCommand("-button11");
+}
