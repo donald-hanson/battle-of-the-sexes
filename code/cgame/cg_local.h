@@ -375,6 +375,9 @@ typedef struct {
 	animation_t		animations[MAX_TOTALANIMATIONS];
 
 	sfxHandle_t		sounds[MAX_CUSTOM_SOUNDS];
+
+	char			className[MAX_TEAMNAME];
+	class_t			bots_class;
 } clientInfo_t;
 
 

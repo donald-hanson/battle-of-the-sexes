@@ -870,16 +870,22 @@ void ClientUserinfoChanged( int clientNum ) {
 	// print scoreboards, display models, and play custom sounds
 	if (ent->r.svFlags & SVF_BOT)
 	{
-		s = va("n\\%s\\t\\%i\\model\\%s\\hmodel\\%s\\c1\\%s\\c2\\%s\\hc\\%i\\w\\%i\\l\\%i\\skill\\%s\\tt\\%d\\tl\\%d",
+		s = va("n\\%s\\t\\%i\\model\\%s\\hmodel\\%s\\c1\\%s\\c2\\%s\\hc\\%i\\w\\%i\\l\\%i\\skill\\%s\\tt\\%d\\tl\\%d\\c\\%d\\cn\\%s",
 			client->pers.netname, team, model, headModel, c1, c2, 
 			client->pers.maxHealth, client->sess.wins, client->sess.losses,
-			Info_ValueForKey( userinfo, "skill" ), teamTask, teamLeader );
+			Info_ValueForKey( userinfo, "skill" ), teamTask, teamLeader,
+			client->sess.sessionClass,
+			BOTS_ClassName(client->sess.sessionClass)
+			);
 	}
 	else
 	{
-		s = va("n\\%s\\t\\%i\\model\\%s\\hmodel\\%s\\g_redteam\\%s\\g_blueteam\\%s\\c1\\%s\\c2\\%s\\hc\\%i\\w\\%i\\l\\%i\\tt\\%d\\tl\\%d",
+		s = va("n\\%s\\t\\%i\\model\\%s\\hmodel\\%s\\g_redteam\\%s\\g_blueteam\\%s\\c1\\%s\\c2\\%s\\hc\\%i\\w\\%i\\l\\%i\\tt\\%d\\tl\\%d\\c\\%d\\cn\\%s",
 			client->pers.netname, client->sess.sessionTeam, model, headModel, redTeam, blueTeam, c1, c2, 
-			client->pers.maxHealth, client->sess.wins, client->sess.losses, teamTask, teamLeader);
+			client->pers.maxHealth, client->sess.wins, client->sess.losses, teamTask, teamLeader,
+			client->sess.sessionClass,
+			BOTS_ClassName(client->sess.sessionClass)
+			);
 	}
 
 	trap_SetConfigstring( CS_PLAYERS+clientNum, s );

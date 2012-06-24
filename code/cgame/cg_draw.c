@@ -2058,7 +2058,7 @@ static void CG_DrawCrosshairNames( void ) {
 #else
 	w = CG_DrawStrlen( name ) * BIGCHAR_WIDTH;
 	CG_DrawBigString( 320 - w / 2, 170, name, color[3] * 0.5f );
-	name = va("%d", (int)Distance(cg.refdef.vieworg, trace.endpos));
+	name = va("%d (%s)", (int)Distance(cg.refdef.vieworg, trace.endpos), cgs.clientinfo[cg.crosshairClientNum].className);
 	CG_DrawSmallString(320-w/2,170+BIGCHAR_HEIGHT, name, color[3] * 0.5f);
 
 #endif

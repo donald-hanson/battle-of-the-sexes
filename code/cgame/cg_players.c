@@ -947,6 +947,13 @@ void CG_NewClientInfo( int clientNum ) {
 	v = Info_ValueForKey( configstring, "g_blueteam" );
 	Q_strncpyz(newInfo.blueTeam, v, MAX_TEAMNAME);
 
+	// class name
+	v = Info_ValueForKey( configstring, "cn" );
+	Q_strncpyz(newInfo.className, v, MAX_TEAMNAME);
+
+	v = Info_ValueForKey( configstring, "c" );
+	newInfo.bots_class = atoi( v );
+
 	// model
 	v = Info_ValueForKey( configstring, "model" );
 	if ( cg_forceModel.integer ) {
