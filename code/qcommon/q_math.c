@@ -160,6 +160,11 @@ float	Q_crandom( int *seed ) {
 	return 2.0 * ( Q_random( seed ) - 0.5 );
 }
 
+float Q_randomBetween(int *seed, int min, int max)
+{
+	return ((max - min + 1) * Q_random(seed)) + min;
+}
+
 //=======================================================
 
 signed char ClampChar( int i ) {

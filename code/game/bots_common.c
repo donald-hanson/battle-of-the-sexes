@@ -485,7 +485,7 @@ void BOTS_TryToPlay(gentity_t *ent)
 	static int	seed = 0x92;
 
 	if (ent->r.svFlags & SVF_BOT && ent->next_class == CLASS_NONE)
-		ent->next_class = (class_t)(((CLASS_NURSE - CLASS_BODYGUARD + 1) * Q_random( &seed )) + CLASS_BODYGUARD);
+		ent->next_class = (class_t)Q_randomBetween(&seed, CLASS_BODYGUARD, CLASS_NURSE);
 
 	changedTeams = oldTeam != ent->next_team ? qtrue : qfalse;
 	changedClasses = oldClass != ent->next_class ? qtrue : qfalse;

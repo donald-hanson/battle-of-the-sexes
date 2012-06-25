@@ -14,15 +14,16 @@ typedef struct grenadeInfo_s {
 } grenadeInfo_t;
 
 void BOTS_Grenade_Setup_Proximity(gentity_t *ent, gentity_t *grenade);
+void BOTS_Grenade_Setup_Decoy(gentity_t *ent, gentity_t *grenade);
 
 grenadeInfo_t grenadeInfos[] = {
 	//type,						handler
 	{GRENADE_NORMAL,			NULL },
 	{GRENADE_PROXIMITY,			BOTS_Grenade_Setup_Proximity },
-	{GRENADE_DECOY,				NULL },
 	{GRENADE_FLASH,				NULL },
 	{GRENADE_TELEPORT,			NULL },
 	{GRENADE_FREEZE,			NULL },
+	{GRENADE_DECOY,				BOTS_Grenade_Setup_Decoy },
 	{GRENADE_NUM_GRENADES,		NULL },
 };
 
@@ -79,6 +80,25 @@ void BOTS_Grenade_Setup_Proximity(gentity_t *ent, gentity_t *grenade)
 		grenade->s.loopSound = G_SoundIndex("sound/Hgrenc1b.wav");
 		grenade->s.modelindex2 = GRENADE_PROXIMITY;
 		grenade->count = level.time + (30000 * modifier);
+	}
+}
+
+void BOTS_Grenade_Setup_Decoy(gentity_t *ent, gentity_t *grenade)
+{
+	static int seed = 0x92;
+	grenadeState_t *grenadeState = &grenadeStates[ent->s.clientNum];
+	grenadeInfo_t *grenadeInfo = &grenadeInfo[GRENADE_DECOY];
+	int playerLevel = ent->client->ps.persistant[PERS_LEVEL];
+
+	if (grenadeState->activeGrenades < 4 + playerLevel)
+	{
+		grenadeState->activeGrenades++;
+
+		grenade->classname = "decoy_grenade";
+		grenade->think = BOTS_Grenade_Proximity_Think;
+		grenade->nextthink = level.time + FRAMETIME;
+		grenade->s.modelindex2 = Q_randomBetween(&seed, GRENADE_MODEL_SHOTGUN, GRENADE_MODEL_BFG);
+		grenade->count = level.time + 25000;
 	}
 }
 
@@ -181,7 +201,7 @@ void BOTS_Grenade_ExplodeNearByGrenades(gentity_t *ent)
 			temp->classname &&
 			temp != ent &&
 			Distance(ent->s.pos.trBase, temp->s.pos.trBase) <= 80 &&
-			Q_stricmp (temp->classname, "proxy_grenade")  == 0)
+			(Q_stricmp (temp->classname, "proxy_grenade")  == 0 || Q_stricmp (temp->classname, "decoy_grenade")  == 0))
 		{
 			temp->count = 0;
 			temp->nextthink = level.time + 10;
