@@ -1061,6 +1061,17 @@ gitem_t	*BG_FindItemForWeapon( weapon_t weapon ) {
 	return NULL;
 }
 
+int BG_FindItemIndexForWeapon(weapon_t weapon) {
+	gitem_t	*it;
+	int i = 0;
+	for ( i = 1 ; i < bg_numItems ; i++ ) {
+		it = &bg_itemlist[i];
+		if (it->giType==IT_WEAPON && it->giTag == weapon)
+			return i;
+	}
+	return -1;
+}
+
 /*
 ===============
 BG_FindItem

@@ -1673,3 +1673,7 @@ void BOTS_LoadClientInfo(clientInfo_t *ci);
 void BOTS_Laser( centity_t* cent, int entType );
 void BOTS_Command_PlusGrenade();
 void BOTS_Command_MinusGrenade();
+qboolean BOTS_Grenade_IsDecoyGrenade(centity_t *cent);
+void BOTS_Grenade_PrepareDecoyGrenade(centity_t *cent);
+void BOTS_Init_RegisterGraphics();
+void BOTS_Grenade_ChangeGrenadeModel(centity_t *cent, refEntity_t *ent, entityState_t *s1);

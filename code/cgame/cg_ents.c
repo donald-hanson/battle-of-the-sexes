@@ -492,6 +492,17 @@ static void CG_Missile( centity_t *cent ) {
 		ent.axis[0][2] = 1;
 	}
 
+
+	if (BOTS_Grenade_IsDecoyGrenade(cent))
+	{
+		BOTS_Grenade_PrepareDecoyGrenade(cent);
+		CG_Item(cent);
+		return;
+	}
+	
+	BOTS_Grenade_ChangeGrenadeModel(cent, &ent, s1);
+
+
 	// spin as it moves
 	if ( s1->pos.trType != TR_STATIONARY ) {
 		RotateAroundDirection( ent.axis, cg.time / 4 );

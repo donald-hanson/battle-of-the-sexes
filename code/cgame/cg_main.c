@@ -1079,6 +1079,8 @@ static void CG_RegisterGraphics( void ) {
 
 #endif
 	CG_ClearParticles ();
+
+	BOTS_Init_RegisterGraphics();
 /*
 	for (i=1; i<MAX_PARTICLES_AREAS; i++)
 	{

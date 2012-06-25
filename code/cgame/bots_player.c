@@ -169,3 +169,94 @@ void BOTS_Command_MinusGrenade()
 {
 	trap_SendConsoleCommand("-button11");
 }
+
+typedef struct grenadeModelTypeInfo_s {
+	grenadeModelType_t modelType;
+	qboolean isDecoy;
+	qboolean adjustShaderTime;
+	vec_t offset;
+	qhandle_t model;
+	weapon_t weapon;
+} grenadeModelTypeInfo_t;
+
+grenadeModelTypeInfo_t grenadeModelTypeInfos[] = {
+	// modelType,						isDecoy,	adjustShaderTime,	offset,		model,	weapon
+	{GRENADE_MODEL_NORMAL,				qfalse,		qfalse,				0.0f,		0,		WP_NONE, },
+
+	{GRENADE_MODEL_PROXIMITY,			qfalse,		qtrue,				4.0f,		0,		WP_NONE, },
+	{GRENADE_MODEL_FLASH,				qfalse,		qfalse,				4.0f,		0,		WP_NONE, },
+	{GRENADE_MODEL_TELEPORT,			qfalse,		qfalse,				4.0f,		0,		WP_NONE, },
+	{GRENADE_MODEL_FREEZE,				qfalse,		qfalse,				4.0f,		0,		WP_NONE, },
+
+	{GRENADE_MODEL_SHOTGUN,				qtrue,		qfalse,				0.0f,		0,		WP_SHOTGUN, },
+	{GRENADE_MODEL_GRENADE_LAUNCHER,	qtrue,		qfalse,				0.0f,		0,		WP_GRENADE_LAUNCHER, },
+	{GRENADE_MODEL_ROCKET_LAUNCHER,		qtrue,		qfalse,				0.0f,		0,		WP_ROCKET_LAUNCHER, },
+	{GRENADE_MODEL_LIGHTNING,			qtrue,		qfalse,				0.0f,		0,		WP_LIGHTNING, },
+	{GRENADE_MODEL_RAILGUN,				qtrue,		qfalse,				0.0f,		0,		WP_RAILGUN, },
+	{GRENADE_MODEL_PLASMAGUN,			qtrue,		qfalse,				0.0f,		0,		WP_PLASMAGUN, },
+	{GRENADE_MODEL_BFG,					qtrue,		qfalse,				0.0f,		0,		WP_BFG, },
+
+	{GRENADE_MODEL_NUM_GRENADES,		qfalse,		qfalse,				0.0f,		0,		WP_NONE },
+};
+
+void BOTS_Grenade_RegisterModel(grenadeModelType_t modelType, const char *modelName)
+{
+	grenadeModelTypeInfos[modelType].model = trap_R_RegisterModel(modelName);
+}
+
+qboolean BOTS_Grenade_IsDecoyGrenade(centity_t *cent)
+{
+	if (cent->currentState.modelindex2 >= GRENADE_MODEL_NORMAL && cent->currentState.modelindex2 < GRENADE_MODEL_NUM_GRENADES)
+		return grenadeModelTypeInfos[cent->currentState.modelindex2].isDecoy;
+	return qfalse;
+}
+
+void BOTS_Grenade_PrepareDecoyGrenade(centity_t *cent)
+{
+	weapon_t weapon = grenadeModelTypeInfos[cent->currentState.modelindex2].weapon;
+	if (weapon > WP_NONE && weapon < WP_NUM_WEAPONS)
+	{
+		cent->currentState.modelindex = BG_FindItemIndexForWeapon(weapon);
+		cent->lerpOrigin[2] += 20;
+	}
+}
+
+void BOTS_Grenade_ChangeGrenadeModel(centity_t *cent, refEntity_t *ent, entityState_t *s1)
+{
+	int modelIndex = cent->currentState.modelindex2;
+	grenadeModelTypeInfo_t *info;
+	if (modelIndex > GRENADE_MODEL_NORMAL && modelIndex < GRENADE_MODEL_NUM_GRENADES)
+	{
+		info = &grenadeModelTypeInfos[modelIndex];
+
+		ent->hModel = info->model;
+
+		if (info->adjustShaderTime)
+			ent->shaderTime = s1->pos.trTime / 1000.0f;
+
+		if (info->offset > 0.0f)
+		{
+			if ((s1->pos.trDelta[0] == 0) && (s1->pos.trDelta[1] == 0) && (s1->pos.trDelta[2] == 0))
+				ent->origin[2] += info->offset;
+
+			s1->time = s1->pos.trTime;
+		}
+	}
+}
+
+void BOTS_Init_RegisterGraphics()
+{
+	BOTS_Grenade_RegisterModel(GRENADE_MODEL_NORMAL, "models/ammo/grenade1.md3");
+	BOTS_Grenade_RegisterModel(GRENADE_MODEL_PROXIMITY, "models/bots/proxie_mine.md3");
+	BOTS_Grenade_RegisterModel(GRENADE_MODEL_FLASH, "models/bots/flash_gren.md3");
+	BOTS_Grenade_RegisterModel(GRENADE_MODEL_TELEPORT, "models/bots/temp_gren.md3");
+	BOTS_Grenade_RegisterModel(GRENADE_MODEL_FREEZE, "models/bots/temp_gren.md3");
+
+	BOTS_Grenade_RegisterModel(GRENADE_MODEL_SHOTGUN, "models/weapons2/shotgun/shotgun.md3");
+	BOTS_Grenade_RegisterModel(GRENADE_MODEL_GRENADE_LAUNCHER, "models/weapons2/grenadel/grenadel.md3");
+	BOTS_Grenade_RegisterModel(GRENADE_MODEL_ROCKET_LAUNCHER, "models/weapons2/rocketl/rocketl.md3");
+	BOTS_Grenade_RegisterModel(GRENADE_MODEL_LIGHTNING, "models/weapons2/lightning/lightning.md3");
+	BOTS_Grenade_RegisterModel(GRENADE_MODEL_RAILGUN, "models/weapons2/railgun/railgun.md3");
+	BOTS_Grenade_RegisterModel(GRENADE_MODEL_PLASMAGUN, "models/weapons2/plasma/plasma.md3");
+	BOTS_Grenade_RegisterModel(GRENADE_MODEL_BFG, "models/weapons2/bfg/bfg.md3");
+}
