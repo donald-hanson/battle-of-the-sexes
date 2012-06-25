@@ -51,7 +51,8 @@ classCommandInfo_t g_sniperCommands[] = {
 };
 classCommandInfo_t g_soldierCommands[] = {
 	{"rapid", BOTS_SoldierCommand_Rapid },
-	{"guide", BOTS_SoldierCommand_Guide },
+	{"guide1", BOTS_SoldierCommand_Guide1 },
+	{"guide2", BOTS_SoldierCommand_Guide2 },
 	{"tag", BOTS_SoldierCommand_Tag },
 	{"split1", BOTS_SoldierCommand_Split1 },
 	{"split2", BOTS_SoldierCommand_Split2 },

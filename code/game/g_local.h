@@ -1065,7 +1065,8 @@ gentity_t	*BOTS_Bodyguard_FindNearByProtector(gentity_t *ent);
 // BotS - bots_soldier
 qboolean	BOTS_Soldier_FireWeapon(gentity_t *ent);
 void		BOTS_SoldierCommand_Rapid(int clientNum);
-void		BOTS_SoldierCommand_Guide(int clientNum);
+void		BOTS_SoldierCommand_Guide1(int clientNum);
+void		BOTS_SoldierCommand_Guide2(int clientNum);
 void		BOTS_SoldierCommand_Tag(int clientNum);
 void		BOTS_SoldierCommand_Split1(int clientNum);
 void		BOTS_SoldierCommand_Split2(int clientNum);
