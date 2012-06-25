@@ -723,6 +723,10 @@ int Team_TouchOurFlag( gentity_t *ent, gentity_t *other, gentity_t *pad, int tea
 	// flag, he's just won!
 	if (!cl->ps.powerups[enemy_flag])
 		return 0; // We don't have the flag
+
+	if (!BOTS_Goal_CanCapture(ent, other, pad))
+		return 0;
+
 #ifdef MISSIONPACK
 	if( g_gametype.integer == GT_1FCTF ) {
 		PrintMsg( NULL, "%s" S_COLOR_WHITE " captured the flag!\n", cl->pers.netname );
@@ -746,7 +750,7 @@ int Team_TouchOurFlag( gentity_t *ent, gentity_t *other, gentity_t *pad, int tea
 	other->client->rewardTime = level.time + REWARD_SPRITE_TIME;
 	other->client->ps.persistant[PERS_CAPTURES]++;
 
-	BOTS_FlagCaptured( other, pad );
+	BOTS_Goal_FlagCaptured( other, pad );
 
 	Team_CaptureFlagSound( ent, team );
 
@@ -844,7 +848,7 @@ int Pickup_Team( gentity_t *ent, gentity_t *other ) {
 #endif
 	// GT_CTF
 	if( team == cl->sess.sessionTeam) {
-		return 0;
+		return Team_TouchOurFlag( ent, other, NULL, team );
 	}
 	return Team_TouchEnemyFlag( ent, other, team );
 }

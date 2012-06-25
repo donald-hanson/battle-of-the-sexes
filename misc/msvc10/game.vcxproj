@@ -781,6 +781,7 @@
     <ClCompile Include="..\..\code\game\bots_captain.c" />
     <ClCompile Include="..\..\code\game\bots_client.c" />
     <ClCompile Include="..\..\code\game\bots_common.c" />
+    <ClCompile Include="..\..\code\game\bots_goal.c" />
     <ClCompile Include="..\..\code\game\bots_grenade.c" />
     <ClCompile Include="..\..\code\game\bots_scientist.c" />
     <ClCompile Include="..\..\code\game\g_active.c">

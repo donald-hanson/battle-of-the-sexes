@@ -381,95 +381,6 @@ qboolean BOTS_CanTouchHurt(gentity_t *hurt, gentity_t *player)
 	return BOTS_MapEntityCheck(hurt, player);
 }
 
-void BOTS_GoalAllThink(gentity_t *self)
-{
-	self->nextthink = level.time + FRAMETIME;
-
-	if (level.time > self->wait)
-	{
-		if (self->bots_team == TEAM_RED)
-		{
-			self->bots_team = TEAM_BLUE;
-			self->s.modelindex = G_ModelIndex("models/bots/capture_pad_blue.md3");
-		}
-		else 
-		{
-			self->bots_team = TEAM_RED;
-			self->s.modelindex = G_ModelIndex("models/bots/capture_pad_red.md3");
-		}
-
-		self->wait = level.time + (self->capPad->waitTime * 1000);
-	}
-}
-
-void BOTS_GoalTouch (gentity_t *ent, gentity_t *other, trace_t *trace)
-{
-	int			team;
-
-	if (!ent) return;
-	if (!other) return;
-	if (!other->client) return;
-	if (other->health < 0) return;
-
-	team = ent->bots_team == TEAM_RED || ent->bots_team == TEAM_BLUE ? ent->bots_team : TEAM_RED;
-
-	if (team == other->bots_team)
-		Team_TouchOurFlag(ent, other, ent, team);
-}
-
-void SP_bots_goal(gentity_t *goal)
-{
-	trace_t tr;
-	vec3_t dest;
-	gcappad_t *capPad;
-
-	if (level.numCapPads >= MAX_CAPPADS)
-	{
-		G_Printf("Too many capture pads defined in map.");
-		return;
-	}
-
-	goal->capPad = capPad = &level.cappads[level.numCapPads];
-	level.numCapPads++;
-
-	G_SpawnInt("bots_points", "2", &capPad->teamPoints);
-	G_SpawnInt("bots_promos", "2", &capPad->promoPoints);
-	G_SpawnInt("bots_techs", "2", &capPad->techPoints);	
-	G_SpawnInt("bots_wait", "10", &capPad->waitTime);
-
-	G_Printf("Capture Pad - Team: %d Points: %d Promos: %d Techs: %d Wait: %d\n", goal->bots_team, capPad->teamPoints, capPad->promoPoints, capPad->techPoints, capPad->waitTime);
-
-	goal->s.eType = ET_GENERAL;
-	goal->clipmask = CONTENTS_SOLID;
-	goal->s.number = goal - g_entities;
-	goal->r.contents = CONTENTS_SOLID;
-
-	// Try to make the cap pad touch the floor	
-	VectorSet( dest, goal->s.origin[0], goal->s.origin[1], goal->s.origin[2] - 4096 );
-	trap_Trace( &tr, goal->s.origin, goal->r.mins, goal->r.maxs, dest, goal->s.number, MASK_SOLID );
-	goal->s.groundEntityNum = tr.entityNum;
-	G_SetOrigin( goal, tr.endpos );
-	
-	goal->touch = BOTS_GoalTouch;
-
-	if (goal->bots_team == TEAM_BLUE)
-		goal->s.modelindex = G_ModelIndex("models/bots/capture_pad_blue.md3");
-	else if (goal->bots_team == TEAM_RED)
-		goal->s.modelindex = G_ModelIndex("models/bots/capture_pad_red.md3");
-	else
-	{
-		goal->s.modelindex = G_ModelIndex("models/bots/capture_pad_red.md3");
-		goal->wait = level.time + (capPad->waitTime * 1000);
-		goal->bots_team = TEAM_RED;
-		goal->think = BOTS_GoalAllThink;
-		goal->nextthink = level.time + FRAMETIME;
-	}
-
-	VectorSet(goal->r.mins, -30, -30, 0);
-	VectorSet(goal->r.maxs, 30, 30, 6);
-
-	trap_LinkEntity (goal);
-}
 
 void BOTS_TryToPlay(gentity_t *ent)
 {
@@ -616,10 +527,6 @@ void BOTS_Pickup_Key(gentity_t *key, gentity_t *player )
 
 	G_AddEvent( player, EV_ITEM_PICKUP, key->s.modelindex );
 	G_FreeEntity(key);
-}
-
-void BOTS_Spawn_Goal(gentity_t *ent)
-{
 }
 
 void BOTS_SpawnSetup(gentity_t *ent)

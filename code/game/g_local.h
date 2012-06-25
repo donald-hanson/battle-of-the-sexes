@@ -67,15 +67,6 @@ typedef enum {
 typedef struct gentity_s gentity_t;
 typedef struct gclient_s gclient_t;
 
-#define MAX_CAPPADS 16
-
-typedef struct gcappad_s {
-	int teamPoints;
-	int promoPoints;
-	int techPoints;
-	int waitTime;
-} gcappad_t;
-
 struct gentity_s {
 	entityState_t	s;				// communicated by server to clients
 	entityShared_t	r;				// shared by both the server system and game
@@ -192,7 +183,6 @@ struct gentity_s {
 	class_t		next_class;	// the class the player wants to go to
 
 	int			keyDropTime;
-	gcappad_t	*capPad;	//non null if this entity is a capture pad
 };
 
 
@@ -433,8 +423,6 @@ typedef struct {
 #ifdef MISSIONPACK
 	int			portalSequence;
 #endif
-	gcappad_t	cappads[MAX_CAPPADS];
-	int			numCapPads;
 } level_locals_t;
 
 
@@ -1022,7 +1010,6 @@ void		BOTS_SetPromotionPoints(team_t team, int points);
 void		BOTS_SetTechPoints(team_t team, int points);
 int			BOTS_GetPromotionPoints(team_t team);
 int			BOTS_GetTechPoints(team_t team);
-void		BOTS_FlagCaptured(gentity_t *player, gentity_t *pad);
 void		BOTS_UpdateCaptainLevel(team_t team);
 void		BOTS_ClientDisconnect(int clientNum);
 void		BOTS_AutoDemote(int clientNum);
@@ -1048,7 +1035,6 @@ qboolean	BOTS_CanTouchHurt(gentity_t *hurt, gentity_t *player);
 void		BOTS_RewriteSpawnVar(char *key, int keySize, char *value, int valueSize);
 void		BOTS_Pickup_Key(gentity_t *key, gentity_t *player );
 void		BOTS_SpawnSetup(gentity_t *ent);
-void		BOTS_Spawn_Goal(gentity_t *ent);
 void		BOTS_TryToPlay(gentity_t *ent);
 int			BOTS_Common_CalculateDamageKnockback(gentity_t *targ, gentity_t *attacker, int damage);
 void		BOTS_Common_ApplyBodyguardProtection(gentity_t **targ, gentity_t *attacker, int *damage, int mod);
@@ -1079,3 +1065,8 @@ gentity_t	*BOTS_Bodyguard_FindNearByProtector(gentity_t *ent);
 void		BOTS_Grenade_HandleKeyPress(gentity_t *ent);
 void		BOTS_Grenade_ExplodeNearByGrenades(gentity_t *ent);
 qboolean	BOTS_Grenade_TryToStick(gentity_t *ent, gentity_t *other, trace_t *trace);
+
+// BotS - bots_goal
+void		BOTS_Spawn_Goal(gentity_t *ent);;
+qboolean	BOTS_Goal_CanCapture(gentity_t *flag, gentity_t *player, gentity_t *pad);
+void		BOTS_Goal_FlagCaptured(gentity_t *player, gentity_t *pad);

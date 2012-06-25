@@ -487,14 +487,6 @@ void BOTS_ClientCommand(int clientNum)
 			trap_SendServerCommand( clientNum, va("print \"unknown cmd %s\n\"", cmd ) );
 }
 
-//player captured the enemy flag!
-void BOTS_FlagCaptured(gentity_t *player, gentity_t *pad)
-{
-	AddTeamScore(player->s.pos.trBase, player->bots_team, pad->capPad->teamPoints);
-	BOTS_AddPromotionPoints(player->bots_team, pad->capPad->promoPoints);
-	BOTS_AddTechPoints(player->bots_team, pad->capPad->techPoints);
-}
-
 void BOTS_UpdateCaptainLevel(team_t team)
 {
 	int playerLevel;
