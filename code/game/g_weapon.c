@@ -398,7 +398,7 @@ ROCKET
 void Weapon_RocketLauncher_Fire (gentity_t *ent) {
 	gentity_t	*m;
 
-	m = fire_rocket (ent, muzzle, forward);
+	m = fire_rocket (ent, muzzle, forward, 900);
 	m->damage *= s_quadFactor;
 	m->splashDamage *= s_quadFactor;
 
@@ -788,6 +788,10 @@ FireWeapon
 ===============
 */
 void FireWeapon( gentity_t *ent ) {
+
+	if (BOTS_Client_FireWeapon(ent))
+		return;
+
 	if (ent->client->ps.powerups[PW_QUAD] ) {
 		s_quadFactor = g_quadfactor.value;
 	} else {

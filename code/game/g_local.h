@@ -534,7 +534,7 @@ void G_ExplodeMissile( gentity_t *ent );
 
 gentity_t *fire_plasma (gentity_t *self, vec3_t start, vec3_t aimdir);
 gentity_t *fire_grenade (gentity_t *self, vec3_t start, vec3_t aimdir, int velocity);
-gentity_t *fire_rocket (gentity_t *self, vec3_t start, vec3_t dir);
+gentity_t *fire_rocket (gentity_t *self, vec3_t start, vec3_t dir, int velocity);
 gentity_t *fire_bfg (gentity_t *self, vec3_t start, vec3_t dir);
 gentity_t *fire_grapple (gentity_t *self, vec3_t start, vec3_t dir);
 #ifdef MISSIONPACK
@@ -1017,6 +1017,7 @@ void		BOTS_ClientSkin(gentity_t *ent, char *model, char *headModel);
 char *		BOTS_BuildTeamInfoConfigString(team_t team);
 void		BOTS_SyncScoresConfigStrings();
 grenadeType_t BOTS_GetGrenadeType(class_t cls);
+qboolean	BOTS_Client_FireWeapon(gentity_t *ent);
 
 // BotS - bots_common
 void		BOTS_Common_DropKey(int clientNum, qboolean launch, qboolean tech);
@@ -1060,6 +1061,15 @@ void		BOTS_BodyguardCommand_LaserOn(int clientNum);
 void		BOTS_BodyguardCommand_LaserKill(int clientNum);
 void		BOTS_BodyguardCommand_Protect(int clientNum);
 gentity_t	*BOTS_Bodyguard_FindNearByProtector(gentity_t *ent);
+
+// BotS - bots_soldier
+qboolean	BOTS_Soldier_FireWeapon(gentity_t *ent);
+void		BOTS_SoldierCommand_Rapid(int clientNum);
+void		BOTS_SoldierCommand_Guide(int clientNum);
+void		BOTS_SoldierCommand_Tag(int clientNum);
+void		BOTS_SoldierCommand_Split1(int clientNum);
+void		BOTS_SoldierCommand_Split2(int clientNum);
+void		BOTS_SoldierCommand_Split3(int clientNum);
 
 // BotS - bots_grenade
 void		BOTS_Grenade_HandleKeyPress(gentity_t *ent);

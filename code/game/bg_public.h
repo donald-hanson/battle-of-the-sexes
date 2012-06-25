@@ -614,6 +614,17 @@ typedef enum {
 	GRENADE_MODEL_NUM_GRENADES
 } grenadeModelType_t;
 
+typedef enum {
+	ROCKET_NORMAL,
+	ROCKET_RAPID,
+	ROCKET_TAG,
+	ROCKET_SPLIT1,
+	ROCKET_SPLIT2,
+	ROCKET_SPLIT3,
+	ROCKET_GUIDED,
+	ROCKET_NUM_ROCKETMODES
+} rocketMode_t;
+
 // Time between location updates
 #define TEAM_LOCATION_UPDATE_TIME		1000
 
