@@ -278,7 +278,7 @@ void Use_Shooter( gentity_t *ent, gentity_t *other, gentity_t *activator ) {
 		fire_rocket( ent, ent->s.origin, dir, 900 );
 		break;
 	case WP_PLASMAGUN:
-		fire_plasma( ent, ent->s.origin, dir );
+		fire_plasma( ent, ent->s.origin, dir, 2000 );
 		break;
 	}
 

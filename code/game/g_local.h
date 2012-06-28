@@ -532,7 +532,7 @@ void TossClientCubes( gentity_t *self );
 void G_RunMissile( gentity_t *ent );
 void G_ExplodeMissile( gentity_t *ent );
 
-gentity_t *fire_plasma (gentity_t *self, vec3_t start, vec3_t aimdir);
+gentity_t *fire_plasma (gentity_t *self, vec3_t start, vec3_t aimdir, int velocity);
 gentity_t *fire_grenade (gentity_t *self, vec3_t start, vec3_t aimdir, int velocity);
 gentity_t *fire_rocket (gentity_t *self, vec3_t start, vec3_t dir, int velocity);
 gentity_t *fire_bfg (gentity_t *self, vec3_t start, vec3_t dir);
@@ -1079,6 +1079,7 @@ void		BOTS_SoldierCommand_Tag(int clientNum);
 void		BOTS_SoldierCommand_Split1(int clientNum);
 void		BOTS_SoldierCommand_Split2(int clientNum);
 void		BOTS_SoldierCommand_Split3(int clientNum);
+qboolean	BOTS_Rocket_TryToTag(gentity_t *ent, gentity_t *other, trace_t *trace);
 
 // BotS - bots_grenade
 void		BOTS_Grenade_HandleKeyPress(gentity_t *ent);

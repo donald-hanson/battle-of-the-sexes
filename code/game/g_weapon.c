@@ -417,7 +417,7 @@ PLASMA GUN
 void Weapon_Plasmagun_Fire (gentity_t *ent) {
 	gentity_t	*m;
 
-	m = fire_plasma (ent, muzzle, forward);
+	m = fire_plasma (ent, muzzle, forward, 2000);
 	m->damage *= s_quadFactor;
 	m->splashDamage *= s_quadFactor;
 

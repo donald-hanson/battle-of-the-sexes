@@ -281,6 +281,9 @@ void G_MissileImpact( gentity_t *ent, trace_t *trace ) {
 	if (BOTS_Grenade_TryToStick(ent, other, trace))
 		return;
 
+	if (BOTS_Rocket_TryToTag(ent, other, trace))
+		return;
+
 	// check for bounce
 	if ( !other->takedamage &&
 		( ent->s.eFlags & ( EF_BOUNCE | EF_BOUNCE_HALF ) ) ) {
@@ -526,7 +529,7 @@ fire_plasma
 
 =================
 */
-gentity_t *fire_plasma (gentity_t *self, vec3_t start, vec3_t dir) {
+gentity_t *fire_plasma (gentity_t *self, vec3_t start, vec3_t dir, int velocity) {
 	gentity_t	*bolt;
 
 	VectorNormalize (dir);
@@ -551,7 +554,7 @@ gentity_t *fire_plasma (gentity_t *self, vec3_t start, vec3_t dir) {
 	bolt->s.pos.trType = TR_LINEAR;
 	bolt->s.pos.trTime = level.time - MISSILE_PRESTEP_TIME;		// move a bit on the very first frame
 	VectorCopy( start, bolt->s.pos.trBase );
-	VectorScale( dir, 2000, bolt->s.pos.trDelta );
+	VectorScale( dir, velocity, bolt->s.pos.trDelta );
 	SnapVector( bolt->s.pos.trDelta );			// save net bandwidth
 
 	VectorCopy (start, bolt->r.currentOrigin);

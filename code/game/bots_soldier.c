@@ -173,6 +173,120 @@ void BOTS_Rocket_FireGuided1(gentity_t *ent)
 	m->nextthink = level.time + FRAMETIME/10;
 }
 
+void BOTS_Rocket_FireTag(gentity_t *ent)
+{
+	gentity_t *m;
+	vec3_t	forward, right, up;
+	vec3_t	muzzle;
+	// set aiming directions
+	AngleVectors (ent->client->ps.viewangles, forward, right, up);
+	CalcMuzzlePointOrigin ( ent, ent->client->oldOrigin, forward, right, up, muzzle );
+	m = fire_plasma(ent, muzzle, forward, 8000);
+	m->classname = "plasma_tag";
+	m->damage = 1;
+	m->splashDamage = 0;
+}
+
+void BOTS_Rocket_HomingThink(gentity_t *rocket)
+{
+	gentity_t*	soldier;
+	vec3_t		targetdir;
+	vec3_t		targOrigin;
+	int			speed;
+
+	if (!rocket->parent)
+		return;
+	soldier = rocket->parent;
+
+	if (!soldier->client)
+		return;
+
+	if (!rocket->enemy)
+		return;
+
+	VectorCopy(rocket->enemy->s.pos.trBase, targOrigin);
+	targOrigin[2] += 0;
+	VectorSubtract(targOrigin, soldier->s.pos.trBase, targetdir);
+
+	// target acquired, nudge our direction toward it
+	VectorNormalize(targetdir);
+
+	// change the scalar to make it turn tighter
+	//VectorScale(targetdir, 10000, targetdir);
+	//SnapVector( targetdir );
+
+	// change the direction of the rocket
+	VectorAdd(targetdir, rocket->movedir, targetdir);
+	VectorNormalize(targetdir);
+	VectorCopy(targetdir, rocket->movedir);
+	vectoangles(targetdir, rocket->s.angles);
+
+	// set the velocity
+	//speed = VectorLength(self->s.pos.trDelta);
+	speed = 1200;
+	VectorScale(targetdir, speed, rocket->s.pos.trDelta);
+
+	rocket->nextthink = level.time + FRAMETIME;
+}
+
+void BOTS_Rocket_TaggerThink(gentity_t *ent)
+{
+	vec3_t	forward, right, up;
+	vec3_t	muzzle;
+	gentity_t *soldier = ent->parent;
+	gentity_t *rocket = (gentity_t *)NULL;
+
+	AngleVectors (soldier->client->ps.viewangles, forward, right, up);
+	CalcMuzzlePointOrigin ( soldier, soldier->client->oldOrigin, forward, right, up, muzzle );
+
+	rocket = fire_rocket(soldier, muzzle, forward, 1200);
+	rocket->enemy = ent->enemy;
+	rocket->think = BOTS_Rocket_HomingThink;
+	rocket->nextthink = level.time + FRAMETIME;
+
+	ent->count--;
+
+	if (ent->count == 0)
+		G_FreeEntity(ent);
+	else
+		ent->nextthink = level.time + 200;
+}
+
+void BOTS_Rocket_SpawnTagger(gentity_t *plasma, gentity_t *target)
+{
+	gentity_t *bolt = G_Spawn();
+	bolt->classname = "rocket_tagger";
+	bolt->nextthink = level.time + 200;
+	bolt->think = BOTS_Rocket_TaggerThink;
+	bolt->r.ownerNum = plasma->parent->s.number;
+	bolt->parent = plasma->parent;
+	bolt->enemy = target;
+	bolt->count = 5;
+}
+
+qboolean BOTS_Rocket_TryToTag(gentity_t *ent, gentity_t *other, trace_t *trace)
+{
+	int i = 0;
+	gentity_t *soldier = (gentity_t *)NULL;
+	if (Q_stricmp(ent->classname, "plasma_tag") == 0)
+	{
+		soldier = ent->parent;
+		if (other->takedamage && 
+			other->client && 
+			other->health > 0 && 
+			other->bots_team != soldier->bots_team && 
+			(other->bots_team == TEAM_RED || other->bots_team == TEAM_BLUE)
+			)
+		{
+			BOTS_Rocket_SpawnTagger(ent, other);
+			G_FreeEntity(ent);
+			return qtrue;
+		}
+	}
+	return qfalse;
+}
+
+
 typedef struct rocketModeInfo_s {
 	rocketMode_t rocketMode;
 	void (*handler)(gentity_t *ent);
@@ -181,7 +295,7 @@ typedef struct rocketModeInfo_s {
 rocketModeInfo_t rocketModeInfos[] ={
 	{ROCKET_NORMAL,				NULL},
 	{ROCKET_RAPID,				BOTS_Rocket_FireRapid},
-	{ROCKET_TAG,				NULL},
+	{ROCKET_TAG,				BOTS_Rocket_FireTag},
 	{ROCKET_SPLIT1,				BOTS_Rocket_FireSplit1},
 	{ROCKET_SPLIT2,				BOTS_Rocket_FireSplit2},
 	{ROCKET_SPLIT3,				BOTS_Rocket_FireSplit3},
