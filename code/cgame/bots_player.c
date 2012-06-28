@@ -260,3 +260,32 @@ void BOTS_Init_RegisterGraphics()
 	BOTS_Grenade_RegisterModel(GRENADE_MODEL_PLASMAGUN, "models/weapons2/plasma/plasma.md3");
 	BOTS_Grenade_RegisterModel(GRENADE_MODEL_BFG, "models/weapons2/bfg/bfg.md3");
 }
+
+typedef struct gameStateInfo_s {
+	class_t cls;
+	void (*networkHandler)(int clientNum);
+} gameStateInfo_t;
+
+void BOTS_Bodyguard_Network(int clientNum);
+
+gameStateInfo_t gameStateInfos[] = {
+	{ CLASS_NONE,			NULL },
+	{ CLASS_CAPTAIN,		NULL },
+	{ CLASS_BODYGUARD,		BOTS_Bodyguard_Network },
+	{ CLASS_SNIPER,			NULL },
+	{ CLASS_SOLDIER,		NULL },
+	{ CLASS_BERZERKER,		NULL },
+	{ CLASS_INFILTRATOR,	NULL },
+	{ CLASS_KAMIKAZEE,		NULL },
+	{ CLASS_NURSE,			NULL },
+	{ CLASS_SCIENTIST,		NULL },
+	{ CLASS_NUM_CLASSES,	NULL }
+};
+
+void BOTS_ClassState_Parse(int clientNum)
+{
+	class_t cls = (class_t)trap_Net_ReadBits(4);
+	gameStateInfo_t *info = &gameStateInfos[cls];
+	if (info->networkHandler)
+		info->networkHandler(clientNum);
+}

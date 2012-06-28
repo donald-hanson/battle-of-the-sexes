@@ -983,6 +983,11 @@ int		trap_GeneticParentsAndChildSelection(int numranks, float *ranks, int *paren
 
 void	trap_SnapVector( float *v );
 
+void	trap_Net_WriteBits(int value, int bits);
+void	trap_Net_WriteByte(int c);
+void	trap_Net_WriteLong(int  c);
+void	trap_Net_WriteFloat(float value);
+
 int Team_TouchOurFlag( gentity_t *ent, gentity_t *other, gentity_t *pad, int team );
 
 // BotS - bots_client
@@ -1018,6 +1023,8 @@ char *		BOTS_BuildTeamInfoConfigString(team_t team);
 void		BOTS_SyncScoresConfigStrings();
 grenadeType_t BOTS_GetGrenadeType(class_t cls);
 qboolean	BOTS_Client_FireWeapon(gentity_t *ent);
+qboolean	BOTS_ClassState_Changed(int clientNum);
+void		BOTS_ClassState_Append(int clientNum);
 
 // BotS - bots_common
 void		BOTS_Common_DropKey(int clientNum, qboolean launch, qboolean tech);
@@ -1061,6 +1068,7 @@ void		BOTS_BodyguardCommand_LaserOn(int clientNum);
 void		BOTS_BodyguardCommand_LaserKill(int clientNum);
 void		BOTS_BodyguardCommand_Protect(int clientNum);
 gentity_t	*BOTS_Bodyguard_FindNearByProtector(gentity_t *ent);
+void		BOTS_Bodyguard_Network(int clientNum);
 
 // BotS - bots_soldier
 qboolean	BOTS_Soldier_FireWeapon(gentity_t *ent);

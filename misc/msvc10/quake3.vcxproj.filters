@@ -884,6 +884,9 @@
     <ClInclude Include="..\..\code\libspeex\config.h">
       <Filter>speex</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\code\qcommon\netmsg.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="..\..\code\sys\win_resource.rc">

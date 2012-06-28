@@ -230,6 +230,11 @@ Q_EXPORT intptr_t vmMain( int command, int arg0, int arg1, int arg2, int arg3, i
 		return ConsoleCommand();
 	case BOTAI_START_FRAME:
 		return BotAIStartFrame( arg0 );
+	case GAME_NETWORK_CHECK_PLAYERSTATE_CHANGED:
+		return BOTS_ClassState_Changed( arg0 );
+	case GAME_NETWORK_APPEND_PLAYERSTATE:
+		BOTS_ClassState_Append( arg0 );
+		return 0;
 	}
 
 	return -1;

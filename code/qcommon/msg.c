@@ -22,6 +22,13 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 #include "q_shared.h"
 #include "qcommon.h"
 
+#include "../game/g_public.h"
+#include "../cgame/cg_public.h"
+
+extern	vm_t			*cgvm;	// interface to cgame dll or vm
+extern	vm_t			*uivm;	// interface to ui dll or vm
+extern	vm_t			*gvm;	// interface to game dll or vm
+
 static huffman_t		msgHuff;
 
 static qboolean			msgInit = qfalse;
@@ -1205,6 +1212,101 @@ netField_t	playerStateFields[] =
 { PSF(jumppad_ent), GENTITYNUM_BITS },
 { PSF(loopSound), 16 }
 };
+
+static msg_t *currentMessage = (msg_t *)NULL;
+
+int NET_ReadBits(int bits)
+{
+	if (currentMessage == (msg_t *)NULL)
+	{
+		Com_Error(ERR_DROP, "NET_ReadBits with null message");
+		return 0;
+	}
+	MSG_ReadBits(currentMessage, bits);
+}
+
+void NET_WriteBits(int value, int bits)
+{
+	if (currentMessage == (msg_t *)NULL)
+		Com_Error(ERR_DROP, "NET_WriteBits with null message");
+	MSG_WriteBits(currentMessage, value, bits);
+}
+
+int NET_ReadByte()
+{
+	if (currentMessage == (msg_t *)NULL)
+	{
+		Com_Error(ERR_DROP, "NET_ReadByte with null message");
+		return 0;
+	}
+	return MSG_ReadByte(currentMessage);
+}
+
+void NET_WriteByte(int c)
+{
+	if (currentMessage == (msg_t *)NULL)
+		Com_Error(ERR_DROP, "NET_WriteByte with null message");
+	MSG_WriteByte(currentMessage, c);
+}
+
+int NET_ReadLong()
+{
+	if (currentMessage == (msg_t *)NULL)
+	{
+		Com_Error(ERR_DROP, "NET_ReadLong with null message");
+		return 0;
+	}
+	return MSG_ReadLong(currentMessage);
+}
+
+void NET_WriteLong(int c)
+{
+	if (currentMessage == (msg_t *)NULL)
+		Com_Error(ERR_DROP, "NET_WriteLong with null message");
+	MSG_WriteLong(currentMessage, c);
+}
+
+float NET_ReadFloat()
+{
+	if (currentMessage == (msg_t *)NULL)
+	{
+		Com_Error(ERR_DROP, "NET_ReadFloat with null message");
+		return 0;
+	}
+	return MSG_ReadFloat(currentMessage);
+}
+
+void NET_WriteFloat(float value)
+{
+	if (currentMessage == (msg_t *)NULL)
+		Com_Error(ERR_DROP, "NET_WriteFloat with null message");
+	MSG_WriteFloat(currentMessage, value);
+}
+
+void MSG_Write_GameState(msg_t *msg, struct playerState_s *to) {
+	qboolean gameStateChanged = VM_Call(gvm, GAME_NETWORK_CHECK_PLAYERSTATE_CHANGED, to->clientNum);
+	if (gameStateChanged)
+	{
+		MSG_WriteBits( msg, 1, 1 );	// changed
+		currentMessage = msg;
+		VM_Call(gvm, GAME_NETWORK_APPEND_PLAYERSTATE, to->clientNum);
+		currentMessage = (msg_t *)NULL;
+	}
+	else
+	{
+		MSG_WriteBits( msg, 0, 1 );	// no change
+	}
+}
+
+void MSG_Read_GameState(msg_t *msg, struct playerState_s *to) {
+	if ( MSG_ReadBits( msg, 1 ) ) {
+		LOG("GAME_CUSTOM_STATE");
+		// call cgame vm to read the bits sent by the server
+		currentMessage = msg;
+		VM_Call(cgvm, CG_NETWORK_PLAYERSTATE_CHANGED, to->clientNum);
+		currentMessage = (msg_t *)NULL;
+	}
+}
 
 /*
 =============

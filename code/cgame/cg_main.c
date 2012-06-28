@@ -74,6 +74,9 @@ Q_EXPORT intptr_t vmMain( int command, int arg0, int arg1, int arg2, int arg3, i
 	case CG_EVENT_HANDLING:
 		CG_EventHandling(arg0);
 		return 0;
+	case CG_NETWORK_PLAYERSTATE_CHANGED:
+		BOTS_ClassState_Parse(arg0);
+		return 0;
 	default:
 		CG_Error( "vmMain: unknown command %i", command );
 		break;

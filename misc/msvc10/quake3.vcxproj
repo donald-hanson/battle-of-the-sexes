@@ -1783,6 +1783,7 @@
     <ClInclude Include="..\..\code\qcommon\cm_polylib.h" />
     <ClInclude Include="..\..\code\qcommon\cm_public.h" />
     <ClInclude Include="..\..\code\game\g_public.h" />
+    <ClInclude Include="..\..\code\qcommon\netmsg.h" />
     <ClInclude Include="..\..\code\ui\keycodes.h" />
     <ClInclude Include="..\..\code\client\keys.h" />
     <ClInclude Include="..\..\code\qcommon\puff.h" />

@@ -790,3 +790,19 @@ int trap_PC_ReadToken( int handle, pc_token_t *pc_token ) {
 int trap_PC_SourceFileAndLine( int handle, char *filename, int *line ) {
 	return syscall( BOTLIB_PC_SOURCE_FILE_AND_LINE, handle, filename, line );
 }
+
+void trap_Net_WriteBits(int value, int bits) {
+	syscall(G_NET_WRITEBITS, value, bits);
+}
+
+void trap_Net_WriteByte(int c) {
+	syscall(G_NET_WRITEBYTE, c);
+}
+
+void trap_Net_WriteLong(int c) {
+	syscall(G_NET_WRITELONG, c);
+}
+
+void trap_Net_WriteFloat(float c) {
+	syscall(G_NET_WRITEFLOAT, PASSFLOAT(c));
+}

@@ -190,6 +190,8 @@ void CL_ParsePacketEntities( msg_t *msg, clSnapshot_t *oldframe, clSnapshot_t *n
 }
 
 
+void MSG_Read_GameState(msg_t *msg, struct playerState_s *to);
+
 /*
 ================
 CL_ParseSnapshot
@@ -281,6 +283,8 @@ void CL_ParseSnapshot( msg_t *msg ) {
 	// read packet entities
 	SHOWNET( msg, "packet entities" );
 	CL_ParsePacketEntities( msg, old, &newSnap );
+
+	MSG_Read_GameState(msg, &newSnap.ps );
 
 	// if not valid, dump the entire thing now that it has
 	// been properly read

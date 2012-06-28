@@ -113,6 +113,7 @@ static void SV_EmitPacketEntities( clientSnapshot_t *from, clientSnapshot_t *to,
 }
 
 
+void MSG_Write_GameState(msg_t *msg, struct playerState_s *to);
 
 /*
 ==================
@@ -198,6 +199,8 @@ static void SV_WriteSnapshotToClient( client_t *client, msg_t *msg ) {
 
 	// delta encode the entities
 	SV_EmitPacketEntities (oldframe, frame, msg);
+
+	MSG_Write_GameState(msg, &frame->ps);
 
 	// padding for rate debugging
 	if ( sv_padPackets->integer ) {

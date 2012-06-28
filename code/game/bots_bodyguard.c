@@ -22,6 +22,29 @@ bodyguardState_t *BOTS_Bodyguard_GetState(int clientNum)
 	return &bodyguardStates[clientNum];
 }
 
+void BOTS_Bodyguard_Network(int clientNum)
+{
+	gentity_t *ent = g_entities + clientNum;
+	bodyguardState_t *state = BOTS_Bodyguard_GetState(clientNum);
+	int i = 0;
+
+	trap_Net_WriteBits(state->protect ? 1 : 0, 1);
+	for (i=0;i<MAX_LASERS;i++)
+	{
+		laserState_t *laser = &state->lasers[i];
+		if (laser->active)
+		{
+			trap_Net_WriteBits(1, 1);
+			trap_Net_WriteBits(laser->on ? 1 : 0, 1);
+			trap_Net_WriteFloat(Distance(ent->r.currentOrigin, laser->base->r.currentOrigin));
+		}
+		else
+		{
+			trap_Net_WriteBits(0, 1);
+		}
+	}
+}
+
 void BOTS_Bodyguard_LaserBeam_Think(gentity_t* self) 
 {
 	/*
