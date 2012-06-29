@@ -67,6 +67,7 @@ classCommandInfo_t g_berzerkerCommands[] = {
 	{ NULL, NULL }
 };
 classCommandInfo_t g_infiltratorCommands[] = {
+	{ "disguise", BOTS_InfiltratorCommand_Disguise },
 	{ NULL, NULL }
 };
 classCommandInfo_t g_kamikazeeCommands[] = {
@@ -368,6 +369,15 @@ class_t BOTS_ClassNumber(char *s)
 	return CLASS_NONE;
 }
 
+team_t BOTS_TeamNumber(char *s)
+{
+	if (Q_stricmp(s, "red") == 0)
+		return TEAM_RED;
+	else if(Q_stricmp(s, "blue") == 0)
+		return TEAM_BLUE;
+	return TEAM_FREE;
+}
+
 void BOTS_Print(int clientNum, char* text)
 {
 	if (clientNum == -1)
@@ -566,6 +576,8 @@ void BOTS_ClientSkin(gentity_t *ent, char *outModel, char *outHeadModel)
 
 	team_t team = ent->client->sess.sessionTeam;
 	class_t cls = ent->client->sess.sessionClass;
+
+	BOTS_Infiltrator_AdjustClientSkin(ent, &team, &cls);
 
 	switch (cls)
 	{

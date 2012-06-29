@@ -997,6 +997,7 @@ void		BOTS_ClientSpawn(gentity_t *ent);
 void		BOTS_PlayerDeath(gentity_t *killed, gentity_t *killedBy, gentity_t *killer, int damage, int meansOfDeath);
 char *		BOTS_ClassName(class_t cls);
 class_t		BOTS_ClassNumber(char *s);
+team_t		BOTS_TeamNumber(char *s);
 void		BOTS_Print(int clientNum, char* text);
 void		BOTS_Print_Team(team_t team, char *text);
 qboolean	BOTS_IsClassName(char *s);
@@ -1085,6 +1086,10 @@ void		BOTS_SoldierCommand_Split1(int clientNum);
 void		BOTS_SoldierCommand_Split2(int clientNum);
 void		BOTS_SoldierCommand_Split3(int clientNum);
 qboolean	BOTS_Rocket_TryToTag(gentity_t *ent, gentity_t *other, trace_t *trace);
+
+// BotS - bots_infiltrator
+void		BOTS_Infiltrator_AdjustClientSkin(gentity_t *ent, team_t *team, class_t *cls);
+void		BOTS_InfiltratorCommand_Disguise(int clientNum);
 
 // BotS - bots_grenade
 void		BOTS_Grenade_HandleKeyPress(gentity_t *ent);
