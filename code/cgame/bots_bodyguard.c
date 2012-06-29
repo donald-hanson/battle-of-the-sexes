@@ -11,6 +11,8 @@ typedef struct laserState_s {
 typedef struct bodyguardState_s {
 	laserState_t lasers[MAX_LASERS];
 	qboolean protect;
+	qboolean decoyActive;
+	int decoyTime;
 } bodyguardState_t;
 
 bodyguardState_t bodyguardState;
@@ -24,7 +26,11 @@ void BOTS_Bodyguard_Network(int clientNum)
 {
 	int i;
 	bodyguardState_t *state = BOTS_Bodyguard_GetState();
+	qboolean decoyActive = qfalse;
+	int decoyTime = 0;
 
+	state->decoyActive = (qboolean)trap_Net_ReadBits(1);
+	state->decoyTime = trap_Net_ReadBits(8);
 	state->protect = (qboolean)trap_Net_ReadBits(1);
 	for (i=0;i<MAX_LASERS;i++)
 	{

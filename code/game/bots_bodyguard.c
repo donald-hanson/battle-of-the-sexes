@@ -1,7 +1,9 @@
 #include "g_local.h"
 
-#define MAX_LASERS 3
-#define MAX_LASER_HITS 10
+#define MAX_LASERS				3
+#define MAX_LASER_HITS			10
+#define DECOY_COOLDOWN_SECONDS	30000
+#define	DECOY_ACTIVE_SECONDS	15000
 
 typedef struct laserState_s {
 	qboolean active;	//has the laser base been placed in the game world?
@@ -13,6 +15,7 @@ typedef struct laserState_s {
 typedef struct bodyguardState_s {
 	laserState_t lasers[MAX_LASERS];
 	qboolean protect;
+	int decoy;
 } bodyguardState_t;
 
 bodyguardState_t bodyguardStates[MAX_CLIENTS];
@@ -27,6 +30,22 @@ void BOTS_Bodyguard_Network(int clientNum)
 	gentity_t *ent = g_entities + clientNum;
 	bodyguardState_t *state = BOTS_Bodyguard_GetState(clientNum);
 	int i = 0;
+
+	if (state->decoy > level.time)
+	{
+		trap_Net_WriteBits(1, 1);
+		trap_Net_WriteBits( (state->decoy - level.time) / 1000, 8);
+	}
+	else if (state->decoy + DECOY_COOLDOWN_SECONDS > level.time)
+	{
+		trap_Net_WriteBits(0, 1);
+		trap_Net_WriteBits( (state->decoy + DECOY_COOLDOWN_SECONDS - level.time) / 1000, 8);
+	}
+	else
+	{
+		trap_Net_WriteBits(0, 1);
+		trap_Net_WriteBits(0, 8);
+	}
 
 	trap_Net_WriteBits(state->protect ? 1 : 0, 1);
 	for (i=0;i<MAX_LASERS;i++)
@@ -266,7 +285,6 @@ void BOTS_Bodyguard_PlaceLaser(gentity_t *ent, bodyguardState_t *bodyguardState,
 	laserState->on = qfalse;
 }
 
-
 void BOTS_BodyguardCommand_Laser(int clientNum)
 {
 	int i = 0;
@@ -353,6 +371,24 @@ void BOTS_BodyguardCommand_Protect(int clientNum)
 		trap_SendServerCommand( clientNum, "print \"Protection disabled.\n\"");
 }
 
+void BOTS_BodyguardCommand_Decoy(int clientNum)
+{
+	bodyguardState_t *state = BOTS_Bodyguard_GetState(clientNum);
+	if (state->decoy > level.time)
+	{
+		trap_SendServerCommand( clientNum, "print \"Decoy currently active.\n\"");
+	}
+	else if (state->decoy + DECOY_COOLDOWN_SECONDS > level.time)
+	{
+		trap_SendServerCommand( clientNum, "print \"Decoy currently on cooldown.\n\"");
+	}
+	else
+	{
+		state->decoy = level.time + DECOY_ACTIVE_SECONDS;
+		trap_SendServerCommand( clientNum, "print \"Decoy enabled.\n\"");
+	}
+}
+
 gentity_t *BOTS_Bodyguard_FindNearByProtector(gentity_t *ent)
 {
 	gentity_t *bodyguard;
@@ -375,4 +411,52 @@ gentity_t *BOTS_Bodyguard_FindNearByProtector(gentity_t *ent)
 		}
 	}
 	return (gentity_t *)NULL;
+}
+
+void BOTS_Bodyguard_Modify_EntityState()
+{
+	gentity_t *ent;
+	bodyguardState_t *state;
+	int i=0;
+	for (i=0;i<MAX_CLIENTS;i++)
+	{
+		ent = g_entities + i;
+		if (ent && ent->inuse && ent->client && ent->health > 0 && 
+			ent->bots_class == CLASS_BODYGUARD && 
+			!ent->client->ps.powerups[PW_REDFLAG] && !ent->client->ps.powerups[PW_BLUEFLAG] && !ent->client->ps.powerups[PW_NEUTRALFLAG])
+		{
+			state = BOTS_Bodyguard_GetState(i);
+			if (state->decoy >= level.time)
+			{
+				if (ent->bots_team == TEAM_BLUE)
+					ent->s.powerups |= (1 << PW_REDFLAG);
+				else if (ent->bots_team == TEAM_RED)
+					ent->s.powerups |= (1 << PW_BLUEFLAG);
+			}
+		}
+	}
+}
+
+void BOTS_Bodyguard_Rollback_EntityState()
+{
+	gentity_t *ent;
+	bodyguardState_t *state;
+	int i=0;
+	for (i=0;i<MAX_CLIENTS;i++)
+	{
+		ent = g_entities + i;
+		if (ent && ent->inuse && ent->client && ent->health > 0 && 
+			ent->bots_class == CLASS_BODYGUARD && 
+			!ent->client->ps.powerups[PW_REDFLAG] && !ent->client->ps.powerups[PW_BLUEFLAG] && !ent->client->ps.powerups[PW_NEUTRALFLAG])
+		{
+			state = BOTS_Bodyguard_GetState(i);
+			if (state->decoy >= level.time)
+			{
+				if (ent->bots_team == TEAM_BLUE)
+					ent->s.powerups &= ~(1 << PW_REDFLAG);
+				else if (ent->bots_team == TEAM_RED)
+					ent->s.powerups &= ~(1 << PW_BLUEFLAG);
+			}
+		}
+	}
 }

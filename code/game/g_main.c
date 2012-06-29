@@ -235,6 +235,12 @@ Q_EXPORT intptr_t vmMain( int command, int arg0, int arg1, int arg2, int arg3, i
 	case GAME_NETWORK_APPEND_PLAYERSTATE:
 		BOTS_ClassState_Append( arg0 );
 		return 0;
+	case GAME_BEFORE_SEND_SNAPSHOTS:
+		BOTS_Modify_EntityState();
+		return 0;
+	case GAME_AFTER_SEND_SNAPSHOTS:
+		BOTS_Rollback_EntityState();
+		return 0;
 	}
 
 	return -1;

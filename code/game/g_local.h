@@ -1046,7 +1046,9 @@ void		BOTS_SpawnSetup(gentity_t *ent);
 void		BOTS_TryToPlay(gentity_t *ent);
 int			BOTS_Common_CalculateDamageKnockback(gentity_t *targ, gentity_t *attacker, int damage);
 void		BOTS_Common_ApplyBodyguardProtection(gentity_t **targ, gentity_t *attacker, int *damage, int mod);
-qboolean	BOTS_Common_Visible( gentity_t *ent1, gentity_t *ent2 ) ;
+qboolean	BOTS_Common_Visible( gentity_t *ent1, gentity_t *ent2 );
+void		BOTS_Modify_EntityState();
+void		BOTS_Rollback_EntityState();
 
 // BotS - bots_captain
 void		BOTS_CaptainCommand_DropPromote(int clientNum);
@@ -1067,8 +1069,11 @@ void		BOTS_BodyguardCommand_LaserOff(int clientNum);
 void		BOTS_BodyguardCommand_LaserOn(int clientNum);
 void		BOTS_BodyguardCommand_LaserKill(int clientNum);
 void		BOTS_BodyguardCommand_Protect(int clientNum);
+void		BOTS_BodyguardCommand_Decoy(int clientNum);
 gentity_t	*BOTS_Bodyguard_FindNearByProtector(gentity_t *ent);
 void		BOTS_Bodyguard_Network(int clientNum);
+void		BOTS_Bodyguard_Modify_EntityState();
+void		BOTS_Bodyguard_Rollback_EntityState();
 
 // BotS - bots_soldier
 qboolean	BOTS_Soldier_FireWeapon(gentity_t *ent);

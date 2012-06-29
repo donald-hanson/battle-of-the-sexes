@@ -1149,8 +1149,12 @@ void SV_Frame( int msec ) {
 	// check timeouts
 	SV_CheckTimeouts();
 
+	VM_Call(gvm, GAME_BEFORE_SEND_SNAPSHOTS);
+
 	// send messages back to the clients
 	SV_SendClientMessages();
+
+	VM_Call(gvm, GAME_AFTER_SEND_SNAPSHOTS);
 
 	// send a heartbeat to the master if needed
 	SV_MasterHeartbeat(HEARTBEAT_FOR_MASTER);
