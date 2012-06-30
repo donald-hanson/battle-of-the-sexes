@@ -1,11 +1,14 @@
 #include "../qcommon/q_shared.h"
 #include "cg_local.h"
+#define JS_GC_ZEAL
+#define MOZ_TRACE_JSCALLS
 #include <jsapi.h>
+#include <jsdbgapi.h>
 
 void CG_JS_GenericShutdown(void);
 
-#define JS_RUNTIME_SPACE		8L * 1024L * 1024L
-#define JS_STACK_CHUNK_SIZE		8192 * 4
+#define JS_RUNTIME_SPACE		1L * 1024L * 1024L
+#define JS_STACK_CHUNK_SIZE		8192 * 1
 #define MAX_JSFILE				32768
 
 static JSRuntime *_jsruntime;
@@ -38,11 +41,10 @@ static JSFunctionSpec global_functions[] = {
 	JS_FS_END
 };
 
-void CG_JS_ErrorReporter(JSContext *cx, const char *message,JSErrorReport *report)
+void CG_JS_ErrorReporter(JSContext *cx, const char *message, JSErrorReport *report)
 {
 	CG_Printf(S_COLOR_RED " Javascript Error: %s (%s) (%d) (%s)\n", message, report->linebuf, report->lineno, report->tokenptr);
 }
-
 
 void CG_JS_Sys_Init(JSContext *ctx, JSObject *global);
 void CG_JS_Vector_Init(JSContext *ctx, JSObject *global);
@@ -69,6 +71,9 @@ void CG_JS_Init(void)
 	JS_SetOptions(_jscontext, JSOPTION_VAROBJFIX | JSOPTION_METHODJIT);
 	JS_SetVersion(_jscontext, JSVERSION_LATEST);
 	JS_SetErrorReporter(_jscontext, CG_JS_ErrorReporter);
+	
+	//JS_SetGCZeal(_jscontext, 2);
+	//JS_SetFunctionCallback(_jscontext, CG_JS_FunctionCallback);
 
 	CG_Printf("JS Stack Chunk Size: %d\n",JS_STACK_CHUNK_SIZE);
 	CG_Printf("JS Version: %s\n",JS_VersionToString(JS_GetVersion(_jscontext)));
@@ -156,7 +161,7 @@ void CG_JS_LoadFile(char *filename)
 void CG_JS_Eval(char *script)
 {
 	jsval returnval;
-	JSBool ran = JS_FALSE;
+	JSBool ran = JS_FALSE; 
 	ran = JS_EvaluateScript(_jscontext, _jsglobal, script, strlen(script), NULL, 0, &returnval);
 	if (ran == JS_FALSE)
 		CG_Printf(S_COLOR_RED "Failed to run script: %s\n", script);

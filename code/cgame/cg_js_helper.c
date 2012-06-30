@@ -1,10 +1,13 @@
 #include "../qcommon/q_shared.h"
+#include "../game/bg_public.h"
 #include "../renderer/tr_types.h"
 #include <jsapi.h>
 
 jsval JS_MakeString(JSContext *cx, char *v)
 {
-	return STRING_TO_JSVAL(JS_NewStringCopyZ(cx, v));
+	JSString *s = JS_NewStringCopyZ(cx, v);
+	jsval returnValue = STRING_TO_JSVAL(s);
+	return returnValue;
 }
 
 void JS_Object_SetPropertyString(JSContext *cx, JSObject *o, char *prop, char *v)
@@ -151,15 +154,13 @@ void JS_Object_SetPropertyArray(JSContext *cx, JSObject *o, char *prop, int *v, 
 	jsval a;
 	int i=0;
 	JSObject *arr = JS_NewArrayObject(cx, 0, NULL);
-	a = OBJECT_TO_JSVAL(arr);
-	JS_AddObjectRoot(cx, &arr);
 	for (i=0;i<c;i++)
 	{
 		JS_NewNumberValue(cx,v[i],&z);
 		JS_SetElement(cx,arr,i,&z);
 	}
-	JS_RemoveObjectRoot(cx, &arr);
-	JS_SetProperty(cx,o,prop,&a);
+	a = OBJECT_TO_JSVAL(arr);
+	JS_SetProperty(cx,o,prop, &a);
 }
 
 void JS_Object_SetPropertyArrayString(JSContext *cx, JSObject *o, char *prop, char **v, int c)
@@ -169,15 +170,13 @@ void JS_Object_SetPropertyArrayString(JSContext *cx, JSObject *o, char *prop, ch
 	char *text;
 	int i=0;
 	JSObject *arr = JS_NewArrayObject(cx, 0, NULL);
-	a = OBJECT_TO_JSVAL(arr);
-	JS_AddObjectRoot(cx, &arr);
 	for (i=0;i<c;i++)
 	{
 		text = v[i];
 		z = JS_MakeString(cx, text);
 		JS_SetElement(cx,arr,i,&z);
 	}
-	JS_RemoveObjectRoot(cx, &arr);
+	a = OBJECT_TO_JSVAL(arr);
 	JS_SetProperty(cx,o,prop,&a);
 }
 
@@ -273,4 +272,47 @@ void JS_Object_ParseRefDef(JSContext *cx, JSObject *table, refdef_t *r)
 #undef _U_INT
 #undef _U_VEC
 #undef _U_FLT
+}
+
+void JS_Object_SetPlayerState(JSContext *cx, JSObject *o, playerState_t ps)
+{
+
+#define _INT(x,y) JS_Object_SetPropertyInt(cx,o,##y,##x);
+#define _VEC(x,y) JS_Object_SetPropertyVector(cx,o,##y,##x);
+#define _FLT(x,y) JS_Object_SetPropertyFloat(cx,o,##y,##x);
+#define _ARR_INT(v,c,n) JS_Object_SetPropertyArray(cx,o,##n,##v,##c);
+
+	_ARR_INT(ps.stats, MAX_STATS, "stats");
+	_ARR_INT(ps.persistant, MAX_PERSISTANT, "persistant");
+	_ARR_INT(ps.powerups, MAX_POWERUPS, "powerups");
+	_ARR_INT(ps.ammo, MAX_WEAPONS, "ammo");
+	_ARR_INT(ps.maxammo, MAX_WEAPONS, "maxammo");
+
+#undef _INT
+#undef _VEC
+#undef _FLT
+#undef _ARR_INT
+}
+
+void JS_Object_SetItem(JSContext *cx, JSObject *o, gitem_t *item)
+{
+
+#define _INT(x,y) JS_Object_SetPropertyInt(cx,o,##y,##x);
+#define _STR(x,y) JS_Object_SetPropertyString(cx,o,##y,##x);
+#define _ARR_STR(v,c,n) JS_Object_SetPropertyArrayString(cx,o,##n,##v,##c)
+
+	_STR(item->classname, "classname");
+	_STR(item->pickup_sound, "pickupSound");
+	_ARR_STR(item->world_model, MAX_ITEM_MODELS, "worldModel");
+	_STR(item->icon, "icon");
+	_STR(item->pickup_name, "pickupName");
+	_INT(item->quantity, "quantity");
+	_INT(item->giType, "giType");
+	_INT(item->giTag, "giTag");
+	_STR(item->precaches, "precaches");
+	_STR(item->sounds, "sounds");
+
+#undef _INT
+#undef _STR
+#undef _ARR_STR
 }

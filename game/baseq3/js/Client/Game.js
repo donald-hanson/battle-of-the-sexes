@@ -1,15 +1,15 @@
 Game = {
-	Print : function(msg)
+	Print : function Game_Print(msg)
 	{
 		Sys.Print(msg);
 	},
 
-	Error : function(msg)
+	Error : function Game_Error(msg)
 	{
 		Sys.Error(msg);
 	},
 
-	Init : function(serverMessageNum, serverCommandSequence, clientNum)
+	Init : function Game_Init(serverMessageNum, serverCommandSequence, clientNum)
 	{
 		Game.Print("^6serverMessageNum: " + serverMessageNum + " serverCommandSequence: " + serverCommandSequence + " clientNum: " + clientNum + "\n");
 
@@ -21,7 +21,7 @@ Game = {
 		Game.LoadMedia();
 	},
 
-	LoadMedia : function()
+	LoadMedia : function Game_LoadMedia()
 	{
 		Game.Static.Media.charsetShader = Sys.RegisterShader("gfx/2d/bigchars");
 		Game.Static.Media.whiteShader = Sys.RegisterShader("white");
@@ -62,14 +62,12 @@ Game = {
 			Game.Static.Media.crosshairShader.push(Sys.RegisterShader("gfx/2d/crosshair" + c));
 		}
 
-/*		
 		var items = ItemManager.GetAllItems();
 		for (var i=0;i<items.length;i++)
 		{
 		    var item = items[i];
 		    Game.Static.Media.ItemIcons[item.classname] = Sys.RegisterShaderNoMip(item.icon);
 		}
-*/
 	},
 
 	Static : {
@@ -80,37 +78,51 @@ Game = {
 		}
 	},
 
-	DrawActiveFrame : function(serverTime)
-	{
-		Game.ServerTime = serverTime;
-	},
-
-	Draw2D : function()
+	Draw2D: function Game_Draw2D()
 	{
 		Hud.Draw();
 	},
 	
-	ServerCommand : function()
-	{
-	},
-	
-	GetPlayerState : function()
+	GetPlayerState: function Game_GetPlayerState()
 	{
 	    var ps = Sys.GetPlayerState();
+
+        /*
+	    var ps = {
+	        stats: [],
+	        persistant: [],
+	        powerups: [],
+	        ammo: [],
+	        maxammo:[]
+	    };
+
+	    var ms = Sys.Milliseconds();
+
+        if (ms > 10000)
+            ps.persistant[Constants.Persistant.Team] = Constants.Team.Red;
+	    else
+            ps.persistant[Constants.Persistant.Team] = Constants.Team.Spectator;
+
+	    ps.persistant[Constants.Persistant.Class] = Constants.Class.Soldier;
+	    ps.persistant[Constants.Persistant.Level] = 32;
+	    ps.stats[Constants.Stats.Health] = 50;
+        ps.stats[Constants.Stats.Armor] = 0;
+        ps.stats[Constants.Stats.Weapons] |= (1 << Constants.Weapons.RocketLauncher);
+        ps.ammo[Constants.Weapons.RocketLauncher] = 50;
+        ps.maxammo[Constants.Weapons.RocketLauncher] = 250;
+        */
 	    
-	    ps.HasWeapon = function(i) {
+	    ps.HasWeapon = function PlayerState_HasWeapon(i) {
 	        var x = (1 << i);
 	        var y = this.stats[Constants.Stats.Weapons];
 	        var v = y & x;
-	        //var msg = 'HasWeapon(' + i.toString() + ') : ' + y.toString() + '&' + x.toString() + '=' + v.toString() + '\n';
-	        //Sys.Print(msg);
 	        return v == x;
 	    };
 	    
 	    return ps;
 	},
 
-	CreateRefEntity : function()
+	CreateRefEntity: function Game_CreateRefEntity()
 	{
 		return {
 			reType : 0,
@@ -132,13 +144,17 @@ Game = {
 			skinNum : 0,
 			customSkin : 0,
 			customShader : 0,
-
+			shader : {
+			    R: 0, G: 0, B: 0, A: 0,
+			    X: 0, Y: 0,
+                Time : 0
+			},
 			radius : 0,
 			rotation : 0
 		};
 	},
 
-	CreateRefDef : function()
+	CreateRefDef: function Game_CreateRefDef()
 	{
 		return {
 			x : 0,

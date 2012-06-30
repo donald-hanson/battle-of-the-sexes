@@ -1,6 +1,6 @@
 Hud = {
 
-	Draw : function()
+	Draw : function Hud_Draw()
 	{
 		if (Sys.Cvar.GetInt("cg_draw2D") == 0)
 			return;
@@ -8,7 +8,7 @@ Hud = {
 		Event.Publish("Hud/Draw");
 	},
 
-	SetColor : function(o)
+	SetColor: function Hud_SetColor(o)
 	{
 		if (o instanceof Array)
 			Sys.SetColor(o[0], o[1], o[2], o[3]);
@@ -18,13 +18,12 @@ Hud = {
 			Sys.SetColor();
 	},
 
-	GetColorForHealth : function()
+	GetColorForHealth: function Hud_GetColorForHealth(ps)
 	{
-		var ps = Game.GetPlayerState();
-		return Hud.GetColorForHealth(ps.stats[Constants.Stats.Health], ps.stats[Constants.Stats.Armor]);
+		return Hud._GetColorForHealth(ps.stats[Constants.Stats.Health], ps.stats[Constants.Stats.Armor]);
 	},
 
-	GetColorForHealth : function(health, armor)
+	_GetColorForHealth : function Hud__GetColorForHealth(health, armor)
 	{
 		if (health <= 0)
 			return [0,0,0,1];
@@ -56,14 +55,14 @@ Hud = {
 		return [r,g,b,a];
 	},
 
-	AdjustFrom640 : function(x,y,w,h)
+	AdjustFrom640: function Hud_AdjustFrom640(x, y, w, h)
 	{
 		xs = Game.Static.screenXScale;
 		ys = Game.Static.screenYScale;
 		return [x * xs, y * ys, w * xs, h * ys];
 	},
 
-	DrawField : function(x,y,width,value)
+	DrawField: function Hud_DrawField(x, y, width, value)
 	{
 		value = parseInt(value.toString());
 		if (width < 1)
@@ -119,13 +118,13 @@ Hud = {
 		}
 	},
 
-	DrawPic : function(x,y,w,h,handle)
+	DrawPic: function Hud_DrawPic(x, y, w, h, handle)
 	{
 		var a = Hud.AdjustFrom640(x,y,w,h);
 		Sys.DrawStretchPic( a[0], a[1], a[2], a[3], 0, 0, 1, 1, handle );
 	},
 
-	Draw3DModel : function(x, y, w, h, model, skin, origin, angles)
+	Draw3DModel: function Hud_Draw3DModel(x, y, w, h, model, skin, origin, angles)
 	{
 		if (Sys.Cvar.GetInt("cg_draw3dIcons") == 0 || Sys.Cvar.GetInt("cg_drawIcons") == 0)
 			return;
@@ -156,12 +155,12 @@ Hud = {
 		Sys.RenderScene(refdef);
 	},
 	
-	DrawStrlen : function (s)
+	DrawStrlen: function Hud_DrawStrlen(s)
 	{
 	    return Util.StripColor(s).length;
 	},
 	
-	DrawChar : function(x, y, width, height, ch)
+	DrawChar: function Hud_DrawChar(x, y, width, height, ch)
 	{
 	    ch = ch.charCodeAt(0);
 	    ch &= 255;
@@ -178,7 +177,7 @@ Hud = {
 	    Sys.DrawStretchPic( a[0], a[1], a[2], a[3], fcol, frow, fcol + size, frow + size, Game.Static.Media.charsetShader );
 	},
 	
-	DrawStringExt : function(x, y, string, setColor, forceColor, shadow, charWidth, charHeight, maxChars, alignment)
+	DrawStringExt: function Hud_DrawStringExt(x, y, string, setColor, forceColor, shadow, charWidth, charHeight, maxChars, alignment)
 	{
 	    if (!alignment)
 	        alignment = Constants.Hud.Alignment.Left;
@@ -232,24 +231,24 @@ Hud = {
 	    Hud.SetColor();
 	},
 	
-	DrawBigString : function(x, y, s, a, alignment)
+	DrawBigString: function Hud_DrawBigString(x, y, s, a, alignment)
 	{
 	    var color = [1.0, 1.0, 1.0, a];
 	    Hud.DrawStringExt(x, y, s, color, false, true, Constants.Hud.BigChar.Width, Constants.Hud.BigChar.Height, 0, alignment);	
 	},
 	
-	DrawBigStringColor : function(x, y, s, color, alignment)
+	DrawBigStringColor: function Hud_DrawBigStringColor(x, y, s, color, alignment)
 	{
 	    Hud.DrawStringExt(x, y, s, color, true, true,  Constants.Hud.BigChar.Width, Constants.Hud.BigChar.Height, 0, alignment);
 	},
 	
-	DrawSmallString : function(x, y, s, a, alignment)
+	DrawSmallString: function Hud_DrawSmallString(x, y, s, a, alignment)
 	{
 	    var color = [1.0, 1.0, 1.0, a];
 	    Hud.DrawStringExt(x, y, s, color, false, false, Constants.Hud.SmallChar.Width, Constants.Hud.SmallChar.Height, 0, alignment);
 	},
 	
-	DrawSmallStringColor : function(x, y, s, color, alignment)
+	DrawSmallStringColor: function Hud_DrawSmallStringColor(x, y, s, color, alignment)
 	{
 	    Hud.DrawStringExt(x, y, s, color, true, false,  Constants.Hud.SmallChar.Width, Constants.Hud.SmallChar.Height, 0, alignment);
 	}

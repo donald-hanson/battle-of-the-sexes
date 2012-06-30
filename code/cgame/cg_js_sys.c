@@ -103,6 +103,11 @@ static JSBool sys_getglconfig(JSContext *cx, unsigned argc, jsval *vp)
 	trap_GetGlconfig(&cfg);
 
 	res = JS_NewObject(cx,NULL,NULL,NULL);
+	if (!res)
+	{
+		JS_ReportError(cx, "Unable to create glConfig object");
+		return JS_FALSE;
+	}
 	rval = OBJECT_TO_JSVAL(res);
 	JS_NewNumberValue(cx, cfg.vidWidth, &vidWidth);
 	JS_SetProperty(cx, res, "vidWidth", &vidWidth);
@@ -119,6 +124,9 @@ static JSBool sys_drawstretchpic(JSContext *cx, unsigned argc, jsval *vp)
 	int hShader;
 	if (!JS_ConvertArguments(cx, argc, JS_ARGV(cx, vp), "ddddddddi", &x, &y, &w, &h, &s1, &t1, &s2, &t2, &hShader))
 		return JS_FALSE;
+
+	//CG_Printf("DrawStretchPic(%f, %f, %f, %f, %f, %f, %f, %f, %d)\n", x, y, w, h, s1, t1, s2, t2, hShader);
+
 	trap_R_DrawStretchPic(x, y, w, h, s1, t1, s2, t2, hShader);
 	return JS_TRUE;
 }
@@ -182,6 +190,52 @@ static JSBool sys_renderscene(JSContext *cx, unsigned argc, jsval *vp)
 	return JS_TRUE;
 }
 
+void JS_Object_SetPlayerState(JSContext *cx, JSObject *o, playerState_t ps);
+
+static JSBool sys_getplayerstate(JSContext *cx, unsigned argc, jsval *vp)
+{
+	playerState_t ps = cg.snap->ps;
+	JSObject *psobj = JS_NewObject(cx,NULL,NULL,NULL);
+	jsval returnValue;
+	
+	if (!psobj)
+	{
+		JS_ReportError(cx, "Unabel to create playerState object");
+		return JS_FALSE;
+	}
+
+	JS_Object_SetPlayerState(cx,psobj, ps);
+
+	returnValue = OBJECT_TO_JSVAL(psobj);
+	JS_SET_RVAL(cx, vp, returnValue);
+	return JS_TRUE;
+}
+
+void JS_Object_SetItem(JSContext *cx, JSObject *o, gitem_t *item);
+
+static JSBool sys_getitems(JSContext *cx, unsigned argc, jsval *vp)
+{
+	gitem_t	*it;
+	JSObject *j;
+	jsval val;
+	int i;
+	jsval returnValue;
+	JSObject *arr = JS_NewArrayObject(cx, 0, NULL);
+	JS_AddObjectRoot(cx, &arr);
+	
+	for ( i=0, it = bg_itemlist + 1 ; it->classname ; it++,i++) {
+		j = JS_NewObject(cx, NULL, NULL, NULL);
+		JS_Object_SetItem(cx, j, it);
+		val = OBJECT_TO_JSVAL(j);
+		JS_SetElement(cx,arr,i,&val);
+	}
+
+	JS_RemoveObjectRoot(cx, &arr);
+	returnValue = OBJECT_TO_JSVAL(arr);
+	JS_SET_RVAL(cx, vp, returnValue);
+	return JS_TRUE;
+}
+
 static JSFunctionSpec sys_static_methods[] = {
 	JS_FS("Print", sys_print, 1, 0),
 	JS_FS("Error", sys_error, 1, 0),
@@ -199,6 +253,10 @@ static JSFunctionSpec sys_static_methods[] = {
 	JS_FS("ClearScene", sys_clearscene, 0, 0),
 	JS_FS("AddRefEntityToScene", sys_addrefentitytoscene, 1, 0),
 	JS_FS("RenderScene", sys_renderscene, 1, 0),
+
+	JS_FS("GetPlayerState", sys_getplayerstate, 0, 0),
+
+	JS_FS("GetItems", sys_getitems, 0, 0),
 
 	JS_FS_END
 };

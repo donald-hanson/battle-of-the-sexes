@@ -2656,7 +2656,7 @@ void CG_DrawActive( stereoFrame_t stereoView ) {
 	trap_R_RenderScene( &cg.refdef );
 
 	// draw status bar and other floating elements
- 	CG_Draw2D(stereoView);
+ 	//CG_Draw2D(stereoView);
 
 	CG_JS_Eval("Game.Draw2D()");
 }
