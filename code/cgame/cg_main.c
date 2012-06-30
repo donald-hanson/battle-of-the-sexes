@@ -1872,6 +1872,11 @@ void CG_Init( int serverMessageNum, int serverCommandSequence, int clientNum ) {
 
 	CG_RegisterCvars();
 
+	CG_JS_Init();
+
+	CG_JS_LoadFile("js/Client/Main.js");
+	CG_JS_Eval(va("Game.Init(%d,%d,%d)", serverMessageNum, serverCommandSequence, clientNum));
+
 	CG_InitConsoleCommands();
 
 	cg.weaponSelect = WP_MACHINEGUN;
@@ -1962,6 +1967,8 @@ Called before every level change or subsystem restart
 void CG_Shutdown( void ) {
 	// some mods may need to do cleanup work here,
 	// like closing files or archiving session data
+
+	CG_JS_Shutdown();
 }
 
 

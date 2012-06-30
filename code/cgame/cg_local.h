@@ -1483,6 +1483,7 @@ void		trap_Cvar_Register( vmCvar_t *vmCvar, const char *varName, const char *def
 void		trap_Cvar_Update( vmCvar_t *vmCvar );
 void		trap_Cvar_Set( const char *var_name, const char *value );
 void		trap_Cvar_VariableStringBuffer( const char *var_name, char *buffer, int bufsize );
+int			trap_Cvar_VariableIntegerValue(const char *var_name );
 
 // ServerCommand and ConsoleCommand parameter access
 int			trap_Argc( void );
@@ -1682,3 +1683,9 @@ qboolean BOTS_Grenade_IsDecoyGrenade(centity_t *cent);
 void BOTS_Grenade_PrepareDecoyGrenade(centity_t *cent);
 void BOTS_Init_RegisterGraphics();
 void BOTS_Grenade_ChangeGrenadeModel(centity_t *cent, refEntity_t *ent, entityState_t *s1);
+
+// JS
+void CG_JS_Init(void);
+void CG_JS_LoadFile(char *filename);
+void CG_JS_Eval(char *script);
+void CG_JS_Shutdown(void);

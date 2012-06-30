@@ -318,8 +318,6 @@ typedef enum {
 typedef enum {
 	WP_NONE,
 
-	WP_GRAPPLING_HOOK,
-	WP_STINGER,
 	WP_GAUNTLET,
 	WP_MACHINEGUN,
 	WP_SHOTGUN,
@@ -329,6 +327,8 @@ typedef enum {
 	WP_RAILGUN,
 	WP_PLASMAGUN,
 	WP_BFG,
+	WP_GRAPPLING_HOOK,
+	WP_STINGER,
 
 #ifdef MISSIONPACK
 	WP_NAILGUN,
@@ -695,8 +695,8 @@ typedef enum {
 	IT_HOLDABLE,			// single use, holdable item
 							// EFX: rotate + bob
 	IT_PERSISTANT_POWERUP,
-	IT_KEY,
-	IT_TEAM
+	IT_TEAM,
+	IT_KEY
 } itemType_t;
 
 #define MAX_ITEM_MODELS 4
