@@ -1,5 +1,8 @@
 #include "g_local.h"
 
+#define BOTS_PACK_AMMO 100
+#define BOTS_PACK_ARMOR 100
+
 typedef struct classCommandInfo_s {
 	char *command;
 	void (*handler)(int clientNum);
@@ -262,6 +265,10 @@ void BOTS_ClientSpawn(gentity_t *ent)
 		if (currentLevel > 0)
 				defaultAmmo = maxAmmo;
 
+		client->ps.maxammo[WP_BFG] = 50;
+		client->ps.maxammo[WP_GRENADE_LAUNCHER] = 50;
+		client->ps.maxammo[WP_GAUNTLET] = -1;
+
 		client->ps.ammo[classInfo.primaryWeapon] = defaultAmmo;
 		client->ps.maxammo[classInfo.primaryWeapon] = maxAmmo;
 
@@ -416,7 +423,40 @@ qboolean BOTS_CanPickupWeapon(gentity_t *weapon, gentity_t *player)
 
 qboolean BOTS_CanPickupAmmo(gentity_t *ammo, gentity_t *player)
 {
-	return g_classList[player->bots_class].primaryWeapon == ammo->item->giTag ? qtrue : qfalse;
+	return qtrue;
+}
+
+void BOTS_Add_Ammo(gentity_t *player, weapon_t weapon, int amount)
+{
+	if (!player->client)
+		return;
+
+	player->client->ps.ammo[weapon] += amount;
+	if (player->client->ps.ammo[weapon] > player->client->ps.maxammo[weapon])
+		player->client->ps.ammo[weapon] = player->client->ps.maxammo[weapon];
+}
+
+void BOTS_Add_Stat(gentity_t *player, statIndex_t stat, statIndex_t statMax, int amount)
+{
+	if (!player->client)
+		return;
+
+	if (player->client->ps.stats[stat] < player->client->ps.stats[statMax])
+	{
+		player->client->ps.stats[stat] += amount;
+		if (player->client->ps.stats[stat] > player->client->ps.stats[statMax])
+			player->client->ps.stats[stat] = player->client->ps.stats[statMax];
+	}
+}
+
+int BOTS_Pickup_Ammo(gentity_t *ammo, gentity_t *player)
+{
+	int i =0;
+	for (i=WP_NONE+1;i<WP_NUM_WEAPONS;i++)
+		BOTS_Add_Ammo(player, (weapon_t)i, BOTS_PACK_AMMO);
+
+	BOTS_Add_Stat(player, STAT_ARMOR, STAT_MAX_ARMOR, BOTS_PACK_ARMOR);
+	
 }
 
 gentity_t *BOTS_GetTeamCaptain(team_t team)

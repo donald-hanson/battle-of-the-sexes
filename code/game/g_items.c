@@ -332,8 +332,8 @@ int Pickup_Armor( gentity_t *ent, gentity_t *other ) {
 	}
 #else
 	other->client->ps.stats[STAT_ARMOR] += ent->item->quantity;
-	if ( other->client->ps.stats[STAT_ARMOR] > other->client->ps.stats[STAT_MAX_HEALTH] * 2 ) {
-		other->client->ps.stats[STAT_ARMOR] = other->client->ps.stats[STAT_MAX_HEALTH] * 2;
+	if ( other->client->ps.stats[STAT_ARMOR] > other->client->ps.stats[STAT_MAX_ARMOR] * 2 ) {
+		other->client->ps.stats[STAT_ARMOR] = other->client->ps.stats[STAT_MAX_ARMOR] * 2;
 	}
 #endif
 
@@ -444,7 +444,8 @@ void Touch_Item (gentity_t *ent, gentity_t *other, trace_t *trace) {
 	case IT_AMMO:
 		if (!BOTS_CanPickupAmmo(ent, other))
 			return;
-		respawn = Pickup_Ammo(ent, other);
+		//respawn = Pickup_Ammo(ent, other);
+		respawn = BOTS_Pickup_Ammo(ent,other);
 //		predict = qfalse;
 		break;
 	case IT_ARMOR:

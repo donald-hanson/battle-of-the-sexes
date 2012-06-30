@@ -1184,7 +1184,7 @@ qboolean BG_CanItemBeGrabbed( int gametype, const entityState_t *ent, const play
 			return qfalse;
 		}
 #else
-		if ( ps->stats[STAT_ARMOR] >= ps->stats[STAT_MAX_HEALTH] * 2 ) {
+		if ( ps->stats[STAT_ARMOR] >= ps->stats[STAT_MAX_ARMOR] * 2 ) {
 			return qfalse;
 		}
 #endif

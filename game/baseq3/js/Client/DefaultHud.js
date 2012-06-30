@@ -28,36 +28,36 @@ DefaultHud = {
 	
 	DrawAmmo : function(ps)
 	{
-	    var l = [];
-	
+        var ammoToShow = [];
+
 	    for (var w in Constants.Weapons)
 	    {
 	        var i = Constants.Weapons[w];
-	        var v = ps.ammo[i];
-	        if (v >= 0 && ps.HasWeapon(i))
-	            l.push( { w : w, i : i, v : v });
-	    }
-	    
-	    l.reverse();
-	    
-	    var y = 432 - ( 3 * Constants.Hud.Char.Height );
+            
+            if ( i == Constants.Weapons.Stinger || i == Constants.Weapons.GrapplingHook || i == Constants.Weapons.Gauntlet)
+                continue;
 
-	    for (var index = 0; index < l.length; index++)
+	        if ( i == Constants.Weapons.BFG || i == Constants.Weapons.GrenadeLauncher || ps.HasWeapon(i) )
+                ammoToShow.push(i);
+	    }
+
+		var x = Constants.Hud.Char.Width*3 + Constants.Hud.Icon.Space;
+	    var y = 432 - ( 3 * Constants.Hud.Char.Height );
+		var w = Constants.Hud.Icon.Size;
+		var h = Constants.Hud.Icon.Size;		    
+
+	    for (var i=0;i<ammoToShow.length;i++)
 	    {
-	        var info = l[index];
-	        var w = info.w;
-	        var i = info.i;
-	        var v = info.v;
+	        var weapon = ammoToShow[i];
+	        var ammo = ps.ammo[weapon];
 	        
 		    Hud.SetColor([1.0, 0.69, 0.0, 1.0]);
-		    Hud.DrawField(0, y, 3, v);
+		    Hud.DrawField(0, y, 3, ammo);
 		    Hud.SetColor();
-		    
-			var x = Constants.Hud.Char.Width*3 + Constants.Hud.Icon.Space;
-			var w = Constants.Hud.Icon.Size;
-			var h = Constants.Hud.Icon.Size;		    
-			
-			var item = ItemManager.FindForAmmo(i);
+		
+			var item = ItemManager.FindForAmmo(weapon);
+            if (!item)
+                continue;
 			var icon = Game.Static.Media.ItemIcons[item.classname];
 		    Hud.DrawPic(x, y, w, h, icon);
 

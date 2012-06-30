@@ -1026,6 +1026,7 @@ grenadeType_t BOTS_GetGrenadeType(class_t cls);
 qboolean	BOTS_Client_FireWeapon(gentity_t *ent);
 qboolean	BOTS_ClassState_Changed(int clientNum);
 void		BOTS_ClassState_Append(int clientNum);
+int			BOTS_Pickup_Ammo(gentity_t *ammo, gentity_t *player);
 
 // BotS - bots_common
 void		BOTS_Common_DropKey(int clientNum, qboolean launch, qboolean tech);
