@@ -298,12 +298,18 @@ int Pickup_Health (gentity_t *ent, gentity_t *other) {
 		quantity = ent->item->quantity;
 	}
 
-	other->health += quantity;
+	if (BOTS_Nurse_PoisonHealth(ent, other))
+		return 0;
+	
+	if (!BOTS_Common_ApplyPoison(ent, other, quantity))
+	{
+		other->health += quantity;
 
-	if (other->health > max ) {
-		other->health = max;
+		if (other->health > max ) {
+			other->health = max;
+		}
+		other->client->ps.stats[STAT_HEALTH] = other->health;
 	}
-	other->client->ps.stats[STAT_HEALTH] = other->health;
 
 	if ( ent->item->quantity == 100 ) {		// mega health respawns slow
 		return RESPAWN_MEGAHEALTH;

@@ -247,6 +247,9 @@ static void CG_Obituary( entityState_t *ent ) {
 
 	if ( attacker != ENTITYNUM_WORLD ) {
 		switch (mod) {
+		case MOD_POISON:
+			message = "was poisoned by";
+			break;
 		case MOD_GRAPPLE:
 			message = "was caught by";
 			break;

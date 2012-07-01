@@ -1051,6 +1051,7 @@ void		BOTS_Common_ApplyBodyguardProtection(gentity_t **targ, gentity_t *attacker
 qboolean	BOTS_Common_Visible( gentity_t *ent1, gentity_t *ent2 );
 void		BOTS_Modify_EntityState();
 void		BOTS_Rollback_EntityState();
+qboolean	BOTS_Common_ApplyPoison(gentity_t *health, gentity_t *player, int quantity);
 
 // BotS - bots_captain
 void		BOTS_CaptainCommand_DropPromote(int clientNum);
@@ -1091,6 +1092,10 @@ qboolean	BOTS_Rocket_TryToTag(gentity_t *ent, gentity_t *other, trace_t *trace);
 // BotS - bots_infiltrator
 void		BOTS_Infiltrator_AdjustClientSkin(gentity_t *ent, team_t *team, class_t *cls);
 void		BOTS_InfiltratorCommand_Disguise(int clientNum);
+
+// BotS - bots_nurse
+qboolean	BOTS_Nurse_PoisonHealth(gentity_t *health, gentity_t *player);
+void		BOTS_NurseCommand_Poison(int clientNum);
 
 // BotS - bots_grenade
 void		BOTS_Grenade_HandleKeyPress(gentity_t *ent);

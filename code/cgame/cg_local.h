@@ -1684,6 +1684,7 @@ void BOTS_Grenade_PrepareDecoyGrenade(centity_t *cent);
 void BOTS_Init_RegisterGraphics();
 void BOTS_Grenade_ChangeGrenadeModel(centity_t *cent, refEntity_t *ent, entityState_t *s1);
 void Bots_Draw_Blind();
+void BOTS_Adjust_FOV(float *x, float *y);
 
 // JS
 void CG_JS_Init(void);

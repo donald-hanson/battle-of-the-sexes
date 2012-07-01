@@ -399,6 +399,8 @@ static void CG_Item( centity_t *cent ) {
 			}
 		}
 	}
+
+	BOTS_Nurse_ShowPoisonSprite(cent);
 }
 
 //============================================================================

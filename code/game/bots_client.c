@@ -77,6 +77,7 @@ classCommandInfo_t g_kamikazeeCommands[] = {
 	{ NULL, NULL }
 };
 classCommandInfo_t g_nurseCommands[] = {
+	{ "poison", BOTS_NurseCommand_Poison },
 	{ NULL, NULL }
 };
 classCommandInfo_t g_scientistCommands[] = {
@@ -740,4 +741,42 @@ void BOTS_Rollback_EntityState()
 		if (info->rollbackEntityHandler)
 			info->rollbackEntityHandler();
 	}
+}
+
+qboolean BOTS_Common_ApplyPoison(gentity_t *health, gentity_t *player, int quantity)
+{
+	const int delta = 5000;
+	const int maxTime = 15000;
+	gentity_t *nurse = NULL;
+
+	if ( health->s.powerups & (1 << PW_POISON) )
+	{
+		nurse = g_entities + health->s.otherEntityNum;
+
+		if (nurse == player) // cannot poison our self
+			return qfalse;
+		if (OnSameTeam(nurse, player)) // cannot poison our teammates
+			return qfalse; 
+		if (!player->client) // cannot poison non-clients
+			return qfalse;
+
+		if (player->client->ps.powerups[PW_POISON] > level.time)
+			player->client->ps.powerups[PW_POISON] += delta;
+		else
+			player->client->ps.powerups[PW_POISON] = level.time + delta;
+
+		if (player->client->ps.powerups[PW_POISON] - level.time > maxTime)
+			player->client->ps.powerups[PW_POISON] = level.time + maxTime;
+	
+		player->client->ps.damagePitch = player->client->ps.viewangles[PITCH]/360.0 * 256;
+		player->client->ps.damageYaw = player->client->ps.viewangles[YAW]/360.0 * 256;
+
+		G_Damage(player, health, nurse, NULL, NULL, quantity, DAMAGE_NO_ARMOR | DAMAGE_NO_KNOCKBACK, MOD_POISON);
+
+		health->s.powerups &= ~(1 << PW_POISON);
+		health->s.otherEntityNum = -1;
+
+		return qtrue;
+	}
+	return qfalse;
 }

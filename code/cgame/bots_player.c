@@ -305,3 +305,29 @@ void Bots_Draw_Blind()
 		CG_FillRect(0, 0, 640, 480, color);
 	}
 }
+
+#define	WAVE_AMPLITUDE	1
+#define	WAVE_FREQUENCY	0.4
+
+void BOTS_Adjust_FOV(float *x, float *y)
+{
+	float phase;
+	float v;
+
+	if (cg.predictedPlayerState.powerups[PW_POISON] > cg.time) 
+	{
+		phase = (cg.time / 1000.0) * WAVE_FREQUENCY * M_PI * 2 * 6;
+
+		if ((cg.predictedPlayerState.powerups[PW_POISON] - cg.time)>5000) {
+			v = WAVE_AMPLITUDE * sin( phase ) * 25;
+		}
+		else {
+			v = WAVE_AMPLITUDE * sin( phase ) * 
+				((cg.predictedPlayerState.powerups[PW_POISON] - cg.time) / 1000) * 
+				((cg.predictedPlayerState.powerups[PW_POISON] - cg.time) / 1000);
+		}
+
+		*x = *x + v;
+		*y = *y - v;
+	}
+}

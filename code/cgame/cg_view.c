@@ -529,6 +529,7 @@ static int CG_CalcFov( void ) {
 		inwater = qfalse;
 	}
 
+	BOTS_Adjust_FOV(&fov_x, &fov_y);
 
 	// set it
 	cg.refdef.fov_x = fov_x;
