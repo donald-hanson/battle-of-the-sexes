@@ -62,7 +62,7 @@ Hud = {
 		return [x * xs, y * ys, w * xs, h * ys];
 	},
 
-	DrawField: function Hud_DrawField(x, y, width, value)
+	DrawField: function Hud_DrawField(x, y, width, value, fontScaleFactor)
 	{
 		value = parseInt(value.toString());
 		if (width < 1)
@@ -94,8 +94,10 @@ Hud = {
 		if (l > width)
 			l = width;	
 
+        if (!fontScaleFactor)
+            fontScaleFactor = 1.0;
 
-		x += 2 + Constants.Hud.Char.Width * (width - l);
+		x += 2 + Constants.Hud.Char.Width * fontScaleFactor * (width - l);
 		i = 0;
 		while(1)
 		{
@@ -109,9 +111,9 @@ Hud = {
 			else
 				frame = parseInt(c);
 	
-			Hud.DrawPic( x, y, Constants.Hud.Char.Width, Constants.Hud.Char.Height, Game.Static.Media.numberShaders[frame] );
+			Hud.DrawPic( x, y, Constants.Hud.Char.Width * fontScaleFactor, Constants.Hud.Char.Height * fontScaleFactor, Game.Static.Media.numberShaders[frame] );
 
-			x += Constants.Hud.Char.Width;
+			x += Constants.Hud.Char.Width * fontScaleFactor;
 
 			i++;
 			l--;

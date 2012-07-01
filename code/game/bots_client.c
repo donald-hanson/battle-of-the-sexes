@@ -426,36 +426,50 @@ qboolean BOTS_CanPickupAmmo(gentity_t *ammo, gentity_t *player)
 	return qtrue;
 }
 
-void BOTS_Add_Ammo(gentity_t *player, weapon_t weapon, int amount)
+qboolean BOTS_Add_Ammo(gentity_t *player, weapon_t weapon, int amount)
 {
 	if (!player->client)
-		return;
+		return qfalse;
 
-	player->client->ps.ammo[weapon] += amount;
-	if (player->client->ps.ammo[weapon] > player->client->ps.maxammo[weapon])
-		player->client->ps.ammo[weapon] = player->client->ps.maxammo[weapon];
+	if (player->client->ps.ammo[weapon] < player->client->ps.maxammo[weapon])
+	{
+		player->client->ps.ammo[weapon] += amount;
+		if (player->client->ps.ammo[weapon] > player->client->ps.maxammo[weapon])
+			player->client->ps.ammo[weapon] = player->client->ps.maxammo[weapon];
+		return qtrue;
+	}
+	return qfalse;
 }
 
-void BOTS_Add_Stat(gentity_t *player, statIndex_t stat, statIndex_t statMax, int amount)
+qboolean BOTS_Add_Stat(gentity_t *player, statIndex_t stat, statIndex_t statMax, int amount)
 {
 	if (!player->client)
-		return;
+		return qfalse;
 
 	if (player->client->ps.stats[stat] < player->client->ps.stats[statMax])
 	{
 		player->client->ps.stats[stat] += amount;
 		if (player->client->ps.stats[stat] > player->client->ps.stats[statMax])
 			player->client->ps.stats[stat] = player->client->ps.stats[statMax];
+		return qtrue;
 	}
+	return qfalse;
 }
 
 int BOTS_Pickup_Ammo(gentity_t *ammo, gentity_t *player)
 {
-	int i =0;
+	int i = 0;
+	qboolean consumed = qfalse;
 	for (i=WP_NONE+1;i<WP_NUM_WEAPONS;i++)
-		BOTS_Add_Ammo(player, (weapon_t)i, BOTS_PACK_AMMO);
+		if (BOTS_Add_Ammo(player, (weapon_t)i, BOTS_PACK_AMMO))
+			consumed = qtrue;
 
-	BOTS_Add_Stat(player, STAT_ARMOR, STAT_MAX_ARMOR, BOTS_PACK_ARMOR);
+	if (BOTS_Add_Stat(player, STAT_ARMOR, STAT_MAX_ARMOR, BOTS_PACK_ARMOR))
+		consumed = qtrue;
+
+	if (consumed)
+		return 40;
+	return 5;
 	
 }
 

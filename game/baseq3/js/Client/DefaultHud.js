@@ -25,6 +25,8 @@ DefaultHud = {
         DefaultHud.DrawHealth(ps);
         DefaultHud.DrawArmor(ps);
 	},
+
+    _leftFontScale : 0.75,
 	
 	DrawAmmo : function(ps)
 	{
@@ -41,10 +43,10 @@ DefaultHud = {
                 ammoToShow.push(i);
 	    }
 
-		var x = Constants.Hud.Char.Width*3 + Constants.Hud.Icon.Space;
-	    var y = 432 - ( 3 * Constants.Hud.Char.Height );
-		var w = Constants.Hud.Icon.Size;
-		var h = Constants.Hud.Icon.Size;		    
+		var x = Constants.Hud.Char.Width*3*DefaultHud._leftFontScale + Constants.Hud.Icon.Space*DefaultHud._leftFontScale;
+	    var y = 480 - ( 4 * Constants.Hud.Char.Height * DefaultHud._leftFontScale );
+		var w = Constants.Hud.Icon.Size*DefaultHud._leftFontScale;
+		var h = Constants.Hud.Icon.Size*DefaultHud._leftFontScale;		    
 
 	    for (var i=0;i<ammoToShow.length;i++)
 	    {
@@ -52,7 +54,7 @@ DefaultHud = {
 	        var ammo = ps.ammo[weapon];
 	        
 		    Hud.SetColor([1.0, 0.69, 0.0, 1.0]);
-		    Hud.DrawField(0, y, 3, ammo);
+		    Hud.DrawField(0, y, 3, ammo, DefaultHud._leftFontScale);
 		    Hud.SetColor();
 		
 			var item = ItemManager.FindForAmmo(weapon);
@@ -61,13 +63,13 @@ DefaultHud = {
 			var icon = Game.Static.Media.ItemIcons[item.classname];
 		    Hud.DrawPic(x, y, w, h, icon);
 
-		    y -= Constants.Hud.Char.Height;
+		    y -= Constants.Hud.Char.Height * DefaultHud._leftFontScale;
 	    }
 	},
 	
 	DrawHealth : function(ps)
 	{
-	    var y = 432 - ( 1 * Constants.Hud.Char.Height);
+	    var y = 480 - ( 2 * Constants.Hud.Char.Height * DefaultHud._leftFontScale);
 	
 		var colors = [
 			[1.0, 0.69, 0.0, 1.0],
@@ -88,33 +90,33 @@ DefaultHud = {
 		    else
 			    colorIndex = 1;
 		    Hud.SetColor(colors[colorIndex]);
-		    Hud.DrawField(0, y, 3, health);
+		    Hud.DrawField(0, y, 3, health, DefaultHud._leftFontScale);
 		    Hud.SetColor();	
         }
 
         // Draw Health Icon
-		var x = Constants.Hud.Char.Width*3 + Constants.Hud.Icon.Space;
-		var w = Constants.Hud.Icon.Size;
-		var h = Constants.Hud.Icon.Size;
+		var x = Constants.Hud.Char.Width*3*DefaultHud._leftFontScale + Constants.Hud.Icon.Space*DefaultHud._leftFontScale;
+		var w = Constants.Hud.Icon.Size*DefaultHud._leftFontScale;
+		var h = Constants.Hud.Icon.Size*DefaultHud._leftFontScale;
         var icon = Game.Static.Media.ItemIcons["item_health"];
 		Hud.DrawPic(x, y, w, h, icon);
 	},
 	
 	DrawArmor : function(ps)
 	{
-	    var y = 432 - ( 0 * Constants.Hud.Char.Height );
+	    var y = 480 - ( 1 * Constants.Hud.Char.Height * DefaultHud._leftFontScale );
 	
         //Draw Armor Number
 		var armor = ps.stats[Constants.Stats.Armor];
 		{
 			Hud.SetColor([1.0, 0.69, 0.0, 1.0]);
-			Hud.DrawField(0, y, 3, armor);
+			Hud.DrawField(0, y, 3, armor, DefaultHud._leftFontScale);
 			Hud.SetColor();
 		}
 
-		var x = Constants.Hud.Char.Width*3 + Constants.Hud.Icon.Space;
-		var w = Constants.Hud.Icon.Size;
-		var h = Constants.Hud.Icon.Size;
+		var x = Constants.Hud.Char.Width*3*DefaultHud._leftFontScale + Constants.Hud.Icon.Space*DefaultHud._leftFontScale;
+		var w = Constants.Hud.Icon.Size*DefaultHud._leftFontScale;
+		var h = Constants.Hud.Icon.Size*DefaultHud._leftFontScale;
         var icon = Game.Static.Media.ItemIcons["item_armor_body"];
 		Hud.DrawPic(x, y, w, h, icon);
 	},
