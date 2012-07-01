@@ -1,5 +1,7 @@
 #include "g_local.h"
 
+#define BOTS_BLIND_TIME 3000
+
 typedef struct grenadeState_s {
 	int startTime;		//time the user started pressing +gren
 	int lastTime;		//time the user last released -gren
@@ -15,17 +17,60 @@ typedef struct grenadeInfo_s {
 
 void BOTS_Grenade_Setup_Proximity(gentity_t *ent, gentity_t *grenade);
 void BOTS_Grenade_Setup_Decoy(gentity_t *ent, gentity_t *grenade);
+void BOTS_Grenade_Setup_Flash(gentity_t *ent, gentity_t *grenade);
 
 grenadeInfo_t grenadeInfos[] = {
 	//type,						handler
 	{GRENADE_NORMAL,			NULL },
 	{GRENADE_PROXIMITY,			BOTS_Grenade_Setup_Proximity },
-	{GRENADE_FLASH,				NULL },
+	{GRENADE_FLASH,				BOTS_Grenade_Setup_Flash },
 	{GRENADE_TELEPORT,			NULL },
 	{GRENADE_FREEZE,			NULL },
 	{GRENADE_DECOY,				BOTS_Grenade_Setup_Decoy },
 	{GRENADE_NUM_GRENADES,		NULL },
 };
+
+void BOTS_Grenade_Flash_Think(gentity_t *ent)
+{
+	int i;
+	gentity_t *temp;
+	gentity_t *player = ent->parent;
+	float blindRadius = 300.0;
+	float distance = 0;
+	int playerLevel = player->client->ps.persistant[PERS_LEVEL];
+	if (playerLevel < 1)
+		playerLevel = 1;
+	blindRadius *= playerLevel;
+	
+	for(i=0;i<level.maxclients;i++)
+	{
+		temp = g_entities + i;
+		if (temp && 
+			temp->inuse && 
+			temp->client &&
+			temp->health > 0 &&
+			!OnSameTeam(temp, player) &&
+			BOTS_Common_Visible(temp, ent)
+		)
+		{
+			distance = Distance(temp->r.currentOrigin, ent->r.currentOrigin);
+			if (distance <= blindRadius)	// adjust based on distance from grenade?
+				temp->client->ps.powerups[PW_BLIND] = level.time + BOTS_BLIND_TIME;
+		}
+	}
+
+	ent->nextthink = level.time + FRAMETIME;
+	ent->think = G_ExplodeMissile;
+}
+
+void BOTS_Grenade_Setup_Flash(gentity_t *ent, gentity_t *grenade)
+{
+	grenade->classname = "flash_grenade";
+	grenade->think = BOTS_Grenade_Flash_Think;
+	grenade->s.modelindex2 = GRENADE_MODEL_FLASH;
+	grenade->damage = 0;
+	grenade->splashDamage = 0;
+}
 
 void BOTS_Grenade_Proximity_Think(gentity_t *ent)
 {
@@ -52,7 +97,9 @@ void BOTS_Grenade_Proximity_Think(gentity_t *ent)
 			temp->client &&
 			temp->health > 0 &&
 			!OnSameTeam(temp, player) &&
-			BOTS_Common_Visible(temp, ent))
+			BOTS_Common_Visible(temp, ent) &&
+			Distance(temp->r.currentOrigin, ent->r.currentOrigin) <= 100.0
+			)
 		{
 			ent->count = 0;
 			ent->nextthink = level.time + 10;
@@ -64,7 +111,6 @@ void BOTS_Grenade_Proximity_Think(gentity_t *ent)
 void BOTS_Grenade_Setup_Proximity(gentity_t *ent, gentity_t *grenade)
 {
 	grenadeState_t *grenadeState = &grenadeStates[ent->s.clientNum];
-	grenadeInfo_t *grenadeInfo = &grenadeInfo[GRENADE_PROXIMITY];
 	int modifier = ent->client->ps.persistant[PERS_LEVEL];
 
 	if (grenadeState->activeGrenades < 8)
@@ -78,7 +124,7 @@ void BOTS_Grenade_Setup_Proximity(gentity_t *ent, gentity_t *grenade)
 		grenade->think = BOTS_Grenade_Proximity_Think;
 		grenade->nextthink = level.time + FRAMETIME;
 		grenade->s.loopSound = G_SoundIndex("sound/Hgrenc1b.wav");
-		grenade->s.modelindex2 = GRENADE_PROXIMITY;
+		grenade->s.modelindex2 = GRENADE_MODEL_PROXIMITY;
 		grenade->count = level.time + (30000 * modifier);
 	}
 }

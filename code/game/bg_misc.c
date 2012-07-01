@@ -714,6 +714,35 @@ Only in CTF games
 /* sounds */ ""
 	},
 
+	{
+		"item_blind", 
+		"sound/items/protect.wav",
+        { "models/powerups/instant/quad.md3", 
+        "models/powerups/instant/quad_ring.md3",
+		0, 0 },
+/* icon */		"icons/blind",
+/* pickup */	"Blind!",
+		30,
+		IT_POWERUP,
+		PW_BLIND,
+/* precache */ "",
+/* sounds */ "sound/items/airout.wav sound/items/protect3.wav"
+	},
+	{
+		"item_poison",
+		"sound/items/invisibility.wav",
+        { "models/powerups/instant/invis.md3", 
+		"models/powerups/instant/invis_ring.md3", 
+		0, 0 },
+/* icon */		"icons/poison",
+/* pickup */	"Poison",
+		30,
+		IT_POWERUP,
+		PW_POISON,
+/* precache */ "",
+/* sounds */ ""
+	},
+
 #ifdef MISSIONPACK
 /*QUAKED holdable_kamikaze (.3 .3 1) (-16 -16 -16) (16 16 16) suspended
 */

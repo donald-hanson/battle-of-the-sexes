@@ -1,5 +1,7 @@
 #include "cg_local.h"
 
+#define BOTS_BLIND_TIME 3000
+
 extern char	*cg_customSoundNames[MAX_CUSTOM_SOUNDS];
 extern qboolean	CG_ParseAnimationFile( const char *filename, clientInfo_t *ci );
 
@@ -288,4 +290,18 @@ void BOTS_ClassState_Parse(int clientNum)
 	gameStateInfo_t *info = &gameStateInfos[cls];
 	if (info->networkHandler)
 		info->networkHandler(clientNum);
+}
+
+void Bots_Draw_Blind()
+{
+	vec4_t		color = { 1,1,1,1 }; 
+	int blindTime = cg.snap->ps.powerups[PW_BLIND];
+	if (blindTime > cg.time)
+	{
+		const int iCOMPLETE_BLINDNESS_TIME = 1000;
+		int iTime = blindTime - cg.time;
+		if (iTime < BOTS_BLIND_TIME - iCOMPLETE_BLINDNESS_TIME)
+			color[3] = (float)iTime/(float)(BOTS_BLIND_TIME - iCOMPLETE_BLINDNESS_TIME);
+		CG_FillRect(0, 0, 640, 480, color);
+	}
 }

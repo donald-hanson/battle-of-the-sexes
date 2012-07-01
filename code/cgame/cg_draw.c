@@ -2659,4 +2659,6 @@ void CG_DrawActive( stereoFrame_t stereoView ) {
  	//CG_Draw2D(stereoView);
 
 	CG_JS_Eval("Game.Draw2D()");
+
+	Bots_Draw_Blind();
 }
