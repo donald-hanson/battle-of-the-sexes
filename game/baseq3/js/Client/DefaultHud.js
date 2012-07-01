@@ -91,19 +91,13 @@ DefaultHud = {
 		    Hud.DrawField(0, y, 3, health);
 		    Hud.SetColor();	
         }
-		
-	    //Draw Health Model
-        /*
-		{
-			var origin = new Vec3(60,0,-5);
-			var angles = new Vec3(0,(Game.ServerTime & 2047) * -360.0 / 2048.0,0);
-			var x = Constants.Hud.Char.Width*3 + Constants.Hud.Icon.Space;
-			var w = Constants.Hud.Icon.Size;
-			var h = Constants.Hud.Icon.Size;
-			Hud.Draw3DModel(x, y, w, h, Game.Static.Media.healthSphereModel, 0, origin, angles);
-			Hud.Draw3DModel(x, y, w, h, Game.Static.Media.healthCrossModel, 0, origin, angles);
-		}
-        */
+
+        // Draw Health Icon
+		var x = Constants.Hud.Char.Width*3 + Constants.Hud.Icon.Space;
+		var w = Constants.Hud.Icon.Size;
+		var h = Constants.Hud.Icon.Size;
+        var icon = Game.Static.Media.ItemIcons["item_health"];
+		Hud.DrawPic(x, y, w, h, icon);
 	},
 	
 	DrawArmor : function(ps)
@@ -117,18 +111,12 @@ DefaultHud = {
 			Hud.DrawField(0, y, 3, armor);
 			Hud.SetColor();
 		}
-		
-	    //Draw Armor Model
-        /*
-		{
-			var origin = new Vec3(90,0,-10);
-			var angles = new Vec3(0,(Game.ServerTime & 2047) * 360.0 / 2048.0,0);
-			var x = Constants.Hud.Char.Width*3 + Constants.Hud.Icon.Space;
-			var w = Constants.Hud.Icon.Size;
-			var h = Constants.Hud.Icon.Size;
-			Hud.Draw3DModel(x, y, w, h, Game.Static.Media.armorModel, 0, origin, angles);
-		}
-        */
+
+		var x = Constants.Hud.Char.Width*3 + Constants.Hud.Icon.Space;
+		var w = Constants.Hud.Icon.Size;
+		var h = Constants.Hud.Icon.Size;
+        var icon = Game.Static.Media.ItemIcons["item_armor_body"];
+		Hud.DrawPic(x, y, w, h, icon);
 	},
 	
 	DrawBottomRight : function(ps)
