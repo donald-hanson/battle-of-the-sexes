@@ -1052,6 +1052,7 @@ qboolean	BOTS_Common_Visible( gentity_t *ent1, gentity_t *ent2 );
 void		BOTS_Modify_EntityState();
 void		BOTS_Rollback_EntityState();
 qboolean	BOTS_Common_ApplyPoison(gentity_t *health, gentity_t *player, int quantity);
+qboolean	BOTS_Common_AvoidDamage(gentity_t *attacker, gentity_t *target, meansOfDeath_t mod);
 
 // BotS - bots_captain
 void		BOTS_CaptainCommand_DropPromote(int clientNum);

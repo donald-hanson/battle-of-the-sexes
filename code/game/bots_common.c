@@ -597,3 +597,21 @@ qboolean BOTS_Common_Visible( gentity_t *ent1, gentity_t *ent2 )
 		return qfalse;
     return qtrue;
 }
+
+qboolean BOTS_Common_AvoidDamage(gentity_t *attacker, gentity_t *target, meansOfDeath_t mod)
+{
+	int pLevel = 0;
+	class_t cls = CLASS_NONE;
+
+	if (target != attacker || !target->client)
+		return qfalse;
+
+	cls = target->bots_class;
+	pLevel = target->client->ps.persistant[PERS_LEVEL];
+
+	if ((mod == MOD_ROCKET || mod == MOD_ROCKET_SPLASH) && cls == CLASS_SOLDIER && pLevel > 2)
+		return qtrue;
+	if ((mod == MOD_BFG || mod == MOD_BFG_SPLASH) && cls == CLASS_CAPTAIN && pLevel > 1)
+		return qtrue;
+	return qfalse;
+}
