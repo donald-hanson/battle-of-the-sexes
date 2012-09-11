@@ -860,6 +860,10 @@ void CG_AddLocalEntities( void ) {
 			CG_AddScorePlum( le );
 			break;
 
+		case LE_HEALRADIUS:
+			BOTS_AddHealRadius( le );
+			break;
+
 #ifdef MISSIONPACK
 		case LE_KAMIKAZE:
 			CG_AddKamikaze( le );

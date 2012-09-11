@@ -78,6 +78,7 @@ classCommandInfo_t g_kamikazeeCommands[] = {
 };
 classCommandInfo_t g_nurseCommands[] = {
 	{ "poison", BOTS_NurseCommand_Poison },
+	{ "healradius", BOTS_NurseCommand_HealRadius },
 	{ NULL, NULL }
 };
 classCommandInfo_t g_scientistCommands[] = {

@@ -224,6 +224,9 @@ typedef enum {
 	LE_FADE_RGB,
 	LE_SCALE_FADE,
 	LE_SCOREPLUM,
+
+	LE_HEALRADIUS,
+
 #ifdef MISSIONPACK
 	LE_KAMIKAZE,
 	LE_INVULIMPACT,
@@ -1685,6 +1688,7 @@ void BOTS_Init_RegisterGraphics();
 void BOTS_Grenade_ChangeGrenadeModel(centity_t *cent, refEntity_t *ent, entityState_t *s1);
 void Bots_Draw_Blind();
 void BOTS_Adjust_FOV(float *x, float *y);
+void BOTS_AddHealRadius( localEntity_t *le );
 
 // JS
 void CG_JS_Init(void);

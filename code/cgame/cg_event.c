@@ -1236,6 +1236,10 @@ void CG_EntityEvent( centity_t *cent, vec3_t position ) {
 		}
 		break;
 
+	case EV_HEALRADIUS:
+		DEBUGNAME("EV_HEALRADIUS");
+		BOTS_HealRadius(es->clientNum,es->eventParm);
+		break;
 
 	default:
 		DEBUGNAME("UNKNOWN");

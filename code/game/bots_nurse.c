@@ -61,3 +61,64 @@ void BOTS_NurseCommand_Poison(int clientNum)
 	else
 		BOTS_Print(clientNum, "Poison Disabled");
 }
+
+
+void BOTS_NurseCommand_HealRadius(int clientNum)
+{
+	gentity_t *ent = g_entities + clientNum;
+	gentity_t *teamMember;
+	int i = 0;
+	vec_t dist;
+	int pLevel = ent->client->ps.persistant[PERS_LEVEL];
+	int ammo = 25 - ( 5 * ( pLevel - 1 ) );
+	int radius = 100 * pLevel;
+	int totalHealed = 0;
+	int playersHealed = 0;
+
+	if (pLevel < 1)
+	{
+		BOTS_Print(clientNum,"You must be level 1 to use healradius.");
+	}
+	else if (ent->client->ps.ammo[WP_BFG] < ammo)
+	{
+		BOTS_Print(clientNum,va("You must have at least %d cells to use healradius.", ammo));
+	}
+	else
+	{
+		for (i=0;i<level.maxclients;i++)
+		{
+			teamMember = g_entities + i;
+			if (teamMember && 
+				teamMember->inuse &&
+				teamMember->client && 
+				teamMember->health > 0 &&
+				teamMember->client->ps.persistant[PERS_TEAM] == ent->bots_team &&
+				Distance(ent->client->ps.origin, teamMember->client->ps.origin) <= radius)
+			{
+				int maxHealth = teamMember->client->ps.stats[STAT_MAX_HEALTH];
+				int health = teamMember->client->ps.stats[STAT_HEALTH];
+				int toHeal = maxHealth - health;
+				if (toHeal > 100)
+					toHeal = 100;
+				if (toHeal > 0)
+				{
+					teamMember->health += toHeal;
+					teamMember->client->ps.stats[STAT_HEALTH] += toHeal;
+					playersHealed++;
+					totalHealed += toHeal;
+					G_AddEvent(teamMember, EV_HEALRADIUS, clientNum);
+				}
+			}
+		}
+
+		if (playersHealed > 0 && totalHealed > 0)
+		{
+			ent->client->ps.ammo[WP_BFG] -= ammo;
+
+			if (playersHealed > 1)
+				BOTS_Print(clientNum, va("Healed %d team members for a total of %d health.", playersHealed, totalHealed));
+			else
+				BOTS_Print(clientNum, va("Healed %d team member for a total of %d health.", playersHealed, totalHealed));
+		}
+	}
+}

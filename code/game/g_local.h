@@ -1097,6 +1097,7 @@ qboolean	BOTS_Infiltrator_FireWeapon(gentity_t *ent);
 // BotS - bots_nurse
 qboolean	BOTS_Nurse_PoisonHealth(gentity_t *health, gentity_t *player);
 void		BOTS_NurseCommand_Poison(int clientNum);
+void		BOTS_NurseCommand_HealRadius(int clientNum);
 
 // BotS - bots_grenade
 void		BOTS_Grenade_HandleKeyPress(gentity_t *ent);

@@ -331,3 +331,80 @@ void BOTS_Adjust_FOV(float *x, float *y)
 		*y = *y - v;
 	}
 }
+
+void BOTS_HealRadius(int clientNum, int nurseNum)
+{
+	localEntity_t	*ex;
+
+	// Allocate a local entity that won't be rendered directly
+	ex = CG_AllocLocalEntity();
+	ex->leType				= LE_HEALRADIUS;
+	ex->leFlags				= clientNum;	// Store it somewhere, needed to track this entity position
+	ex->pos.trType			= TR_STATIONARY;
+	ex->refEntity.rotation	= random() * 2.0f * M_PI; // Initial random rotation
+
+	ex->startTime			= cg.time;
+	ex->endTime				= ex->startTime + 4000;
+
+	ex->refEntity.reType		= RT_SPRITE;
+	ex->refEntity.shaderTime	= ex->startTime / 1000.0f; 
+
+	ex->refEntity.hModel		= cgs.media.dishFlashModel;
+	ex->refEntity.customShader	= cgs.media.waterBubbleShader;
+
+	ex->refEntity.shaderRGBA[0] = 0xff;
+	ex->refEntity.shaderRGBA[1] = 0xff;
+	ex->refEntity.shaderRGBA[2] = 0xff;
+	ex->refEntity.shaderRGBA[3] = 0xff;
+
+	ex->color[0] = ex->color[1] = ex->color[2] = 1.0;
+}
+
+void BOTS_AddHealRadius( localEntity_t *le ) {
+	float t	= 1.0f - (( le->endTime - cg.time ) / ( float ) ( le->endTime - le->startTime ));
+	float color;
+	refEntity_t	*ent = &le->refEntity;
+	vec3_t p;
+	int	 i;
+	int clientNum = le->leFlags;
+	const int	iMAX_FLOATING_STUFF = 4;
+	const float	fDISTANCE = 40.0f, fBOBBING = 5.0f, fSTEP = (2.0f*M_PI)/iMAX_FLOATING_STUFF, fINITIAL_ROTATION = ent->rotation, fMAX_ROTATION = 4.0f * 2.0f * M_PI;
+
+	if ( t > 1 )
+		t = 1.0f;
+	else if (t < 0)
+		t = 0.0f;
+
+	// If there's an alpha channel, use it to fade in/out
+	// Ramp up at the beginning, then slowly ramp down
+	if (t>0.2f)
+		color = (t-0.2f)/0.8f;
+	else
+		color = 1.0f - (t/0.2f);
+	ent->shaderRGBA[3] = 0xff * (1.0f - color); 
+
+
+	// If we're doing it for this player, use the predicted position
+	if (clientNum == cg.snap->ps.clientNum) {
+		VectorCopy(cg.predictedPlayerEntity.lerpOrigin, p);
+	}
+	else
+		VectorCopy(cg_entities[clientNum].lerpOrigin, p);
+	p[2] += 56.0f/2.0f;
+
+	ent->radius			= 10;
+	ent->rotation		= 0;
+
+	for (i=0; i<iMAX_FLOATING_STUFF; i++) {
+		const float a1 = ((float)i * fSTEP), a2 = a1 + (fMAX_ROTATION * t) + fINITIAL_ROTATION;
+
+		VectorCopy(p,ent->origin);
+		ent->origin[0] += sin(a2) * fDISTANCE;
+		ent->origin[1] += cos(a2) * fDISTANCE;
+		ent->origin[2] += sin(a1 + (t*2.0f*M_PI)) * fBOBBING;
+		VectorCopy(ent->origin,ent->oldorigin);
+
+		trap_R_AddRefEntityToScene( ent );
+	}
+	ent->rotation = fINITIAL_ROTATION; // restore
+}
