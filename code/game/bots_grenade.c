@@ -133,7 +133,6 @@ void BOTS_Grenade_Setup_Decoy(gentity_t *ent, gentity_t *grenade)
 {
 	static int seed = 0x92;
 	grenadeState_t *grenadeState = &grenadeStates[ent->s.clientNum];
-	grenadeInfo_t *grenadeInfo = &grenadeInfo[GRENADE_DECOY];
 	int playerLevel = ent->client->ps.persistant[PERS_LEVEL];
 
 	if (grenadeState->activeGrenades < 4 + playerLevel)

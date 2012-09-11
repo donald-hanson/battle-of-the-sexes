@@ -28,20 +28,6 @@ void BOTS_Goal_FlagCaptured(gentity_t *player, gentity_t *pad)
 	BOTS_AddTechPoints(player->bots_team, techPoints);
 }
 
-qboolean BOTS_Goal_CanCapture(gentity_t *flag, gentity_t *player, gentity_t *pad)
-{
-	if (pad == NULL && numCapPads > 0)
-		return qfalse;
-	if (pad)
-	{
-		gcappad_t *capPad = &cappads[pad->count];
-		if (BOTS_Goal_IsConquerValid(pad, capPad))
-			return qfalse;
-	}
-	
-	return qtrue;
-}
-
 qboolean BOTS_Goal_IsConquerValid(gentity_t *ent, gcappad_t *capPad)
 {
 	gentity_t *soldier = capPad->soldier;
@@ -69,6 +55,20 @@ qboolean BOTS_Goal_IsConquerValid(gentity_t *ent, gcappad_t *capPad)
 	if (Distance(soldier->s.pos.trBase, ent->s.pos.trBase) > maxDistance)
 		return qfalse;
 
+	return qtrue;
+}
+
+qboolean BOTS_Goal_CanCapture(gentity_t *flag, gentity_t *player, gentity_t *pad)
+{
+	if (pad == NULL && numCapPads > 0)
+		return qfalse;
+	if (pad)
+	{
+		gcappad_t *capPad = &cappads[pad->count];
+		if (BOTS_Goal_IsConquerValid(pad, capPad))
+			return qfalse;
+	}
+	
 	return qtrue;
 }
 

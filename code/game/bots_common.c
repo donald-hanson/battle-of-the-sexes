@@ -385,8 +385,6 @@ qboolean BOTS_CanTouchHurt(gentity_t *hurt, gentity_t *player)
 void BOTS_TryToPlay(gentity_t *ent)
 {
 	int	teamLeader;
-	gentity_t *	captain;
-	gentity_t *	scientist;
 	qboolean changedTeams = qfalse;
 	qboolean changedClasses = qfalse;
 	team_t oldTeam = ent->bots_team;

@@ -1092,6 +1092,7 @@ qboolean	BOTS_Rocket_TryToTag(gentity_t *ent, gentity_t *other, trace_t *trace);
 // BotS - bots_infiltrator
 void		BOTS_Infiltrator_AdjustClientSkin(gentity_t *ent, team_t *team, class_t *cls);
 void		BOTS_InfiltratorCommand_Disguise(int clientNum);
+qboolean	BOTS_Infiltrator_FireWeapon(gentity_t *ent);
 
 // BotS - bots_nurse
 qboolean	BOTS_Nurse_PoisonHealth(gentity_t *health, gentity_t *player);

@@ -27,12 +27,29 @@ void BOTS_Infiltrator_AdjustClientSkin(gentity_t *ent, team_t *team, class_t *cl
 	}
 }
 
+void BOTS_Infiltrator_ApplyDisguise(int clientNum, team_t team, class_t cls)
+{
+	infiltratorState_t *state = BOTS_Infiltrator_GetState(clientNum);
+
+	qboolean skinChanged = qfalse;
+
+	if (state->disguiseTeam != team || state->disguiseClass != cls)
+		skinChanged = qtrue;
+
+	state->disguiseTeam = team;
+	state->disguiseClass = cls;
+
+	if (skinChanged)
+		ClientUserinfoChanged(clientNum);
+}
+
 void BOTS_InfiltratorCommand_Disguise(int clientNum)
 {
 	char firstCommand[MAX_TOKEN_CHARS];
 	char secondCommand[MAX_TOKEN_CHARS];
 	gentity_t *ent = g_entities + clientNum;
 	infiltratorState_t *state = BOTS_Infiltrator_GetState(clientNum);
+	int pLevel = ent->client->ps.persistant[PERS_LEVEL];
 	class_t	cls = state->disguiseClass;
 	team_t team = state->disguiseTeam;
 	qboolean skinChanged = qfalse;
@@ -52,6 +69,17 @@ void BOTS_InfiltratorCommand_Disguise(int clientNum)
 			BOTS_Print(clientNum, "invalid disguise team\n");
 			return;
 		}
+		else if (team == ent->bots_team && pLevel < 1)
+		{
+			BOTS_Print(clientNum, "must be level 1 to disguise as your team\n");
+			return;
+		}
+		else if (team != ent->bots_team && pLevel < 2)
+		{
+			BOTS_Print(clientNum, "must be level 2 to disguise as the enemy\n");
+			return;
+		}
+
 		cls = BOTS_ClassNumber(secondCommand);
 		if (cls == CLASS_NONE)
 		{
@@ -91,12 +119,13 @@ void BOTS_InfiltratorCommand_Disguise(int clientNum)
 		BOTS_Print(clientNum, va("Disguised as %s %s\n", teamName, className));
 	}
 
-	if (state->disguiseTeam != team || state->disguiseClass != cls)
-		skinChanged = qtrue;
+	BOTS_Infiltrator_ApplyDisguise(clientNum, team, cls);
+}
 
-	state->disguiseTeam = team;
-	state->disguiseClass = cls;
-
-	if (skinChanged)
-		ClientUserinfoChanged(clientNum);
+qboolean BOTS_Infiltrator_FireWeapon(gentity_t *ent)
+{
+	int pLevel = ent->client->ps.persistant[PERS_LEVEL];
+	if (pLevel < 4)
+		BOTS_Infiltrator_ApplyDisguise(ent->s.clientNum, TEAM_FREE, CLASS_NONE);
+	return qfalse;
 }
