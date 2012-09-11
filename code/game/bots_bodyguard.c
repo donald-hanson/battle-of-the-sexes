@@ -291,18 +291,41 @@ void BOTS_BodyguardCommand_Laser(int clientNum)
 	laserState_t *laserState;
 	gentity_t *ent = g_entities + clientNum;
 	bodyguardState_t *state = BOTS_Bodyguard_GetState(clientNum);
+	int pLevel = ent->client->ps.persistant[PERS_LEVEL];
+
+	int totalActive = 0;
 
 	for (i=0;i<MAX_LASERS;i++)
 	{
 		laserState = &state->lasers[i];
-		if (!laserState->active)
-		{
-			BOTS_Bodyguard_PlaceLaser(ent, state, laserState);
-			return;
-		}
+		if (laserState->active)
+			totalActive++;
 	}
 
-	trap_SendServerCommand( clientNum, "print \"You already have the maximum number of lasers.\n\"");
+	if (pLevel < 2 && totalActive == 1)
+	{
+		BOTS_Print(clientNum, "You must be level 2 to place a 2nd laser.");
+	}
+	else if (pLevel < 3 && totalActive == 2)
+	{
+		BOTS_Print(clientNum, "You must be level 3 to place a 3rd laser.");
+	}
+	else if (totalActive == MAX_LASERS)
+	{
+		BOTS_Print(clientNum, "You have placed the maximum number of lasers.");
+	}
+	else
+	{
+		for (i=0;i<MAX_LASERS;i++)
+		{
+			laserState = &state->lasers[i];
+			if (!laserState->active)
+			{
+				BOTS_Bodyguard_PlaceLaser(ent, state, laserState);
+				break;
+			}
+		}
+	}
 }
 
 void BOTS_BodyguardCommand_LaserOn(int clientNum)

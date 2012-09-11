@@ -30,7 +30,7 @@ qboolean BOTS_Nurse_PoisonHealth(gentity_t *health, gentity_t *player)
 				// clear the poison and return false so we can pick it up
 				health->s.powerups &= ~(1 << PW_POISON);
 				health->s.otherEntityNum = -1;
-				BOTS_Print(player->s.clientNum, "Cleared poison\n");
+				BOTS_Print(player->s.clientNum, "Cleared poison");
 				return qfalse;
 			}
 		}
@@ -42,7 +42,7 @@ qboolean BOTS_Nurse_PoisonHealth(gentity_t *health, gentity_t *player)
 			{
 				health->s.powerups |= (1 << PW_POISON);
 				health->s.otherEntityNum = player->s.clientNum;
-				BOTS_Print(player->s.clientNum, "Applied poison\n");
+				BOTS_Print(player->s.clientNum, "Applied poison");
 				return qtrue; // health is now poisoned, return qtrue so we don't consume it
 			}
 		}
@@ -57,7 +57,7 @@ void BOTS_NurseCommand_Poison(int clientNum)
 	state->poison = state->poison ? qfalse : qtrue;
 
 	if (state->poison)
-		BOTS_Print(clientNum, "Poison Enabled\n");
+		BOTS_Print(clientNum, "Poison Enabled");
 	else
-		BOTS_Print(clientNum, "Poison Disabled\n");
+		BOTS_Print(clientNum, "Poison Disabled");
 }

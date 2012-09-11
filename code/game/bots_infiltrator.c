@@ -66,24 +66,24 @@ void BOTS_InfiltratorCommand_Disguise(int clientNum)
 		team = BOTS_TeamNumber(firstCommand);
 		if (team == TEAM_FREE)
 		{
-			BOTS_Print(clientNum, "invalid disguise team\n");
+			BOTS_Print(clientNum, "invalid disguise team");
 			return;
 		}
 		else if (team == ent->bots_team && pLevel < 1)
 		{
-			BOTS_Print(clientNum, "must be level 1 to disguise as your team\n");
+			BOTS_Print(clientNum, "must be level 1 to disguise as your team");
 			return;
 		}
 		else if (team != ent->bots_team && pLevel < 2)
 		{
-			BOTS_Print(clientNum, "must be level 2 to disguise as the enemy\n");
+			BOTS_Print(clientNum, "must be level 2 to disguise as the enemy");
 			return;
 		}
 
 		cls = BOTS_ClassNumber(secondCommand);
 		if (cls == CLASS_NONE)
 		{
-			BOTS_Print(clientNum, "invalid disguise class\n");
+			BOTS_Print(clientNum, "invalid disguise class");
 			return;
 		}
 	}
@@ -98,13 +98,13 @@ void BOTS_InfiltratorCommand_Disguise(int clientNum)
 		}
 		else
 		{
-			BOTS_Print(clientNum, "invalid disguise\n");
+			BOTS_Print(clientNum, "invalid disguise");
 			return;
 		}
 	}
 
 	if (cls == CLASS_NONE && team == TEAM_FREE)
-		BOTS_Print(clientNum, "Disguised removed\n");
+		BOTS_Print(clientNum, "Disguised removed");
 	else
 	{
 		memset(&teamName, 0, 32);
@@ -116,7 +116,7 @@ void BOTS_InfiltratorCommand_Disguise(int clientNum)
 		Q_strlwr(teamName);
 		Q_strlwr(className);
 
-		BOTS_Print(clientNum, va("Disguised as %s %s\n", teamName, className));
+		BOTS_Print(clientNum, va("Disguised as %s %s", teamName, className));
 	}
 
 	BOTS_Infiltrator_ApplyDisguise(clientNum, team, cls);
