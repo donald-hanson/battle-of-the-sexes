@@ -416,7 +416,6 @@ gentity_t *BOTS_Bodyguard_FindNearByProtector(gentity_t *ent)
 {
 	gentity_t *bodyguard;
 	int i = 0;
-	vec_t dist;
 	for (i=0;i<level.maxclients;i++)
 	{
 		bodyguard = g_entities + i;

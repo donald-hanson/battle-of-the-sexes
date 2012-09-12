@@ -68,7 +68,6 @@ void BOTS_NurseCommand_HealRadius(int clientNum)
 	gentity_t *ent = g_entities + clientNum;
 	gentity_t *teamMember;
 	int i = 0;
-	vec_t dist;
 	int pLevel = ent->client->ps.persistant[PERS_LEVEL];
 	int ammo = 25 - ( 5 * ( pLevel - 1 ) );
 	int radius = 100 * pLevel;
