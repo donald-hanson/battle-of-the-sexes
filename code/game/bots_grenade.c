@@ -18,13 +18,14 @@ typedef struct grenadeInfo_s {
 void BOTS_Grenade_Setup_Proximity(gentity_t *ent, gentity_t *grenade);
 void BOTS_Grenade_Setup_Decoy(gentity_t *ent, gentity_t *grenade);
 void BOTS_Grenade_Setup_Flash(gentity_t *ent, gentity_t *grenade);
+void BOTS_Grenade_Setup_Teleport(gentity_t *ent, gentity_t *grenade);
 
 grenadeInfo_t grenadeInfos[] = {
 	//type,						handler
 	{GRENADE_NORMAL,			NULL },
 	{GRENADE_PROXIMITY,			BOTS_Grenade_Setup_Proximity },
 	{GRENADE_FLASH,				BOTS_Grenade_Setup_Flash },
-	{GRENADE_TELEPORT,			NULL },
+	{GRENADE_TELEPORT,			BOTS_Grenade_Setup_Teleport },
 	{GRENADE_FREEZE,			NULL },
 	{GRENADE_DECOY,				BOTS_Grenade_Setup_Decoy },
 	{GRENADE_NUM_GRENADES,		NULL },
@@ -145,6 +146,55 @@ void BOTS_Grenade_Setup_Decoy(gentity_t *ent, gentity_t *grenade)
 		grenade->s.modelindex2 = Q_randomBetween(&seed, GRENADE_MODEL_SHOTGUN, GRENADE_MODEL_BFG);
 		grenade->count = level.time + 25000;
 	}
+}
+
+void BOTS_Grenade_Teleport_Think(gentity_t *ent)
+{
+	int i;
+	gentity_t *temp;
+	gentity_t *player = ent->parent;
+	vec3_t	origin, angles;
+	float teleportRadius = 0.0;
+	float distance = 0;
+	int playerLevel = player->client->ps.persistant[PERS_LEVEL];
+	if (playerLevel < 1)
+		playerLevel = 1;
+	teleportRadius = pow(2.0f, playerLevel-1)*100.0;
+	
+	for(i=0;i<level.maxclients;i++)
+	{
+		temp = g_entities + i;
+		if (temp && 
+			temp->inuse && 
+			temp->client &&
+			temp->health > 0 &&
+			!OnSameTeam(temp, player) &&
+			BOTS_Common_Visible(temp, ent)
+		)
+		{
+			distance = Distance(temp->r.currentOrigin, ent->r.currentOrigin);
+			if (distance <= teleportRadius)	// adjust based on distance from grenade?
+			{
+				// teleport them away!
+				VectorClear(origin);
+
+				if (SelectCTFSpawnPoint(temp->bots_team, temp->bots_class, temp->client->pers.teamState.state, origin, angles, !!(temp->r.svFlags & SVF_BOT)))
+					TeleportPlayer(temp, origin, angles);
+			}
+		}
+	}
+
+	ent->nextthink = level.time + FRAMETIME;
+	ent->think = G_ExplodeMissile;
+}
+
+void BOTS_Grenade_Setup_Teleport(gentity_t *ent, gentity_t *grenade)
+{
+	grenade->classname = "teleport_grenade";
+	grenade->think = BOTS_Grenade_Teleport_Think;
+	grenade->s.modelindex2 = GRENADE_MODEL_TELEPORT;
+	grenade->damage = 0;
+	grenade->splashDamage = 0;
 }
 
 void BOTS_Grenade_Throw(gentity_t *ent, grenadeType_t grenadeType, int heldTime)

@@ -931,7 +931,7 @@ go to a random point that doesn't telefrag
 ================
 */
 #define	MAX_TEAM_SPAWN_POINTS	32
-gentity_t *SelectRandomTeamSpawnPoint( int teamstate, team_t team ) {
+gentity_t *SelectRandomTeamSpawnPoint( int teamstate, team_t team, class_t cls ) {
 	gentity_t	*spot;
 	int			count;
 	int			selection;
@@ -958,12 +958,30 @@ gentity_t *SelectRandomTeamSpawnPoint( int teamstate, team_t team ) {
 	spot = NULL;
 
 	while ((spot = G_Find (spot, FOFS(classname), classname)) != NULL) {
-		if ( SpotWouldTelefrag( spot ) ) {
+		if ( SpotWouldTelefrag( spot ) )
 			continue;
-		}
+		else if (spot->bots_class == CLASS_NONE)
+			continue;
+		else if (spot->bots_class != cls)
+			continue;
+
 		spots[ count ] = spot;
 		if (++count == MAX_TEAM_SPAWN_POINTS)
 			break;
+	}
+
+	if (count == 0)
+	{
+		while ((spot = G_Find (spot, FOFS(classname), classname)) != NULL) {
+			if ( SpotWouldTelefrag( spot ) )
+				continue;
+			else if (spot->bots_class != CLASS_NONE)
+				continue;
+
+			spots[ count ] = spot;
+			if (++count == MAX_TEAM_SPAWN_POINTS)
+				break;
+		}
 	}
 
 	if ( !count ) {	// no spots that won't telefrag
@@ -981,10 +999,10 @@ SelectCTFSpawnPoint
 
 ============
 */
-gentity_t *SelectCTFSpawnPoint ( team_t team, int teamstate, vec3_t origin, vec3_t angles, qboolean isbot ) {
+gentity_t *SelectCTFSpawnPoint ( team_t team, class_t cls, int teamstate, vec3_t origin, vec3_t angles, qboolean isbot ) {
 	gentity_t	*spot;
 
-	spot = SelectRandomTeamSpawnPoint ( teamstate, team );
+	spot = SelectRandomTeamSpawnPoint ( teamstate, team, cls );
 
 	if (!spot) {
 		return SelectSpawnPoint( vec3_origin, origin, angles, isbot );

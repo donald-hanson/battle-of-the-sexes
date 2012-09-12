@@ -99,7 +99,7 @@ classInfo_t g_classList[] = {
 	{ CLASS_INFILTRATOR,"Infiltrator",	WP_PLASMAGUN,		0,		qtrue,		GRENADE_DECOY,		BOTS_Infiltrator_FireWeapon,NULL,				NULL,				NULL,					NULL,					NULL,								NULL,									BOTS_Infiltrator_PickupAmmo,	g_infiltratorCommands	},
 	{ CLASS_KAMIKAZEE,	"Kamikazee",	WP_GRENADE_LAUNCHER,0,		qtrue,		GRENADE_NORMAL,		NULL,						NULL,				NULL,				NULL,					NULL,					NULL,								NULL,									NULL,							g_kamikazeeCommands		},
 	{ CLASS_NURSE,		"Nurse",		WP_MACHINEGUN,		0,		qtrue,		GRENADE_FLASH,		NULL,						NULL,				NULL,				NULL,					NULL,					NULL,								NULL,									NULL,							g_nurseCommands			},
-	{ CLASS_SCIENTIST,	"Scientist",	WP_LIGHTNING,		0,		qtrue,		GRENADE_FREEZE,		NULL,						BOTS_ScientistSpawn,BOTS_ScientistDeath,BOTS_ScientistKiller,	NULL,					NULL,								NULL,									NULL,							g_scientistCommands		},
+	{ CLASS_SCIENTIST,	"Scientist",	WP_LIGHTNING,		0,		qtrue,		GRENADE_TELEPORT,	NULL,						BOTS_ScientistSpawn,BOTS_ScientistDeath,BOTS_ScientistKiller,	NULL,					NULL,								NULL,									NULL,							g_scientistCommands		},
 	{ CLASS_NUM_CLASSES,NULL,			WP_NUM_WEAPONS,		-1,		qfalse,		GRENADE_NORMAL,		NULL,						NULL,				NULL,				NULL,					NULL,					NULL,								NULL,									NULL,							g_noneCommands			}
 };
 
