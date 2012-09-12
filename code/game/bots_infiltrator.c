@@ -3,6 +3,7 @@
 typedef struct infiltratorState_s {
 	class_t disguiseClass;
 	team_t disguiseTeam;
+	qboolean stealEnabled;
 } infiltratorState_t;
 
 infiltratorState_t infiltratorStates[MAX_CLIENTS];
@@ -122,10 +123,34 @@ void BOTS_InfiltratorCommand_Disguise(int clientNum)
 	BOTS_Infiltrator_ApplyDisguise(clientNum, team, cls);
 }
 
+void BOTS_InfiltratorCommand_Steal(int clientNum)
+{
+	infiltratorState_t *state = BOTS_Infiltrator_GetState(clientNum);
+	state->stealEnabled = state->stealEnabled ? qfalse : qtrue;
+	BOTS_Print(clientNum, state->stealEnabled ? "Steal Enabled" : "Steal Disabled");
+}
+
 qboolean BOTS_Infiltrator_FireWeapon(gentity_t *ent)
 {
 	int pLevel = ent->client->ps.persistant[PERS_LEVEL];
 	if (pLevel < 4)
 		BOTS_Infiltrator_ApplyDisguise(ent->s.clientNum, TEAM_FREE, CLASS_NONE);
+	return qfalse;
+}
+
+qboolean BOTS_Infiltrator_PickupAmmo(gentity_t *ammo, gentity_t *player, int *respawnTime)
+{
+	infiltratorState_t *state = BOTS_Infiltrator_GetState(player->s.clientNum);
+	int pLevel = player->client->ps.persistant[PERS_LEVEL];
+	if (state->stealEnabled)
+	{
+		BOTS_Print(player->s.clientNum, "Ammo Stolen");
+		if (pLevel < 1)
+			pLevel = 1;
+
+		*respawnTime = (45 + 20*pLevel);
+		return qtrue;
+	}
+
 	return qfalse;
 }
