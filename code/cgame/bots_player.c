@@ -306,13 +306,14 @@ typedef struct gameStateInfo_s {
 } gameStateInfo_t;
 
 void BOTS_Bodyguard_Network(int clientNum);
+void BOTS_Soldier_Network(int clientNum);
 
 gameStateInfo_t gameStateInfos[] = {
 	{ CLASS_NONE,			NULL },
 	{ CLASS_CAPTAIN,		NULL },
 	{ CLASS_BODYGUARD,		BOTS_Bodyguard_Network },
 	{ CLASS_SNIPER,			NULL },
-	{ CLASS_SOLDIER,		NULL },
+	{ CLASS_SOLDIER,		BOTS_Soldier_Network },
 	{ CLASS_BERZERKER,		NULL },
 	{ CLASS_INFILTRATOR,	NULL },
 	{ CLASS_KAMIKAZEE,		NULL },

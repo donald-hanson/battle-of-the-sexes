@@ -11,6 +11,14 @@ soldierState_t *BOTS_Soldier_GetState(int clientNum)
 	return &soldierStates[clientNum];
 }
 
+void BOTS_Soldier_Network(int clientNum)
+{
+	gentity_t *ent = g_entities + clientNum;
+	soldierState_t *state = BOTS_Soldier_GetState(clientNum);
+
+	trap_Net_WriteBits((int)state->rocketMode, 4);
+}
+
 void BOTS_Rocket_FireRapid(gentity_t *ent)
 {
 	gentity_t *m;

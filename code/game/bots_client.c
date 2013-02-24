@@ -94,7 +94,7 @@ classInfo_t g_classList[] = {
 	{ CLASS_CAPTAIN,	"Captain",		WP_BFG,				2,		qtrue,		GRENADE_PROXIMITY,	NULL,						BOTS_CaptainSpawn,	BOTS_CaptainDeath,	NULL,					NULL,					NULL,								NULL,									NULL,							g_captainCommands		},
 	{ CLASS_BODYGUARD,	"Bodyguard",	WP_SHOTGUN,			0,		qtrue,		GRENADE_PROXIMITY,	NULL,						NULL,				NULL,				NULL,					BOTS_Bodyguard_Network,	BOTS_Bodyguard_Modify_EntityState,	BOTS_Bodyguard_Rollback_EntityState,	NULL,							g_bodyguardCommands		},
 	{ CLASS_SNIPER,		"Sniper",		WP_RAILGUN,			0,		qtrue,		GRENADE_NORMAL,		NULL,						NULL,				NULL,				NULL,					NULL,					NULL,								NULL,									NULL,							g_sniperCommands		},
-	{ CLASS_SOLDIER,	"Soldier",		WP_ROCKET_LAUNCHER,	-1,		qtrue,		GRENADE_NORMAL,		BOTS_Soldier_FireWeapon,	NULL,				NULL,				NULL,					NULL,					NULL,								NULL,									NULL,							g_soldierCommands		},
+	{ CLASS_SOLDIER,	"Soldier",		WP_ROCKET_LAUNCHER,	-1,		qtrue,		GRENADE_NORMAL,		BOTS_Soldier_FireWeapon,	NULL,				NULL,				NULL,					BOTS_Soldier_Network,	NULL,								NULL,									NULL,							g_soldierCommands		},
 	{ CLASS_BERZERKER,	"Berzerker",	WP_GAUNTLET,		-1,		qfalse,		GRENADE_NORMAL,		NULL,						NULL,				NULL,				NULL,					NULL,					NULL,								NULL,									NULL,							g_berzerkerCommands		},
 	{ CLASS_INFILTRATOR,"Infiltrator",	WP_PLASMAGUN,		0,		qtrue,		GRENADE_DECOY,		BOTS_Infiltrator_FireWeapon,NULL,				NULL,				NULL,					NULL,					NULL,								NULL,									BOTS_Infiltrator_PickupAmmo,	g_infiltratorCommands	},
 	{ CLASS_KAMIKAZEE,	"Kamikazee",	WP_GRENADE_LAUNCHER,0,		qtrue,		GRENADE_NORMAL,		NULL,						NULL,				NULL,				NULL,					NULL,					NULL,								NULL,									NULL,							g_kamikazeeCommands		},
