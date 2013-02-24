@@ -232,6 +232,10 @@ void BOTS_Common_ApplyStriping(gentity_t *killed, gentity_t *killer)
 	//killer may not be a scientist
 	//killed may not be a scientist
 	if (	killed->bots_team != killer->bots_team
+		&&  killer->bots_class != CLASS_NONE
+		&&  killed->bots_class != CLASS_NONE
+		&&  killer->bots_class != CLASS_NUM_CLASSES
+		&&  killed->bots_class != CLASS_NUM_CLASSES
 		&&	killed->bots_class != CLASS_CAPTAIN 
 		&&	killer->bots_class != CLASS_CAPTAIN 
 		&&	killed->bots_class != CLASS_SCIENTIST
