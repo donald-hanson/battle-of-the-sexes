@@ -683,7 +683,7 @@ void BOTS_ClientSkin(gentity_t *ent, char *outModel, char *outHeadModel)
 
 char *BOTS_BuildTeamInfoConfigString(team_t team)
 {
-	return va("%i %i %i", level.teamScores[team], BOTS_GetPromotionPoints(team), BOTS_GetTechPoints(team));
+	return va("score\\%i\\promo\\%i\\tech\\%i", level.teamScores[team], BOTS_GetPromotionPoints(team), BOTS_GetTechPoints(team));
 }
 
 void BOTS_SyncScoresConfigStrings()

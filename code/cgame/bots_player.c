@@ -2,6 +2,14 @@
 
 #define BOTS_BLIND_TIME 3000
 
+teamInfo_t g_teamList[] = {
+	{ TEAM_FREE,		0, 0, 0 },
+	{ TEAM_RED,			0, 0, 0 },
+	{ TEAM_BLUE,		0, 0, 0 },
+	{ TEAM_SPECTATOR,	0, 0, 0 },
+	{ TEAM_NUM_TEAMS,	0, 0, 0 },
+};
+
 extern char	*cg_customSoundNames[MAX_CUSTOM_SOUNDS];
 extern qboolean	CG_ParseAnimationFile( const char *filename, clientInfo_t *ci );
 
@@ -72,6 +80,35 @@ static qboolean BOTS_RegisterClientModelname( clientInfo_t *ci, const char *mode
 	}
 
 	return qtrue;
+}
+
+teamInfo_t *BOTS_ParseTeamInfoConfigString(const char *configString, team_t team)
+{
+	teamInfo_t *teamInfo = &g_teamList[team];
+
+	int newPoints = atoi( Info_ValueForKey( configString, "score" ) );
+	int newPromos = atoi( Info_ValueForKey( configString, "promo" ) );
+	int newTechs = atoi( Info_ValueForKey( configString, "tech" ) );
+
+	if (teamInfo->points != newPoints)
+	{
+		teamInfo->points = newPoints;
+		CG_JS_Eval(va("TeamInfo.SetScore(%d, %d)", (int)team, newPoints));
+	}
+
+	if (teamInfo->promopoints != newPromos)
+	{
+		teamInfo->promopoints = newPromos;
+		CG_JS_Eval(va("TeamInfo.SetPromotionPoints(%d, %d)", (int)team, newPromos));
+	}
+
+	if (teamInfo->techpoints != newTechs)
+	{
+		teamInfo->techpoints = newTechs;
+		CG_JS_Eval(va("TeamInfo.SetTechPoints(%d, %d)", (int)team, newTechs));
+	}
+
+	return teamInfo;
 }
 
 void BOTS_LoadClientInfo(clientInfo_t *ci)

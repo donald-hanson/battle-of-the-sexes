@@ -983,6 +983,12 @@ typedef struct {
 
 } cgMedia_t;
 
+typedef struct teamInfo_s {
+	team_t		team;
+	int			points;
+	int			promopoints;
+	int			techpoints;
+} teamInfo_t;
 
 // The client game static (cgs) structure hold everything
 // loaded or calculated from the gamestate.  It will NOT
@@ -1026,7 +1032,9 @@ typedef struct {
 
 	int				levelStartTime;
 
-	int				scores1, scores2;		// from configstrings
+	//int				scores1, scores2;		// from configstrings
+	teamInfo_t		*redTeamInfo;
+	teamInfo_t		*blueTeamInfo;
 	int				redflag, blueflag;		// flag status from configstrings
 	int				flagStatus;
 
@@ -1689,6 +1697,7 @@ void BOTS_Grenade_ChangeGrenadeModel(centity_t *cent, refEntity_t *ent, entitySt
 void Bots_Draw_Blind();
 void BOTS_Adjust_FOV(float *x, float *y);
 void BOTS_AddHealRadius( localEntity_t *le );
+teamInfo_t *BOTS_ParseTeamInfoConfigString(const char *configString, team_t team);
 
 // JS
 void CG_JS_Init(void);
