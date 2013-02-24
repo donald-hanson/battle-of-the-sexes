@@ -42,7 +42,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 #define	RESPAWN_HOLDABLE	60
 #define	RESPAWN_MEGAHEALTH	35//120
 #define	RESPAWN_POWERUP		120
-
+#define RESPAWN_POISONHEALTH 1
 
 //======================================================================
 
@@ -299,7 +299,7 @@ int Pickup_Health (gentity_t *ent, gentity_t *other) {
 	}
 
 	if (BOTS_Nurse_PoisonHealth(ent, other))
-		return 0;
+		return RESPAWN_POISONHEALTH;
 	
 	if (!BOTS_Common_ApplyPoison(ent, other, quantity))
 	{
