@@ -386,8 +386,16 @@ void BOTS_BodyguardCommand_LaserKill(int clientNum)
 
 void BOTS_BodyguardCommand_Protect(int clientNum)
 {
+	gentity_t *ent = g_entities + clientNum;
+	int pLevel = ent->client->ps.persistant[PERS_LEVEL];
 	bodyguardState_t *state = BOTS_Bodyguard_GetState(clientNum);
 	state->protect = state->protect ? qfalse : qtrue;
+	if (pLevel < 1)
+	{
+		BOTS_Print(clientNum, "You must be level 1 to use protect.");
+		return;
+	}
+
 	if (state->protect)
 		trap_SendServerCommand( clientNum, "print \"Protection enabled.\n\"");
 	else
@@ -415,7 +423,11 @@ void BOTS_BodyguardCommand_Decoy(int clientNum)
 gentity_t *BOTS_Bodyguard_FindNearByProtector(gentity_t *ent)
 {
 	gentity_t *bodyguard;
+	float d, maxDistance;
 	int i = 0;
+	if (ent->bots_class != CLASS_CAPTAIN)
+		return (gentity_t *)NULL;
+
 	for (i=0;i<level.maxclients;i++)
 	{
 		bodyguard = g_entities + i;
@@ -426,10 +438,15 @@ gentity_t *BOTS_Bodyguard_FindNearByProtector(gentity_t *ent)
 			bodyguard->health > 0 &&
 			bodyguard->client->ps.persistant[PERS_CLASS] == CLASS_BODYGUARD &&
 			bodyguard->client->ps.persistant[PERS_TEAM] == ent->bots_team &&
-			BOTS_Bodyguard_GetState(i)->protect && 
-			Distance(ent->client->ps.origin, bodyguard->client->ps.origin) <= 500.0)
+			BOTS_Bodyguard_GetState(i)->protect)
 		{
-			return bodyguard;
+			int level = bodyguard->client->ps.persistant[PERS_LEVEL];
+			if (level < 1)
+				continue;
+			d = Distance(ent->client->ps.origin, bodyguard->client->ps.origin);
+			maxDistance = level > 1 ? 750.0f : 500.0f;
+			if (d <= maxDistance)
+				return bodyguard;
 		}
 	}
 	return (gentity_t *)NULL;

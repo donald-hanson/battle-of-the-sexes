@@ -7,3 +7,4 @@ Load("js/Client/TeamInfo.js");
 Load("js/Client/Game.js");
 Load("js/Client/Hud.js");
 Load("js/Client/DefaultHud.js");
+Load("js/Client/ClassHud.js");

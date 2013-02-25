@@ -1,6 +1,4 @@
-#include "../qcommon/q_shared.h"
-#include "../game/bg_public.h"
-#include "../renderer/tr_types.h"
+#include "cg_local.h"
 #include <jsapi.h>
 
 jsval JS_MakeString(JSContext *cx, char *v)
@@ -8,6 +6,16 @@ jsval JS_MakeString(JSContext *cx, char *v)
 	JSString *s = JS_NewStringCopyZ(cx, v);
 	jsval returnValue = STRING_TO_JSVAL(s);
 	return returnValue;
+}
+
+void JS_Object_SetPropertyBit(JSContext *cx, JSObject *o, char *prop, int v)
+{
+	jsval bit = JSVAL_VOID;
+	if (v == 1)
+		bit = JSVAL_TRUE;
+	else
+		bit = JSVAL_FALSE;
+	JS_SetProperty(cx, o, prop, &bit);
 }
 
 void JS_Object_SetPropertyString(JSContext *cx, JSObject *o, char *prop, char *v)
@@ -315,4 +323,110 @@ void JS_Object_SetItem(JSContext *cx, JSObject *o, gitem_t *item)
 #undef _INT
 #undef _STR
 #undef _ARR_STR
+}
+
+#define MAX_WRAPPERS 32
+jsWrapper_t js_wrappers[MAX_WRAPPERS];
+
+void JS_Wrapper_SetPropertyInt(jsWrapper_t *wrapper, char *propertyName, int value)
+{
+	JS_Object_SetPropertyInt((JSContext *)wrapper->jsContext, (JSObject *)wrapper->jsObject, propertyName, value);
+}
+
+void JS_Wrapper_SetPropertyString(jsWrapper_t *wrapper, char *propertyName, char *value)
+{
+	JS_Object_SetPropertyString((JSContext *)wrapper->jsContext, (JSObject *)wrapper->jsObject, propertyName, value);
+}
+
+void JS_Wrapper_SetPropertyBit(jsWrapper_t *wrapper, char *propertyName, int value)
+{
+	JS_Object_SetPropertyBit((JSContext *)wrapper->jsContext, (JSObject *)wrapper->jsObject, propertyName, value);	
+}
+
+void JS_Wrapper_SetPropertyFloat(jsWrapper_t *wrapper, char *propertyName, float value)
+{
+	JS_Object_SetPropertyFloat((JSContext *)wrapper->jsContext, (JSObject *)wrapper->jsObject, propertyName, value);
+}
+
+void JS_Wrapper_SetPropertyByte(jsWrapper_t *wrapper, char *propertyName, byte value)
+{
+	JS_Object_SetPropertyByte((JSContext *)wrapper->jsContext, (JSObject *)wrapper->jsObject, propertyName, value);
+}
+
+jsWrapper_t *JS_FindOpenWrapper(JSContext *jsContext, JSObject *jsObject, jsWrapper_t *parent);
+
+jsWrapper_t *JS_Wrapper_NewObject(jsWrapper_t *wrapper)
+{
+	JSContext *cx = (JSContext *)wrapper->jsContext;
+	JSObject *obj = JS_NewObject(cx, NULL, NULL, NULL);
+	return JS_FindOpenWrapper(cx, obj, wrapper);
+}
+
+void JS_Wrapper_AddObjects(jsWrapper_t *wrapper, char *propertyName, jsWrapper_t **children, int length)
+{
+	jsval z;
+	jsval a;
+	int i=0;
+	JSContext *cx = (JSContext *)wrapper->jsContext;
+	JSObject *o = (JSObject *)wrapper->jsObject;
+	JSObject *arr = JS_NewArrayObject(cx, 0, NULL);
+	for (i=0;i<length;i++)
+	{
+		z = OBJECT_TO_JSVAL((JSObject *)children[i]->jsObject);
+		JS_SetElement(cx,arr,i,&z);
+	}
+	a = OBJECT_TO_JSVAL(arr);
+	JS_SetProperty(cx, o, propertyName, &a);
+
+}
+
+void JS_PrepareFunctionPointers(jsWrapper_t *js_wrapper)
+{
+	js_wrapper->setPropertyInt = JS_Wrapper_SetPropertyInt;
+	js_wrapper->setPropertyString = JS_Wrapper_SetPropertyString;
+	js_wrapper->setPropertyBit = JS_Wrapper_SetPropertyBit;
+	js_wrapper->setPropertyFloat = JS_Wrapper_SetPropertyFloat;
+	js_wrapper->setPropertyByte = JS_Wrapper_SetPropertyByte;
+	js_wrapper->newObject = JS_Wrapper_NewObject;
+	js_wrapper->addObjects = JS_Wrapper_AddObjects;
+}
+
+jsWrapper_t *JS_FindOpenWrapper(JSContext *jsContext, JSObject *jsObject, jsWrapper_t *parent)
+{
+	jsWrapper_t *wrapper;
+	int i=0;
+	for (i=0;i<MAX_WRAPPERS;i++)
+	{
+		wrapper = &js_wrappers[i];
+		if (!wrapper->inUse)
+		{
+			wrapper->inUse = qtrue;
+			wrapper->jsContext = jsContext;
+			wrapper->jsObject = jsObject;
+			wrapper->parent = parent;
+			JS_PrepareFunctionPointers(wrapper);
+			return wrapper;
+		}
+	}
+	return (jsWrapper_t *)NULL;
+}
+
+jsWrapper_t *JS_MakeWrapper(JSContext *jsContext, JSObject *jsObject)
+{
+	return JS_FindOpenWrapper(jsContext, jsObject, (jsWrapper_t *)NULL);
+}
+
+void JS_FreeWrapper(jsWrapper_t *wrapper)
+{
+	int i;
+	jsWrapper_t *child;
+	wrapper->inUse = qfalse;
+	wrapper->jsContext = (void *)NULL;
+	wrapper->jsObject = (void *)NULL;
+	for (i=0;i<MAX_WRAPPERS;i++)
+	{
+		child = &js_wrappers[i];
+		if (child && child != wrapper && child->inUse && child->parent == wrapper)
+			JS_FreeWrapper(child);
+	}
 }

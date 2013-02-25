@@ -2,6 +2,9 @@
 #include "cg_local.h"
 #include <jsapi.h>
 
+jsWrapper_t *JS_MakeWrapper(JSContext *jsContext, JSObject *jsObject);
+void JS_FreeWrapper(jsWrapper_t *wrapper);
+
 static JSClass sys_class = {
     "Sys",
     0,
@@ -211,6 +214,29 @@ static JSBool sys_getplayerstate(JSContext *cx, unsigned argc, jsval *vp)
 	return JS_TRUE;
 }
 
+static JSBool sys_getclassstate(JSContext *cx, unsigned argc, jsval *vp)
+{
+	JSObject *psobj = JS_NewObject(cx,NULL,NULL,NULL);
+	jsval returnValue;
+	jsWrapper_t *wrapper;
+	
+	if (!psobj)
+	{
+		JS_ReportError(cx, "Unabel to create classState object");
+		return JS_FALSE;
+	}
+
+	wrapper = JS_MakeWrapper(cx, psobj);
+
+	BOTS_JS_Object_SetClassState(wrapper);
+
+	JS_FreeWrapper(wrapper);
+
+	returnValue = OBJECT_TO_JSVAL(psobj);
+	JS_SET_RVAL(cx, vp, returnValue);
+	return JS_TRUE;
+}
+
 void JS_Object_SetItem(JSContext *cx, JSObject *o, gitem_t *item);
 
 static JSBool sys_getitems(JSContext *cx, unsigned argc, jsval *vp)
@@ -257,6 +283,8 @@ static JSFunctionSpec sys_static_methods[] = {
 	JS_FS("GetPlayerState", sys_getplayerstate, 0, 0),
 
 	JS_FS("GetItems", sys_getitems, 0, 0),
+
+	JS_FS("GetClassState", sys_getclassstate, 0, 0),
 
 	JS_FS_END
 };

@@ -571,20 +571,18 @@ int BOTS_Common_CalculateDamageKnockback(gentity_t *targ, gentity_t *attacker, i
 
 void BOTS_Common_ApplyBodyguardProtection(gentity_t **targ, gentity_t *attacker, int *damage, int mod)
 {
+	int newDamage;
+	gentity_t *bodyguard;
 	int level = 0;
 	gentity_t *currentTarget = *targ;
-	gentity_t *bodyguard = BOTS_Bodyguard_FindNearByProtector(currentTarget);
-	if (bodyguard && mod != MOD_SUICIDE && currentTarget != attacker)
-	{
-		if (bodyguard == attacker && (mod == MOD_SHOTGUN || mod == MOD_STINGER || mod == MOD_GRAPPLE))
-			return;
-
-		*targ = bodyguard;
-		level = bodyguard->client->ps.persistant[PERS_LEVEL];
-		if (level > 0)
-			*damage =  *damage / level;
-
-		trap_Printf(va("Bodyguard: %s protected %s from %d damage\n", bodyguard->client->pers.netname, currentTarget->client->pers.netname, *damage));
+	if (mod != MOD_SUICIDE && currentTarget != attacker)
+	{	
+		bodyguard = BOTS_Bodyguard_FindNearByProtector(currentTarget);
+		if (bodyguard && bodyguard != attacker)
+		{
+			*targ = bodyguard;
+			trap_Printf(va("Bodyguard: %s protected %s from %d damage\n", bodyguard->client->pers.netname, currentTarget->client->pers.netname, *damage));
+		}
 	}
 }
 

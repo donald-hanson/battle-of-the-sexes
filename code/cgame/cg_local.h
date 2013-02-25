@@ -1682,9 +1682,28 @@ void	CG_ParticleExplosion (char *animStr, vec3_t origin, vec3_t vel, int duratio
 extern qboolean		initparticles;
 int CG_NewParticleArea ( int num );
 
+// JS
+typedef struct jsWrapper_s {
+	qboolean inUse;
+	void *jsContext;
+	void *jsObject;
+	struct jsWrapper_s *parent;
+	void (*setPropertyInt)(struct jsWrapper_s *wrapper, char *propertyName, int value);
+	void (*setPropertyString)(struct jsWrapper_s *wrapper, char *propertyName, char *value);
+	void (*setPropertyBit)(struct jsWrapper_s  *wrapper, char *propertyName, int value);
+	void (*setPropertyFloat)(struct jsWrapper_s  *wrapper, char *propertyName, float value);
+	void (*setPropertyByte)(struct jsWrapper_s  *wrapper, char *propertyName, byte value);
+	struct jsWrapper_s *(*newObject)(struct jsWrapper_s  *wrapper);
+	void (*addObjects)(struct jsWrapper_s *wrapper, char *propertyName, struct jsWrapper_s **children, int length);
+} jsWrapper_t;
+
+void CG_JS_Init(void);
+void CG_JS_LoadFile(char *filename);
+void CG_JS_Eval(char *script);
+void CG_JS_Shutdown(void);
+
 
 //BotS
-
 void BOTS_StingerTrail(clientInfo_t *ci, vec3_t start, vec3_t end);
 void BOTS_LoadClientInfo(clientInfo_t *ci);
 void BOTS_Laser( centity_t* cent, int entType );
@@ -1698,9 +1717,4 @@ void Bots_Draw_Blind();
 void BOTS_Adjust_FOV(float *x, float *y);
 void BOTS_AddHealRadius( localEntity_t *le );
 teamInfo_t *BOTS_ParseTeamInfoConfigString(const char *configString, team_t team);
-
-// JS
-void CG_JS_Init(void);
-void CG_JS_LoadFile(char *filename);
-void CG_JS_Eval(char *script);
-void CG_JS_Shutdown(void);
+void BOTS_JS_Object_SetClassState(jsWrapper_t *wrapper);

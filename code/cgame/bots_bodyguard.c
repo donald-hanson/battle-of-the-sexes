@@ -1,4 +1,5 @@
 #include "cg_local.h"
+#include <jsapi.h>
 
 #define MAX_LASERS 3
 
@@ -45,6 +46,30 @@ void BOTS_Bodyguard_Network(int clientNum)
 		{
 			laser->active = qfalse;
 			laser->on = qfalse;
+			laser->distance = 0;
 		}
 	}
+}
+
+void BOTS_Bodyguard_ClassState(jsWrapper_t *wrapper)
+{
+	int i;
+	jsWrapper_t *laserWrappers[MAX_LASERS];
+	jsWrapper_t *laserWrapper;
+	laserState_t *laserState;
+	bodyguardState_t *state = BOTS_Bodyguard_GetState();
+
+	for (i=0;i<MAX_LASERS;i++)
+	{
+		laserState  = &state->lasers[i];
+		laserWrappers[i] = laserWrapper = wrapper->newObject(wrapper);
+		laserWrapper->setPropertyBit(laserWrapper, "active", laserState->active);
+		laserWrapper->setPropertyBit(laserWrapper, "on", laserState->on);
+		laserWrapper->setPropertyFloat(laserWrapper, "distance", laserState->distance);
+	}
+	wrapper->addObjects(wrapper, "lasers", laserWrappers, MAX_LASERS);
+
+	wrapper->setPropertyBit(wrapper, "protect", state->protect);
+	wrapper->setPropertyBit(wrapper, "decoyActive", state->decoyActive);
+	wrapper->setPropertyInt(wrapper, "decoyTime", state->decoyTime);
 }

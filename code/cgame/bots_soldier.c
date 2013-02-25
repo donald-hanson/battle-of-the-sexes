@@ -13,7 +13,6 @@ soldierState_t *BOTS_Soldier_GetState()
 
 void BOTS_Soldier_Network(int clientNum)
 {
-	int i;
 	soldierState_t *state = BOTS_Soldier_GetState();
 	state->rocketMode = (rocketMode_t)trap_Net_ReadBits(4);
 }

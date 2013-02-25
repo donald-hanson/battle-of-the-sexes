@@ -162,6 +162,8 @@ DefaultHud = {
 
         var lvl = ps.persistant[Constants.Persistant.Level];
         Hud.DrawBigString(640, Constants.Hud.BigChar.Height, "Level " + lvl.toString(), 1.0, Constants.Hud.Alignment.Right);
+	    
+        ClassHud.DrawTopRight(ps);
 	},
 	
 	DrawCrosshair : function(ps)

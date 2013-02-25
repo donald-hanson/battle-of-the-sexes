@@ -303,31 +303,42 @@ void BOTS_Init_RegisterGraphics()
 typedef struct gameStateInfo_s {
 	class_t cls;
 	void (*networkHandler)(int clientNum);
+	void (*clientStateHandler)(jsWrapper_t *wrapper);
 } gameStateInfo_t;
 
 void BOTS_Bodyguard_Network(int clientNum);
 void BOTS_Soldier_Network(int clientNum);
+void BOTS_Bodyguard_ClassState(jsWrapper_t *wrapper);
 
 gameStateInfo_t gameStateInfos[] = {
-	{ CLASS_NONE,			NULL },
-	{ CLASS_CAPTAIN,		NULL },
-	{ CLASS_BODYGUARD,		BOTS_Bodyguard_Network },
-	{ CLASS_SNIPER,			NULL },
-	{ CLASS_SOLDIER,		BOTS_Soldier_Network },
-	{ CLASS_BERZERKER,		NULL },
-	{ CLASS_INFILTRATOR,	NULL },
-	{ CLASS_KAMIKAZEE,		NULL },
-	{ CLASS_NURSE,			NULL },
-	{ CLASS_SCIENTIST,		NULL },
-	{ CLASS_NUM_CLASSES,	NULL }
+	{ CLASS_NONE,			NULL, NULL },
+	{ CLASS_CAPTAIN,		NULL, NULL  },
+	{ CLASS_BODYGUARD,		BOTS_Bodyguard_Network, BOTS_Bodyguard_ClassState },
+	{ CLASS_SNIPER,			NULL, NULL  },
+	{ CLASS_SOLDIER,		BOTS_Soldier_Network, NULL  },
+	{ CLASS_BERZERKER,		NULL, NULL  },
+	{ CLASS_INFILTRATOR,	NULL, NULL  },
+	{ CLASS_KAMIKAZEE,		NULL, NULL  },
+	{ CLASS_NURSE,			NULL, NULL  },
+	{ CLASS_SCIENTIST,		NULL, NULL  },
+	{ CLASS_NUM_CLASSES,	NULL, NULL  }
 };
 
 void BOTS_ClassState_Parse(int clientNum)
 {
 	class_t cls = (class_t)trap_Net_ReadBits(4);
 	gameStateInfo_t *info = &gameStateInfos[cls];
-	if (info->networkHandler)
+	if (info && info->networkHandler)
 		info->networkHandler(clientNum);
+}
+
+void BOTS_JS_Object_SetClassState(jsWrapper_t *wrapper)
+{
+	playerState_t ps = cg.snap->ps;
+	class_t cls = (class_t)ps.persistant[PERS_CLASS];
+	gameStateInfo_t *info = &gameStateInfos[cls];
+	if (info && info->clientStateHandler)
+		info->clientStateHandler(wrapper);
 }
 
 void Bots_Draw_Blind()
