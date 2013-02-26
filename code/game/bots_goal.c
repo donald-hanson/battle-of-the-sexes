@@ -129,7 +129,10 @@ void BOTS_Goal_TryToConquer(gentity_t *player, gentity_t *pad)
 			}
 
 			capPad->soldier = player;
-			trap_Printf(va("Pad #%d conquered by %s\n", pad->count, player->client->pers.netname));
+			if (BOTS_Goal_IsConquerValid(pad, capPad))
+				trap_Printf(va("Pad #%d conquered by %s\n", pad->count, player->client->pers.netname));
+			else
+				capPad->soldier = (gentity_t *)NULL;
 		}
 	}
 }

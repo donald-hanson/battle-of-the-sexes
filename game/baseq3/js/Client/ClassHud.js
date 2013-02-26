@@ -77,41 +77,43 @@ ClassHud = {
     Soldier: {
         DrawTopRight: function(ps)
         {
+            var level = ps.persistant[Constants.Persistant.Level];
+            
             var cs = Sys.GetClassState();
             var rocketMode = Constants.GetName(Constants.RocketMode, cs.rocketMode);
             var rocketModeName = Constants.GetValue(Constants.RocketModeNames, rocketMode);
             Hud.DrawSmallString(640, 32, "Mode: " + rocketModeName, 1.0, Constants.Hud.Alignment.Right);
 
-            Hud.DrawSmallString(640, 48, "Conquer:     ", 1.0, Constants.Hud.Alignment.Right);
-
-            var color = Constants.Colors.White;
-            var conquerLabel = "";
-            if (cs.conquerActive)
+            if (level > 0)
             {
-                var percent = cs.distance / cs.maxDistance;
-                if (percent > 0.75)
+                Hud.DrawSmallString(640, 48, "Conquer:     ", 1.0, Constants.Hud.Alignment.Right);
+
+                var color = Constants.Colors.White;
+                var conquerLabel = "";
+                if (cs.conquerActive)
                 {
-                    var ms = Sys.Milliseconds();
-                    var lowLight = Util.Darken(Constants.Colors.Red);
-                    var t = 0.5 + 0.5 * Math.sin(ms / 100.0);
-                    color = Util.LerpColor(Constants.Colors.Red, lowLight, t);
+                    var percent = cs.distance / cs.maxDistance;
+                    if (percent > 0.75)
+                    {
+                        var ms = Sys.Milliseconds();
+                        var lowLight = Util.Darken(Constants.Colors.Red);
+                        var t = 0.5 + 0.5 * Math.sin(ms / 100.0);
+                        color = Util.LerpColor(Constants.Colors.Red, lowLight, t);
+                    } else if (percent > 0.50)
+                        color = Constants.Colors.Red;
+                    else if (percent > 0.25)
+                        color = Constants.Colors.Yellow;
+                    else
+                        color = Constants.Colors.Green;
+
+                    conquerLabel = Math.floor(cs.distance).toString();
+                } else
+                {
+                    conquerLabel = "Off";
                 }
-                else if (percent > 0.50)
-                    color = Constants.Colors.Red;
-                else if (percent > 0.25)
-                    color = Constants.Colors.Yellow;
-                else
-                    color = Constants.Colors.Green;
-                
-                conquerLabel = Math.floor(cs.distance).toString();
-            }
-            else
-            {
-                conquerLabel = "Off";
-            }
 
-            Hud.DrawSmallStringColor(640, 48, conquerLabel, color, Constants.Hud.Alignment.Right);
-
+                Hud.DrawSmallStringColor(640, 48, conquerLabel, color, Constants.Hud.Alignment.Right);
+            }
         }
     },
 
