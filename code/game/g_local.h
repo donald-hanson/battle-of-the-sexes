@@ -1098,6 +1098,7 @@ void		BOTS_InfiltratorCommand_Disguise(int clientNum);
 void		BOTS_InfiltratorCommand_Steal(int clientNum);
 qboolean	BOTS_Infiltrator_FireWeapon(gentity_t *ent);
 qboolean	BOTS_Infiltrator_PickupAmmo(gentity_t *ammo, gentity_t *player, int *respawnTime);
+void		BOTS_Infiltrator_Network(int clientNum);
 
 // BotS - bots_nurse
 qboolean	BOTS_Nurse_PoisonHealth(gentity_t *health, gentity_t *player);

@@ -126,6 +126,27 @@ ClassHud = {
     Infiltrator: {
         DrawTopRight: function(ps)
         {
+            var level = ps.persistant[Constants.Persistant.Level];
+            
+            var cs = Sys.GetClassState();            
+            
+            Hud.DrawSmallString(640, 32, "Steal: " + (cs.stealEnabled ? "Yes" : "No"), 1.0, Constants.Hud.Alignment.Right);
+            
+            if (level > 0)
+            {
+                var teamValue = cs.disguiseTeam;
+                var classValue = cs.disguiseClass;
+
+                var disguise = "None";
+                if (teamValue != 0 && classValue != 0)
+                {
+                    var teamName = Constants.GetName(Constants.Team, teamValue);
+                    var className = Constants.GetName(Constants.Class, classValue);
+                    disguise = teamName + " " + className;
+                }
+                
+                Hud.DrawSmallString(640, 48, "Disguise: " + disguise, 1.0, Constants.Hud.Alignment.Right);
+            }
         }
     },
 

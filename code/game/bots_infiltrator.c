@@ -13,6 +13,16 @@ infiltratorState_t *BOTS_Infiltrator_GetState(int clientNum)
 	return &infiltratorStates[clientNum];
 }
 
+void BOTS_Infiltrator_Network(int clientNum)
+{
+	gentity_t *ent = g_entities + clientNum;
+	infiltratorState_t *state = BOTS_Infiltrator_GetState(clientNum);
+
+	trap_Net_WriteBits(state->stealEnabled, 1);
+	trap_Net_WriteBits(state->disguiseTeam, 3);
+	trap_Net_WriteBits(state->disguiseClass, 4);
+}
+
 void BOTS_Infiltrator_AdjustClientSkin(gentity_t *ent, team_t *team, class_t *cls)
 {
 	infiltratorState_t *state = NULL;

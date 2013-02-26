@@ -125,6 +125,9 @@
     <ClCompile Include="..\..\code\cgame\bots_soldier.c">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\code\cgame\bots_infiltrator.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\code\game\bg_public.h">
