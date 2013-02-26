@@ -209,5 +209,12 @@ Constants = {
 	    Guided1 :"Guided #1",
 	    Guided2 : "Guided #2"
         
+    },
+    
+    Colors : {
+        Red : [ 1.0, 0.0, 0.0, 1.0 ],
+        Green : [ 0.0, 1.0, 0.0, 1.0 ],
+        Yellow : [1.0, 1.0, 0.0, 1.0 ],
+        White : [ 1.0, 1.0, 1.0, 1.0 ]
     }
 };

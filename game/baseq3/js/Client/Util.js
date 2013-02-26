@@ -103,5 +103,28 @@ Util = {
 	    var c = s.charAt(index+1);
 	    var i = Util._ColorIndex(c);
 	    return Util._colorTable[i];
-	}
+	},
+	
+    Darken : function (c)
+    {
+        var n = c.slice(0);
+        for (var i=0;i<4;i++)
+            n[i] *= 0.8;
+        return n;
+    },
+	
+    LerpColor : function (a, b, t)
+    {
+        var i;
+        var c = [ 0.0, 0.0, 0.0, 0.0 ];
+        for (i=0;i<4;i++)
+        {
+		    c[i] = a[i] + t*(b[i]-a[i]);
+		    if (c[i] < 0)
+    			c[i] = 0;
+		    else if (c[i] > 1.0)
+    			c[i] = 1.0;            
+        }
+        return c;
+    }
 };
