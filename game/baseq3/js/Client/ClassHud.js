@@ -77,6 +77,36 @@ ClassHud = {
     Soldier: {
         DrawTopRight: function(ps)
         {
+            var cs = Sys.GetClassState();
+            var rocketMode = Constants.GetName(Constants.RocketMode, cs.rocketMode);
+            var rocketModeName = Constants.GetValue(Constants.RocketModeNames, rocketMode);
+            Hud.DrawSmallString(640, 32, "Mode: " + rocketModeName, 1.0, Constants.Hud.Alignment.Right);
+
+            var conquerLabel = "Conquer: ";
+            
+            if (cs.conquerActive)
+            {
+                var percent = cs.distance / cs.maxDistance;
+                if (percent > 0.66)
+                {
+                    conquerLabel += "^1" + Math.floor(cs.distance);
+                }
+                else if (percent > 0.33)
+                {
+                    conquerLabel += "^3" + Math.floor(cs.distance);
+                }
+                else 
+                {
+                    conquerLabel += "^2" + Math.floor(cs.distance);
+                }
+            }
+            else
+            {
+                conquerLabel += "Off";
+            }
+
+            Hud.DrawSmallString(640, 48, conquerLabel, 1.0, Constants.Hud.Alignment.Right);
+
         }
     },
 

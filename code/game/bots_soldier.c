@@ -14,9 +14,22 @@ soldierState_t *BOTS_Soldier_GetState(int clientNum)
 void BOTS_Soldier_Network(int clientNum)
 {
 	gentity_t *ent = g_entities + clientNum;
+	float distance = 0.0f;
+	float maxDistance = 0.0f;
 	soldierState_t *state = BOTS_Soldier_GetState(clientNum);
 
 	trap_Net_WriteBits((int)state->rocketMode, 4);
+
+	if (BOTS_Soldier_GetConquerDistance(ent, &distance, &maxDistance))
+	{
+		trap_Net_WriteBits(1, 1);
+		trap_Net_WriteFloat(distance);
+		trap_Net_WriteFloat(maxDistance);
+	}
+	else
+	{
+		trap_Net_WriteBits(0, 1);
+	}
 }
 
 void BOTS_Rocket_FireRapid(gentity_t *ent)

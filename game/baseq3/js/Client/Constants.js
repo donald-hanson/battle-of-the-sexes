@@ -1,4 +1,21 @@
 Constants = {
+
+    GetName : function (map, numericValue)
+    {
+        for(var k in map)
+            if (map[k] == numericValue)
+                return k;
+        return undefined;
+    },
+    
+    GetValue : function (map, name)
+    {
+        for (var k in map)
+            if (k == name)
+                return map[k];
+        return undefined;
+    },
+
 	Team : {
 		Free : 0,
 		Red : 1,
@@ -169,5 +186,28 @@ Constants = {
 	ConfigStrings : {
 	    Scores1 : 6,
 	    Scores2 : 7
-	}  
+	},
+	
+    RocketMode : {
+        Normal : 0,
+        Rapid : 1,
+	    Tag : 2,
+	    Split1 : 3,
+	    Split2 : 4,
+	    Split3 : 5,
+	    Guided1 :6,
+	    Guided2 : 7
+    },
+    
+    RocketModeNames : {
+        Normal : "Normal",
+        Rapid : "Rapid",
+	    Tag : "Tag",
+	    Split1 : "Split #1",
+	    Split2 : "Split #2",
+	    Split3 : "Split #3",
+	    Guided1 :"Guided #1",
+	    Guided2 : "Guided #2"
+        
+    }
 };

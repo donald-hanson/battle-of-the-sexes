@@ -1090,6 +1090,7 @@ void		BOTS_SoldierCommand_Split2(int clientNum);
 void		BOTS_SoldierCommand_Split3(int clientNum);
 qboolean	BOTS_Rocket_TryToTag(gentity_t *ent, gentity_t *other, trace_t *trace);
 void		BOTS_Soldier_Network(int clientNum);
+qboolean	BOTS_Soldier_GetConquerDistance(gentity_t *soldier, float *distance, float *maxDistance);
 
 // BotS - bots_infiltrator
 void		BOTS_Infiltrator_AdjustClientSkin(gentity_t *ent, team_t *team, class_t *cls);

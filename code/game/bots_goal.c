@@ -28,10 +28,26 @@ void BOTS_Goal_FlagCaptured(gentity_t *player, gentity_t *pad)
 	BOTS_AddTechPoints(player->bots_team, techPoints);
 }
 
+void BOTS_Goal_GetConquerDistance(gcappad_t *capPad, float *distance, float *maxDistance)
+{
+	float localMaxDistance = 400.0f;
+	float localDistance = 0.0f;
+	gentity_t *soldier = capPad->soldier;
+	int level = soldier->client->ps.persistant[PERS_LEVEL];
+	if (level > 1)
+		localMaxDistance = localMaxDistance * (1.0f + ((float)level * 0.5f));
+
+	localDistance = Distance(soldier->s.pos.trBase, capPad->goal->s.pos.trBase);
+
+	*distance = localDistance;
+	*maxDistance = localMaxDistance;
+}
+
 qboolean BOTS_Goal_IsConquerValid(gentity_t *ent, gcappad_t *capPad)
 {
 	gentity_t *soldier = capPad->soldier;
-	float maxDistance = 400.0f;
+	float maxDistance = 0.0f;
+	float distance = 0.0f;
 	int level = 0;
 	if (soldier == NULL)
 		return qfalse;
@@ -50,12 +66,28 @@ qboolean BOTS_Goal_IsConquerValid(gentity_t *ent, gcappad_t *capPad)
 	if (level < 1)
 		return qfalse;
 
-	if (level > 1)
-		maxDistance = maxDistance * (1.0f + ((float)level * 0.5f));
-	if (Distance(soldier->s.pos.trBase, ent->s.pos.trBase) > maxDistance)
+	BOTS_Goal_GetConquerDistance(capPad, &distance, &maxDistance);
+
+	if (distance > maxDistance)
 		return qfalse;
 
 	return qtrue;
+}
+
+qboolean BOTS_Soldier_GetConquerDistance(gentity_t *soldier, float *distance, float *maxDistance)
+{
+	gcappad_t *capPad;
+	int i;
+	for(i=0;i<numCapPads;i++)
+	{
+		capPad = &cappads[i];
+		if (capPad->soldier != NULL && capPad->soldier == soldier)
+		{
+			BOTS_Goal_GetConquerDistance(capPad, distance, maxDistance);
+			return *distance <= *maxDistance ? qtrue : qfalse;
+		}
+	}
+	return qfalse;
 }
 
 qboolean BOTS_Goal_CanCapture(gentity_t *flag, gentity_t *player, gentity_t *pad)
