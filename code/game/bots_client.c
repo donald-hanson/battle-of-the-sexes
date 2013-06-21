@@ -81,6 +81,11 @@ classCommandInfo_t g_kamikazeeCommands[] = {
 classCommandInfo_t g_nurseCommands[] = {
 	{ "poison", BOTS_NurseCommand_Poison },
 	{ "healradius", BOTS_NurseCommand_HealRadius },
+	{ "createsmall", BOTS_NurseCommand_CreateSmallHealth },
+	{ "createlarge", BOTS_NurseCommand_CreateLargeHealth },
+	{ "createmega", BOTS_NurseCommand_CreateMegaHealth },
+	{ "createmedikit", BOTS_NurseCommand_CreateMedikitHealth },
+	{ "createregen", BOTS_NurseCommand_CreateRegenHealth },
 	{ NULL, NULL }
 };
 classCommandInfo_t g_scientistCommands[] = {
@@ -98,7 +103,7 @@ classInfo_t g_classList[] = {
 	{ CLASS_BERZERKER,	"Berzerker",	WP_GAUNTLET,		-1,		qfalse,		GRENADE_NORMAL,		NULL,						NULL,				NULL,				NULL,					NULL,						NULL,								NULL,									NULL,							g_berzerkerCommands		},
 	{ CLASS_INFILTRATOR,"Infiltrator",	WP_PLASMAGUN,		0,		qtrue,		GRENADE_DECOY,		BOTS_Infiltrator_FireWeapon,NULL,				NULL,				NULL,					BOTS_Infiltrator_Network,	NULL,								NULL,									BOTS_Infiltrator_PickupAmmo,	g_infiltratorCommands	},
 	{ CLASS_KAMIKAZEE,	"Kamikazee",	WP_GRENADE_LAUNCHER,0,		qtrue,		GRENADE_NORMAL,		NULL,						NULL,				NULL,				NULL,					NULL,						NULL,								NULL,									NULL,							g_kamikazeeCommands		},
-	{ CLASS_NURSE,		"Nurse",		WP_MACHINEGUN,		0,		qtrue,		GRENADE_FLASH,		NULL,						NULL,				NULL,				NULL,					NULL,						NULL,								NULL,									NULL,							g_nurseCommands			},
+	{ CLASS_NURSE,		"Nurse",		WP_MACHINEGUN,		0,		qtrue,		GRENADE_FLASH,		NULL,						BOTS_NurseSpawn,	NULL,				NULL,					NULL,						NULL,								NULL,									NULL,							g_nurseCommands			},
 	{ CLASS_SCIENTIST,	"Scientist",	WP_LIGHTNING,		0,		qtrue,		GRENADE_TELEPORT,	NULL,						BOTS_ScientistSpawn,BOTS_ScientistDeath,BOTS_ScientistKiller,	NULL,						NULL,								NULL,									NULL,							g_scientistCommands		},
 	{ CLASS_NUM_CLASSES,NULL,			WP_NUM_WEAPONS,		-1,		qfalse,		GRENADE_NORMAL,		NULL,						NULL,				NULL,				NULL,					NULL,						NULL,								NULL,									NULL,							g_noneCommands			}
 };

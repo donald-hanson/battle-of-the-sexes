@@ -31,7 +31,7 @@ void BOTS_Soldier_Network(int clientNum)
 	}
 }
 
-void BOTS_Sodlier_ClassState(jsWrapper_t *wrapper)
+void BOTS_Soldier_ClassState(jsWrapper_t *wrapper)
 {
 	soldierState_t *state = BOTS_Soldier_GetState();
 

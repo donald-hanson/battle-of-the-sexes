@@ -11,6 +11,13 @@ nurseState_t *BOTS_Nurse_GetState(int clientNum)
 	return &nurseStates[clientNum];
 }
 
+void BOTS_NurseSpawn(gentity_t *player)
+{
+	int pLevel = player->client->ps.persistant[PERS_LEVEL];
+
+	player->client->ps.maxammo[WP_BFG] = 50 * (pLevel + 1);
+}
+
 // return qtrue and the player will not pickup the health
 qboolean BOTS_Nurse_PoisonHealth(gentity_t *health, gentity_t *player)
 {
@@ -120,4 +127,78 @@ void BOTS_NurseCommand_HealRadius(int clientNum)
 				BOTS_Print(clientNum, va("Healed %d team member for a total of %d health.", playersHealed, totalHealed));
 		}
 	}
+}
+
+void BOTS_Nurse_CreateItem(int clientNum, char *itemName, int baseCost, int minimumLevel, qboolean modifyCostByLevel, char *abilityDescription)
+{
+	gentity_t*	ent = g_entities + clientNum;
+	gentity_t*	drop;
+	gitem_t*	item;
+	vec3_t		angles, velocity, origin, forward;
+	int			li_modifier;
+	int			pLevel = ent->client->ps.persistant[PERS_LEVEL];
+	int			cost = baseCost;
+
+	if (pLevel < minimumLevel)
+	{
+		BOTS_Print(clientNum,va("You must be level %d to %s.", minimumLevel, abilityDescription));
+		return;
+	}
+
+	if (modifyCostByLevel && pLevel > 0)
+		cost = baseCost / pLevel;
+		
+	if (ent->client->ps.ammo[WP_BFG] < cost)
+	{
+		BOTS_Print(clientNum, va("You need %d cells to %s.", cost, abilityDescription));
+		return;
+	}
+
+	ent->client->ps.ammo[WP_BFG] -= cost;
+
+	item = BG_FindItem(itemName);
+
+	// set aiming directions
+	VectorCopy( ent->s.apos.trBase, angles );
+
+	// set the origin of the launch away from the client
+	AngleVectors (ent->client->ps.viewangles, forward, NULL, NULL);
+	forward[2] = 0;
+	VectorMA(ent->s.pos.trBase, 100, forward, origin);
+
+	angles[PITCH] = 0;	// always forward
+
+	AngleVectors( angles, velocity, NULL, NULL );
+	VectorScale( velocity, 150, velocity );
+	velocity[2] += 200 + crandom() * 50;
+
+	drop = LaunchItem( item, origin, velocity );
+
+	if (Q_stricmp (itemName, "Regeneration") == 0 )
+		drop->count = 15;
+}
+
+void BOTS_NurseCommand_CreateSmallHealth(int clientNum)
+{
+	BOTS_Nurse_CreateItem(clientNum, "25 Health", 25, 1, qtrue, "create a small health");
+}
+
+void BOTS_NurseCommand_CreateLargeHealth(int clientNum)
+{
+	BOTS_Nurse_CreateItem(clientNum, "50 Health", 50, 1, qtrue, "create a large health");
+}
+
+void BOTS_NurseCommand_CreateMegaHealth(int clientNum)
+{
+	BOTS_Nurse_CreateItem(clientNum, "Mega Health", 100, 2, qfalse, "create a mega health");
+}
+
+void BOTS_NurseCommand_CreateMedikitHealth(int clientNum)
+{
+	BOTS_Nurse_CreateItem(clientNum, "Medkit", 100, 3, qfalse, "create a medikit");
+}
+
+void BOTS_NurseCommand_CreateRegenHealth(int clientNum)
+{
+	BOTS_Nurse_CreateItem(clientNum, "Regeneration", 100, 4, qfalse, "create a regeneration powerup");
 }

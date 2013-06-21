@@ -1101,9 +1101,15 @@ qboolean	BOTS_Infiltrator_PickupAmmo(gentity_t *ammo, gentity_t *player, int *re
 void		BOTS_Infiltrator_Network(int clientNum);
 
 // BotS - bots_nurse
+void		BOTS_NurseSpawn(gentity_t *player);
 qboolean	BOTS_Nurse_PoisonHealth(gentity_t *health, gentity_t *player);
 void		BOTS_NurseCommand_Poison(int clientNum);
 void		BOTS_NurseCommand_HealRadius(int clientNum);
+void		BOTS_NurseCommand_CreateSmallHealth(int clientNum);
+void		BOTS_NurseCommand_CreateLargeHealth(int clientNum);
+void		BOTS_NurseCommand_CreateMegaHealth(int clientNum);
+void		BOTS_NurseCommand_CreateMedikitHealth(int clientNum);
+void		BOTS_NurseCommand_CreateRegenHealth(int clientNum);
 
 // BotS - bots_grenade
 void		BOTS_Grenade_HandleKeyPress(gentity_t *ent);

@@ -43,6 +43,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 #define	RESPAWN_MEGAHEALTH	35//120
 #define	RESPAWN_POWERUP		120
 #define RESPAWN_POISONHEALTH 1
+#define	RESPAWN_IGNOREHEALTH 5 // if they are at or above max health, then force it to respawn faster
 
 //======================================================================
 
@@ -303,6 +304,9 @@ int Pickup_Health (gentity_t *ent, gentity_t *other) {
 	
 	if (!BOTS_Common_ApplyPoison(ent, other, quantity))
 	{
+		if (other->health >= max)
+			return RESPAWN_IGNOREHEALTH;
+
 		other->health += quantity;
 
 		if (other->health > max ) {
