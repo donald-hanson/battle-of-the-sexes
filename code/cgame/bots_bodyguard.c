@@ -13,6 +13,7 @@ typedef struct bodyguardState_s {
 	laserState_t lasers[MAX_LASERS];
 	qboolean protect;
 	qboolean decoyActive;
+	qboolean pulseActive;
 	int decoyTime;
 } bodyguardState_t;
 
@@ -33,6 +34,7 @@ void BOTS_Bodyguard_Network(int clientNum)
 	state->decoyActive = (qboolean)trap_Net_ReadBits(1);
 	state->decoyTime = trap_Net_ReadBits(8);
 	state->protect = (qboolean)trap_Net_ReadBits(1);
+	state->pulseActive = (qboolean)trap_Net_ReadBits(1);
 	for (i=0;i<MAX_LASERS;i++)
 	{
 		laserState_t *laser = &state->lasers[i];
@@ -70,6 +72,7 @@ void BOTS_Bodyguard_ClassState(jsWrapper_t *wrapper)
 	wrapper->addObjects(wrapper, "lasers", laserWrappers, MAX_LASERS);
 
 	wrapper->setPropertyBit(wrapper, "protect", state->protect);
+	wrapper->setPropertyBit(wrapper, "pulse", state->pulseActive);
 	wrapper->setPropertyBit(wrapper, "decoyActive", state->decoyActive);
 	wrapper->setPropertyInt(wrapper, "decoyTime", state->decoyTime);
 }

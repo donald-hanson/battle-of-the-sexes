@@ -1074,6 +1074,7 @@ void		BOTS_BodyguardCommand_LaserOn(int clientNum);
 void		BOTS_BodyguardCommand_LaserKill(int clientNum);
 void		BOTS_BodyguardCommand_Protect(int clientNum);
 void		BOTS_BodyguardCommand_Decoy(int clientNum);
+void		BOTS_BodyguardCommand_Pulse(int clientNum);
 gentity_t	*BOTS_Bodyguard_FindNearByProtector(gentity_t *ent);
 void		BOTS_Bodyguard_Network(int clientNum);
 void		BOTS_Bodyguard_Modify_EntityState();

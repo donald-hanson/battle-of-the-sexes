@@ -2,6 +2,8 @@
 
 #define MAX_LASERS				3
 #define MAX_LASER_HITS			10
+#define MAX_LASER_ON_TIME		15000
+#define MAX_LASER_PULSE_TIME	4000
 #define DECOY_COOLDOWN_SECONDS	30000
 #define	DECOY_ACTIVE_SECONDS	15000
 
@@ -10,12 +12,19 @@ typedef struct laserState_s {
 	qboolean on;		// is the laser currently on?
 	gentity_t *base;	//pointer to the laser base entity
 	gentity_t *beam;	//pointer to the laser beam entity
+	int onTime;	// time the laser was turned on
+	void (*enable)(struct laserState_s *state);
+	void (*disable)(struct laserState_s *state);
+	void (*kill)(struct laserState_s *state);
+	void (*pulseOn)(struct laserState_s *state);
+	void (*pulseOff)(struct laserState_s *state);
 } laserState_t;
 
 typedef struct bodyguardState_s {
 	laserState_t lasers[MAX_LASERS];
 	qboolean protect;
 	int decoy;
+	qboolean pulse;
 } bodyguardState_t;
 
 bodyguardState_t bodyguardStates[MAX_CLIENTS];
@@ -48,6 +57,7 @@ void BOTS_Bodyguard_Network(int clientNum)
 	}
 
 	trap_Net_WriteBits(state->protect ? 1 : 0, 1);
+	trap_Net_WriteBits(state->pulse ? 1 : 0, 1);
 	for (i=0;i<MAX_LASERS;i++)
 	{
 		laserState_t *laser = &state->lasers[i];
@@ -64,59 +74,57 @@ void BOTS_Bodyguard_Network(int clientNum)
 	}
 }
 
+laserState_t *BOTS_Bodyguard_GetLaserState(gentity_t *beam)
+{
+	gentity_t *bodyguard = beam->parent;
+	int i;
+	int clientNum = bodyguard->client->ps.clientNum;
+	bodyguardState_t *state = BOTS_Bodyguard_GetState(clientNum);
+	for (i=0;i<MAX_LASERS;i++)
+	{
+		laserState_t *laserState = &state->lasers[i];
+		if (laserState->beam != (gentity_t *)NULL && laserState->beam == beam)
+		{
+			return laserState;
+		}
+	}
+	return (laserState_t *)NULL;
+}
+
 void BOTS_Bodyguard_LaserBeam_Think(gentity_t* self) 
 {
-	/*
-	if (laser->sweep) { //alter the current angle
-	float amount = (float)0.025;
-	qboolean changed = qfalse;
-
-	if (Q_fabs(laser->angle[0] - laser->target_angle[0]) > amount) {
-	if (laser->angle[0] < laser->target_angle[0]) {
-	laser->angle[0] += amount;
-	} else {
-	laser->angle[0] -= amount;
-	}
-	changed = qtrue;         
-	}
-	if (Q_fabs(laser->angle[1] - laser->target_angle[1]) > amount) {
-	if (laser->angle[1] < laser->target_angle[1]) {
-	laser->angle[1] += amount;
-	} else {
-	laser->angle[1] -= amount;
-	}
-	changed = qtrue;
-
-	}
-	if (Q_fabs(laser->angle[2] - laser->target_angle[2]) > amount) {
-	if (laser->angle[2] < laser->target_angle[2]) {
-	laser->angle[2] += amount;
-	} else {
-	laser->angle[2] -= amount;
-	}
-	changed = qtrue;
-
-	}
-	if (!changed) {
-	if (Distance(laser->angle, laser->min_angle) > Distance(laser->angle, laser->max_angle)) {
-	VectorCopy(laser->min_angle, laser->target_angle);
-	} else {
-	VectorCopy(laser->max_angle, laser->target_angle);
-	}
-	}
-	}
-
-	// setup laser movedir (projection of laser) based on the current angle
-	if (VectorLength(laser->angle))
-	VectorCopy(laser->angle, LaserBeam->movedir);
-	*/   
-
 	gentity_t *bodyguard = self->parent;
 	gentity_t *unlinkedEntities[MAX_LASER_HITS];
 	int unlinked = 0;
 	vec3_t end;
 	trace_t tr;
 	int i;
+	int elapsed;
+	bodyguardState_t *state = BOTS_Bodyguard_GetState(bodyguard->s.clientNum);
+	laserState_t *laserState = BOTS_Bodyguard_GetLaserState(self);
+
+	if (laserState == (laserState_t *)NULL)
+		return;
+	
+	elapsed = level.time - laserState->onTime;
+	if (elapsed >= MAX_LASER_ON_TIME)
+	{
+		laserState->kill(laserState);
+		return;
+	}
+
+	if (state->pulse)
+	{
+		if (elapsed > MAX_LASER_PULSE_TIME * 2)
+		{
+			laserState->pulseOn(laserState);
+		}
+		else if (elapsed > MAX_LASER_PULSE_TIME)
+		{
+			laserState->pulseOff(laserState);
+			return;
+		}
+	}
 
 	// fire forward and see what we hit
 	VectorMA (self->s.pos.trBase, 8192, self->movedir, end);
@@ -231,7 +239,58 @@ gentity_t *BOTS_Bodyguard_CreateLaserBase(gentity_t *ent, trace_t tr)
 	return laser_mount;
 }
 
-void BOTS_Bodyguard_PlaceLaser(gentity_t *ent, bodyguardState_t *bodyguardState, laserState_t *laserState) 
+void BOTS_Bodyguard_LaserEnable(laserState_t *laserState)
+{
+	if (laserState->active && !laserState->on)
+	{
+		laserState->onTime = level.time;
+		laserState->beam->nextthink = level.time + FRAMETIME;
+		laserState->on = qtrue;
+	}
+}
+
+void BOTS_Bodyguard_LaserDisable(laserState_t *laserState)
+{
+	if (laserState->active && laserState->on)
+	{
+		trap_UnlinkEntity(laserState->beam);
+		laserState->onTime = 0;
+		laserState->beam->nextthink = 0;
+		laserState->on = qfalse;
+	}
+}
+
+void BOTS_Bodyguard_LaserKill(laserState_t *laserState)
+{
+	if (laserState->active)
+	{
+		G_FreeEntity(laserState->base);
+		G_FreeEntity(laserState->beam);
+		laserState->base = (gentity_t *)NULL;
+		laserState->beam = (gentity_t *)NULL;
+		laserState->onTime = 0;
+		laserState->on = qfalse;
+		laserState->active = qfalse;
+	}
+}
+
+void BOTS_Bodyguard_LaserPulseOn(laserState_t *laserState)
+{
+	if (laserState->active)
+		laserState->enable(laserState);
+}
+
+void BOTS_Bodyguard_LaserPulseOff(laserState_t *laserState)
+{
+	if (laserState->active)
+	{
+		trap_UnlinkEntity(laserState->beam);
+		laserState->on = qfalse;
+		laserState->beam->nextthink = level.time + FRAMETIME;
+	}
+}
+
+void BOTS_Bodyguard_PlaceLaser(gentity_t *ent, laserState_t *laserState) 
 {
 	int clientNum = ent->client->ps.clientNum;
 	vec3_t		wallp;
@@ -283,6 +342,11 @@ void BOTS_Bodyguard_PlaceLaser(gentity_t *ent, bodyguardState_t *bodyguardState,
 	laserState->beam = laser;
 	laserState->base = laser_mount;
 	laserState->on = qfalse;
+	laserState->enable = BOTS_Bodyguard_LaserEnable;
+	laserState->disable = BOTS_Bodyguard_LaserDisable;
+	laserState->kill = BOTS_Bodyguard_LaserKill;
+	laserState->pulseOn = BOTS_Bodyguard_LaserPulseOn;
+	laserState->pulseOff = BOTS_Bodyguard_LaserPulseOff;
 }
 
 void BOTS_BodyguardCommand_Laser(int clientNum)
@@ -321,7 +385,7 @@ void BOTS_BodyguardCommand_Laser(int clientNum)
 			laserState = &state->lasers[i];
 			if (!laserState->active)
 			{
-				BOTS_Bodyguard_PlaceLaser(ent, state, laserState);
+				BOTS_Bodyguard_PlaceLaser(ent, laserState);
 				break;
 			}
 		}
@@ -337,11 +401,8 @@ void BOTS_BodyguardCommand_LaserOn(int clientNum)
 	for (i=0;i<MAX_LASERS;i++)
 	{
 		laserState = &state->lasers[i];
-		if (laserState->active && !laserState->on)
-		{
-			laserState->beam->nextthink = level.time + FRAMETIME;
-			laserState->on = qtrue;
-		}
+		if (laserState->active)
+			laserState->enable(laserState);
 	}
 }
 
@@ -354,12 +415,8 @@ void BOTS_BodyguardCommand_LaserOff(int clientNum)
 	for (i=0;i<MAX_LASERS;i++)
 	{
 		laserState = &state->lasers[i];
-		if (laserState->active && laserState->on)
-		{
-			trap_UnlinkEntity(laserState->beam);
-			laserState->beam->nextthink = 0;
-			laserState->on = qfalse;
-		}
+		if (laserState->active)
+			laserState->disable(laserState);
 	}
 }
 
@@ -372,15 +429,8 @@ void BOTS_BodyguardCommand_LaserKill(int clientNum)
 	for (i=0;i<MAX_LASERS;i++)
 	{
 		laserState = &state->lasers[i];
-		if (laserState->active && laserState->on)
-		{
-			G_FreeEntity(laserState->base);
-			G_FreeEntity(laserState->beam);
-			laserState->base = (gentity_t *)NULL;
-			laserState->beam = (gentity_t *)NULL;
-			laserState->on = qfalse;
-			laserState->active = qfalse;
-		}
+		if (laserState->active)
+			laserState->kill(laserState);
 	}
 }
 
@@ -389,12 +439,14 @@ void BOTS_BodyguardCommand_Protect(int clientNum)
 	gentity_t *ent = g_entities + clientNum;
 	int pLevel = ent->client->ps.persistant[PERS_LEVEL];
 	bodyguardState_t *state = BOTS_Bodyguard_GetState(clientNum);
-	state->protect = state->protect ? qfalse : qtrue;
+
 	if (pLevel < 1)
 	{
 		BOTS_Print(clientNum, "You must be level 1 to use protect.");
 		return;
 	}
+
+	state->protect = state->protect ? qfalse : qtrue;
 
 	if (state->protect)
 		trap_SendServerCommand( clientNum, "print \"Protection enabled.\n\"");
@@ -404,7 +456,15 @@ void BOTS_BodyguardCommand_Protect(int clientNum)
 
 void BOTS_BodyguardCommand_Decoy(int clientNum)
 {
+	gentity_t *ent = g_entities + clientNum;
+	int pLevel = ent->client->ps.persistant[PERS_LEVEL];
 	bodyguardState_t *state = BOTS_Bodyguard_GetState(clientNum);
+	if (pLevel < 1)
+	{
+		BOTS_Print(clientNum, "You must be level 1 to use decoy.");
+		return;
+	}
+
 	if (state->decoy > level.time)
 	{
 		trap_SendServerCommand( clientNum, "print \"Decoy currently active.\n\"");
@@ -418,6 +478,25 @@ void BOTS_BodyguardCommand_Decoy(int clientNum)
 		state->decoy = level.time + DECOY_ACTIVE_SECONDS;
 		trap_SendServerCommand( clientNum, "print \"Decoy enabled.\n\"");
 	}
+}
+
+void BOTS_BodyguardCommand_Pulse(int clientNum)
+{
+	gentity_t *ent = g_entities + clientNum;
+	int pLevel = ent->client->ps.persistant[PERS_LEVEL];
+	bodyguardState_t *state = BOTS_Bodyguard_GetState(clientNum);
+	if (pLevel < 4)
+	{
+		BOTS_Print(clientNum, "You must be level 4 to use pulse.");
+		return;
+	}
+
+	state->pulse = state->pulse ? qfalse : qtrue;
+
+	if (state->pulse)
+		trap_SendServerCommand( clientNum, "print \"Laser Pulse enabled.\n\"");
+	else
+		trap_SendServerCommand( clientNum, "print \"Laser Pulse disabled.\n\"");
 }
 
 gentity_t *BOTS_Bodyguard_FindNearByProtector(gentity_t *ent)

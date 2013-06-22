@@ -51,6 +51,9 @@ ClassHud = {
                     status = "Off";
                 messages.push("Laser " + (i + 1) + ": " + status);
             }
+            
+            if (level > 3)
+                messages.push("Pulse: " + (cs.pulse ? "On " : "Off"));
 
             if (level > 0)
             {
@@ -61,7 +64,7 @@ ClassHud = {
             }
 
             if (level > 0)
-                messages.push("Protect: " + (cs.protect ? "On ": "Off"));
+                messages.push("Protect: " + (cs.protect ? "On " : "Off"));
            
             for(i=0;i<messages.length;i++)
                 Hud.DrawSmallString(640, 32 + (i * 16), messages[i], 1.0, Constants.Hud.Alignment.Right);
