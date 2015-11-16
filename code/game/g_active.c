@@ -452,7 +452,7 @@ void ClientTimerActions( gentity_t *ent, int msec ) {
 		}
 
 		// count down armor when over max
-		if ( client->ps.stats[STAT_ARMOR] > client->ps.stats[STAT_MAX_HEALTH] ) {
+		if ( client->ps.stats[STAT_ARMOR] > client->ps.stats[STAT_MAX_ARMOR] ) {
 			client->ps.stats[STAT_ARMOR]--;
 		}
 	}
@@ -1001,6 +1001,8 @@ void ClientThink_real( gentity_t *ent ) {
 		}
 		return;
 	}
+
+	BOTS_Grenade_HandleKeyPress(ent);
 
 	// perform once-a-second actions
 	ClientTimerActions( ent, msec );

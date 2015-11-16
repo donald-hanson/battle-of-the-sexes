@@ -1024,8 +1024,8 @@ static float CG_DrawScores( float y ) {
 	float		y1;
 	gitem_t		*item;
 
-	s1 = cgs.scores1;
-	s2 = cgs.scores2;
+	s1 = 0;//cgs.scores1;
+	s2 = 0;//cgs.scores2;
 
 	y -=  BIGCHAR_HEIGHT + 8;
 
@@ -1990,33 +1990,32 @@ static void CG_DrawCrosshair3D(void)
 CG_ScanForCrosshairEntity
 =================
 */
-static void CG_ScanForCrosshairEntity( void ) {
-	trace_t		trace;
+static void CG_ScanForCrosshairEntity( trace_t *trace ) {
 	vec3_t		start, end;
 	int			content;
 
 	VectorCopy( cg.refdef.vieworg, start );
 	VectorMA( start, 131072, cg.refdef.viewaxis[0], end );
 
-	CG_Trace( &trace, start, vec3_origin, vec3_origin, end, 
+	CG_Trace( trace, start, vec3_origin, vec3_origin, end, 
 		cg.snap->ps.clientNum, CONTENTS_SOLID|CONTENTS_BODY );
-	if ( trace.entityNum >= MAX_CLIENTS ) {
+	if ( trace->entityNum >= MAX_CLIENTS ) {
 		return;
 	}
 
 	// if the player is in fog, don't show it
-	content = CG_PointContents( trace.endpos, 0 );
+	content = CG_PointContents( trace->endpos, 0 );
 	if ( content & CONTENTS_FOG ) {
 		return;
 	}
 
 	// if the player is invisible, don't show it
-	if ( cg_entities[ trace.entityNum ].currentState.powerups & ( 1 << PW_INVIS ) ) {
+	if ( cg_entities[ trace->entityNum ].currentState.powerups & ( 1 << PW_INVIS ) ) {
 		return;
 	}
 
 	// update the fade timer
-	cg.crosshairClientNum = trace.entityNum;
+	cg.crosshairClientNum = trace->entityNum;
 	cg.crosshairClientTime = cg.time;
 }
 
@@ -2030,6 +2029,7 @@ static void CG_DrawCrosshairNames( void ) {
 	float		*color;
 	char		*name;
 	float		w;
+	trace_t	 trace;
 
 	if ( !cg_drawCrosshair.integer ) {
 		return;
@@ -2042,7 +2042,7 @@ static void CG_DrawCrosshairNames( void ) {
 	}
 
 	// scan the known entities to see if the crosshair is sighted on one
-	CG_ScanForCrosshairEntity();
+	CG_ScanForCrosshairEntity(&trace);
 
 	// draw the name of the player being looked at
 	color = CG_FadeColor( cg.crosshairClientTime, 1000 );
@@ -2059,6 +2059,9 @@ static void CG_DrawCrosshairNames( void ) {
 #else
 	w = CG_DrawStrlen( name ) * BIGCHAR_WIDTH;
 	CG_DrawBigString( 320 - w / 2, 170, name, color[3] * 0.5f );
+	name = va("%d (%s)", (int)Distance(cg.refdef.vieworg, trace.endpos), cgs.clientinfo[cg.crosshairClientNum].className);
+	CG_DrawSmallString(320-w/2,170+BIGCHAR_HEIGHT, name, color[3] * 0.5f);
+
 #endif
 	trap_R_SetColor( NULL );
 }
@@ -2648,8 +2651,9 @@ void CG_DrawActive( stereoFrame_t stereoView ) {
 	trap_R_RenderScene( &cg.refdef );
 
 	// draw status bar and other floating elements
- 	CG_Draw2D(stereoView);
+ 	//CG_Draw2D(stereoView);
+
+	CG_JS_Eval("Game.Draw2D()");
+
+	Bots_Draw_Blind();
 }
-
-
-

@@ -42,7 +42,8 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 #define	RESPAWN_HOLDABLE	60
 #define	RESPAWN_MEGAHEALTH	35//120
 #define	RESPAWN_POWERUP		120
-
+#define RESPAWN_POISONHEALTH 1
+#define	RESPAWN_IGNOREHEALTH 5 // if they are at or above max health, then force it to respawn faster
 
 //======================================================================
 
@@ -298,12 +299,21 @@ int Pickup_Health (gentity_t *ent, gentity_t *other) {
 		quantity = ent->item->quantity;
 	}
 
-	other->health += quantity;
+	if (BOTS_Nurse_PoisonHealth(ent, other))
+		return RESPAWN_POISONHEALTH;
+	
+	if (!BOTS_Common_ApplyPoison(ent, other, quantity))
+	{
+		if (other->health >= max)
+			return RESPAWN_IGNOREHEALTH;
 
-	if (other->health > max ) {
-		other->health = max;
+		other->health += quantity;
+
+		if (other->health > max ) {
+			other->health = max;
+		}
+		other->client->ps.stats[STAT_HEALTH] = other->health;
 	}
-	other->client->ps.stats[STAT_HEALTH] = other->health;
 
 	if ( ent->item->quantity == 100 ) {		// mega health respawns slow
 		return RESPAWN_MEGAHEALTH;
@@ -332,8 +342,8 @@ int Pickup_Armor( gentity_t *ent, gentity_t *other ) {
 	}
 #else
 	other->client->ps.stats[STAT_ARMOR] += ent->item->quantity;
-	if ( other->client->ps.stats[STAT_ARMOR] > other->client->ps.stats[STAT_MAX_HEALTH] * 2 ) {
-		other->client->ps.stats[STAT_ARMOR] = other->client->ps.stats[STAT_MAX_HEALTH] * 2;
+	if ( other->client->ps.stats[STAT_ARMOR] > other->client->ps.stats[STAT_MAX_ARMOR] * 2 ) {
+		other->client->ps.stats[STAT_ARMOR] = other->client->ps.stats[STAT_MAX_ARMOR] * 2;
 	}
 #endif
 
@@ -444,11 +454,16 @@ void Touch_Item (gentity_t *ent, gentity_t *other, trace_t *trace) {
 	// call the item-specific pickup function
 	switch( ent->item->giType ) {
 	case IT_WEAPON:
+		if (!BOTS_CanPickupWeapon(ent, other))
+			return;
 		respawn = Pickup_Weapon(ent, other);
 //		predict = qfalse;
 		break;
 	case IT_AMMO:
-		respawn = Pickup_Ammo(ent, other);
+		if (!BOTS_CanPickupAmmo(ent, other))
+			return;
+		//respawn = Pickup_Ammo(ent, other);
+		respawn = BOTS_Pickup_Ammo(ent,other);
 //		predict = qfalse;
 		break;
 	case IT_ARMOR:
@@ -472,6 +487,9 @@ void Touch_Item (gentity_t *ent, gentity_t *other, trace_t *trace) {
 	case IT_HOLDABLE:
 		respawn = Pickup_Holdable(ent, other);
 		break;
+	case IT_KEY:
+		BOTS_Pickup_Key(ent, other);
+		return;
 	default:
 		return;
 	}
@@ -590,6 +608,8 @@ gentity_t *LaunchItem( gitem_t *item, vec3_t origin, vec3_t velocity ) {
 	dropped->s.pos.trTime = level.time;
 	VectorCopy( velocity, dropped->s.pos.trDelta );
 
+	trap_Print(va("Item %s launched at %d\n", item->classname, level.time));
+
 	dropped->s.eFlags |= EF_BOUNCE_HALF;
 #ifdef MISSIONPACK
 	if ((g_gametype.integer == GT_CTF || g_gametype.integer == GT_1FCTF)			&& item->giType == IT_TEAM) { // Special case for CTF flags
@@ -599,6 +619,9 @@ gentity_t *LaunchItem( gitem_t *item, vec3_t origin, vec3_t velocity ) {
 		dropped->think = Team_DroppedFlagThink;
 		dropped->nextthink = level.time + 30000;
 		Team_CheckDroppedItem( dropped );
+	}
+	else if (item->giType == IT_KEY) {
+		// leave the key item alone, it never dissappears
 	} else { // auto-remove after 30 seconds
 		dropped->think = G_FreeEntity;
 		dropped->nextthink = level.time + 30000;

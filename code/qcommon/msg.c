@@ -22,6 +22,13 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 #include "q_shared.h"
 #include "qcommon.h"
 
+#include "../game/g_public.h"
+#include "../cgame/cg_public.h"
+
+extern	vm_t			*cgvm;	// interface to cgame dll or vm
+extern	vm_t			*uivm;	// interface to ui dll or vm
+extern	vm_t			*gvm;	// interface to game dll or vm
+
 static huffman_t		msgHuff;
 
 static qboolean			msgInit = qfalse;
@@ -1145,6 +1152,101 @@ netField_t	playerStateFields[] =
 { PSF(loopSound), 16 }
 };
 
+static msg_t *currentMessage = (msg_t *)NULL;
+
+int NET_ReadBits(int bits)
+{
+	if (currentMessage == (msg_t *)NULL)
+	{
+		Com_Error(ERR_DROP, "NET_ReadBits with null message");
+		return 0;
+	}
+	MSG_ReadBits(currentMessage, bits);
+}
+
+void NET_WriteBits(int value, int bits)
+{
+	if (currentMessage == (msg_t *)NULL)
+		Com_Error(ERR_DROP, "NET_WriteBits with null message");
+	MSG_WriteBits(currentMessage, value, bits);
+}
+
+int NET_ReadByte()
+{
+	if (currentMessage == (msg_t *)NULL)
+	{
+		Com_Error(ERR_DROP, "NET_ReadByte with null message");
+		return 0;
+	}
+	return MSG_ReadByte(currentMessage);
+}
+
+void NET_WriteByte(int c)
+{
+	if (currentMessage == (msg_t *)NULL)
+		Com_Error(ERR_DROP, "NET_WriteByte with null message");
+	MSG_WriteByte(currentMessage, c);
+}
+
+int NET_ReadLong()
+{
+	if (currentMessage == (msg_t *)NULL)
+	{
+		Com_Error(ERR_DROP, "NET_ReadLong with null message");
+		return 0;
+	}
+	return MSG_ReadLong(currentMessage);
+}
+
+void NET_WriteLong(int c)
+{
+	if (currentMessage == (msg_t *)NULL)
+		Com_Error(ERR_DROP, "NET_WriteLong with null message");
+	MSG_WriteLong(currentMessage, c);
+}
+
+float NET_ReadFloat()
+{
+	if (currentMessage == (msg_t *)NULL)
+	{
+		Com_Error(ERR_DROP, "NET_ReadFloat with null message");
+		return 0;
+	}
+	return MSG_ReadFloat(currentMessage);
+}
+
+void NET_WriteFloat(float value)
+{
+	if (currentMessage == (msg_t *)NULL)
+		Com_Error(ERR_DROP, "NET_WriteFloat with null message");
+	MSG_WriteFloat(currentMessage, value);
+}
+
+void MSG_Write_GameState(msg_t *msg, struct playerState_s *to) {
+	qboolean gameStateChanged = VM_Call(gvm, GAME_NETWORK_CHECK_PLAYERSTATE_CHANGED, to->clientNum);
+	if (gameStateChanged)
+	{
+		MSG_WriteBits( msg, 1, 1 );	// changed
+		currentMessage = msg;
+		VM_Call(gvm, GAME_NETWORK_APPEND_PLAYERSTATE, to->clientNum);
+		currentMessage = (msg_t *)NULL;
+	}
+	else
+	{
+		MSG_WriteBits( msg, 0, 1 );	// no change
+	}
+}
+
+void MSG_Read_GameState(msg_t *msg, struct playerState_s *to) {
+	if ( MSG_ReadBits( msg, 1 ) ) {
+		LOG("GAME_CUSTOM_STATE");
+		// call cgame vm to read the bits sent by the server
+		currentMessage = msg;
+		VM_Call(cgvm, CG_NETWORK_PLAYERSTATE_CHANGED, to->clientNum);
+		currentMessage = (msg_t *)NULL;
+	}
+}
+
 /*
 =============
 MSG_WriteDeltaPlayerstate
@@ -1157,6 +1259,7 @@ void MSG_WriteDeltaPlayerstate( msg_t *msg, struct playerState_s *from, struct p
 	int				statsbits;
 	int				persistantbits;
 	int				ammobits;
+	int				maxammobits;
 	int				powerupbits;
 	int				numFields;
 	netField_t		*field;
@@ -1239,6 +1342,12 @@ void MSG_WriteDeltaPlayerstate( msg_t *msg, struct playerState_s *from, struct p
 			ammobits |= 1<<i;
 		}
 	}
+	maxammobits = 0;
+	for (i=0 ; i<MAX_WEAPONS ; i++) {
+		if (to->maxammo[i] != from->maxammo[i]) {
+			maxammobits |= 1<<i;
+		}
+	}
 	powerupbits = 0;
 	for (i=0 ; i<MAX_POWERUPS ; i++) {
 		if (to->powerups[i] != from->powerups[i]) {
@@ -1246,7 +1355,7 @@ void MSG_WriteDeltaPlayerstate( msg_t *msg, struct playerState_s *from, struct p
 		}
 	}
 
-	if (!statsbits && !persistantbits && !ammobits && !powerupbits) {
+	if (!statsbits && !persistantbits && !ammobits && !maxammobits && !powerupbits) {
 		MSG_WriteBits( msg, 0, 1 );	// no change
 		oldsize += 4;
 		return;
@@ -1285,6 +1394,15 @@ void MSG_WriteDeltaPlayerstate( msg_t *msg, struct playerState_s *from, struct p
 		MSG_WriteBits( msg, 0, 1 );	// no change
 	}
 
+	if ( maxammobits ) {
+		MSG_WriteBits( msg, 1, 1 );	// changed
+		MSG_WriteBits( msg, maxammobits, MAX_WEAPONS );
+		for (i=0 ; i<MAX_WEAPONS ; i++)
+			if (maxammobits & (1<<i) )
+				MSG_WriteShort (msg, to->maxammo[i]);
+	} else {
+		MSG_WriteBits( msg, 0, 1 );	// no change
+	}
 
 	if ( powerupbits ) {
 		MSG_WriteBits( msg, 1, 1 );	// changed
@@ -1416,6 +1534,17 @@ void MSG_ReadDeltaPlayerstate (msg_t *msg, playerState_t *from, playerState_t *t
 			for (i=0 ; i<MAX_WEAPONS ; i++) {
 				if (bits & (1<<i) ) {
 					to->ammo[i] = MSG_ReadShort(msg);
+				}
+			}
+		}
+
+		// parse maxammo
+		if ( MSG_ReadBits( msg, 1 ) ) {
+			LOG("PS_MAX_AMMO");
+			bits = MSG_ReadBits (msg, MAX_WEAPONS);
+			for (i=0 ; i<MAX_WEAPONS ; i++) {
+				if (bits & (1<<i) ) {
+					to->maxammo[i] = MSG_ReadShort(msg);
 				}
 			}
 		}

@@ -347,6 +347,22 @@ gitem_t	bg_itemlist[] =
 /* sounds */ ""
 	},
 
+/*QUAKED weapon_stinger (.3 .3 1) (-16 -16 -16) (16 16 16) suspended
+*/
+	{
+		"weapon_stinger", 
+		"sound/misc/w_pkup.wav",
+        { "models/weapons2/machinegun/machinegun.md3", 
+		NULL, NULL, NULL},
+/* icon */		"icons/iconw_machinegun",
+/* pickup */	"Stinger",
+		0,
+		IT_WEAPON,
+		WP_STINGER,
+/* precache */ "",
+/* sounds */ ""
+	},
+
 	//
 	// AMMO ITEMS
 	//
@@ -515,6 +531,50 @@ gitem_t	bg_itemlist[] =
 /* sounds */ "sound/items/use_medkit.wav"
 	},
 
+
+	//
+	// KEY ITEMS
+	//
+	{
+		"item_blue_promo", 
+		"sound/items/quaddamage.wav",
+		{ "models/powerups/instant/quad.md3",  NULL, NULL, NULL },
+		"icons/quad",
+		"Blue Promotion Key",
+		0, IT_KEY, KEY_BLUE_PROMO, "",
+		""
+	},
+	{
+		"item_blue_tech", 
+		"sound/items/quaddamage.wav",
+		{ "models/powerups/instant/quad.md3",  NULL, NULL, NULL },
+		"icons/quad",
+		"Blue Tech Key",
+		0, IT_KEY, KEY_BLUE_TECH, "",
+		""
+	},
+
+	{
+		"item_red_promo", 
+		"sound/items/quaddamage.wav",
+		{ "models/powerups/instant/quad.md3",  NULL, NULL, NULL },
+		"icons/quad",
+		"Red Promotion Key",
+		0, IT_KEY, KEY_RED_PROMO, "",
+		""
+	},
+
+	{
+		"item_red_tech", 
+		"sound/items/quaddamage.wav",
+		{ "models/powerups/instant/quad.md3",  NULL, NULL, NULL },
+		"icons/quad",
+		"Red Tech Key",
+		0, IT_KEY, KEY_RED_TECH, "",
+		""
+	},
+
+
 	//
 	// POWERUP ITEMS
 	//
@@ -650,6 +710,35 @@ Only in CTF games
 		0,
 		IT_TEAM,
 		PW_BLUEFLAG,
+/* precache */ "",
+/* sounds */ ""
+	},
+
+	{
+		"item_blind", 
+		"sound/items/protect.wav",
+        { "models/powerups/instant/quad.md3", 
+        "models/powerups/instant/quad_ring.md3",
+		0, 0 },
+/* icon */		"icons/blind",
+/* pickup */	"Blind!",
+		30,
+		IT_POWERUP,
+		PW_BLIND,
+/* precache */ "",
+/* sounds */ "sound/items/airout.wav sound/items/protect3.wav"
+	},
+	{
+		"item_poison",
+		"sound/items/invisibility.wav",
+        { "models/powerups/instant/invis.md3", 
+		"models/powerups/instant/invis_ring.md3", 
+		0, 0 },
+/* icon */		"icons/poison",
+/* pickup */	"Poison",
+		30,
+		IT_POWERUP,
+		PW_POISON,
 /* precache */ "",
 /* sounds */ ""
 	},
@@ -963,6 +1052,24 @@ gitem_t	*BG_FindItemForHoldable( holdable_t pw ) {
 	return NULL;
 }
 
+/*
+==============
+BG_FindItemForKey
+==============
+*/
+gitem_t	*BG_FindItemForKey( key_t key ) {
+	int		i;
+
+	for ( i = 0 ; i < bg_numItems ; i++ ) {
+		if ( bg_itemlist[i].giType == IT_KEY && bg_itemlist[i].giTag == key ) {
+			return &bg_itemlist[i];
+		}
+	}
+
+	Com_Error( ERR_DROP, "KeyItem not found" );
+
+	return NULL;
+}
 
 /*
 ===============
@@ -981,6 +1088,17 @@ gitem_t	*BG_FindItemForWeapon( weapon_t weapon ) {
 
 	Com_Error( ERR_DROP, "Couldn't find item for weapon %i", weapon);
 	return NULL;
+}
+
+int BG_FindItemIndexForWeapon(weapon_t weapon) {
+	gitem_t	*it;
+	int i = 0;
+	for ( i = 1 ; i < bg_numItems ; i++ ) {
+		it = &bg_itemlist[i];
+		if (it->giType==IT_WEAPON && it->giTag == weapon)
+			return i;
+	}
+	return -1;
 }
 
 /*
@@ -1028,6 +1146,21 @@ qboolean	BG_PlayerTouchesItem( playerState_t *ps, entityState_t *item, int atTim
 
 
 
+qboolean BG_CanKeyBeGrabbed(int gametype, gitem_t *item, const entityState_t *ent, const playerState_t *ps) {
+	team_t itemTeam = item->giTag == KEY_RED_PROMO || item->giTag == KEY_RED_TECH ? TEAM_RED : TEAM_BLUE;
+	class_t itemClass = item->giTag == KEY_RED_PROMO || item->giTag == KEY_BLUE_PROMO ? CLASS_CAPTAIN : CLASS_SCIENTIST;
+	team_t playerTeam = (team_t)ps->persistant[PERS_TEAM];
+	class_t playerClass = (class_t)ps->persistant[PERS_CLASS];
+
+	if (ps->commandTime - ent->pos.trTime < 1000)
+		return qfalse;
+	if (itemTeam != playerTeam)
+		return qtrue;
+	if (itemClass == playerClass)
+		return qtrue;
+	return qfalse;
+}
+
 /*
 ================
 BG_CanItemBeGrabbed
@@ -1049,61 +1182,16 @@ qboolean BG_CanItemBeGrabbed( int gametype, const entityState_t *ent, const play
 	item = &bg_itemlist[ent->modelindex];
 
 	switch( item->giType ) {
+
+	case IT_KEY:
+		return BG_CanKeyBeGrabbed(gametype, item, ent, ps);
+
 	case IT_WEAPON:
-		return qtrue;	// weapons are always picked up
-
 	case IT_AMMO:
-		if ( ps->ammo[ item->giTag ] >= 200 ) {
-			return qfalse;		// can't hold any more
-		}
-		return qtrue;
-
 	case IT_ARMOR:
-#ifdef MISSIONPACK
-		if( bg_itemlist[ps->stats[STAT_PERSISTANT_POWERUP]].giTag == PW_SCOUT ) {
-			return qfalse;
-		}
-
-		// we also clamp armor to the maxhealth for handicapping
-		if( bg_itemlist[ps->stats[STAT_PERSISTANT_POWERUP]].giTag == PW_GUARD ) {
-			upperBound = ps->stats[STAT_MAX_HEALTH];
-		}
-		else {
-			upperBound = ps->stats[STAT_MAX_HEALTH] * 2;
-		}
-
-		if ( ps->stats[STAT_ARMOR] >= upperBound ) {
-			return qfalse;
-		}
-#else
-		if ( ps->stats[STAT_ARMOR] >= ps->stats[STAT_MAX_HEALTH] * 2 ) {
-			return qfalse;
-		}
-#endif
-		return qtrue;
-
 	case IT_HEALTH:
-		// small and mega healths will go over the max, otherwise
-		// don't pick up if already at max
-#ifdef MISSIONPACK
-		if( bg_itemlist[ps->stats[STAT_PERSISTANT_POWERUP]].giTag == PW_GUARD ) {
-		}
-		else
-#endif
-		if ( item->quantity == 5 || item->quantity == 100 ) {
-			if ( ps->stats[STAT_HEALTH] >= ps->stats[STAT_MAX_HEALTH] * 2 ) {
-				return qfalse;
-			}
-			return qtrue;
-		}
-
-		if ( ps->stats[STAT_HEALTH] >= ps->stats[STAT_MAX_HEALTH] ) {
-			return qfalse;
-		}
-		return qtrue;
-
 	case IT_POWERUP:
-		return qtrue;	// powerups are always picked up
+		return qtrue;
 
 #ifdef MISSIONPACK
 	case IT_PERSISTANT_POWERUP:

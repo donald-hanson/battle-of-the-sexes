@@ -79,6 +79,7 @@ typedef enum {
 	CG_CVAR_UPDATE,
 	CG_CVAR_SET,
 	CG_CVAR_VARIABLESTRINGBUFFER,
+	CG_CVAR_VARIABLEINTEGERVALUE,
 	CG_ARGC,
 	CG_ARGV,
 	CG_ARGS,
@@ -182,7 +183,12 @@ typedef enum {
 	CG_CEIL,
 	CG_TESTPRINTINT,
 	CG_TESTPRINTFLOAT,
-	CG_ACOS
+	CG_ACOS,
+
+	CG_NET_READBITS,
+	CG_NET_READBYTE,
+	CG_NET_READLONG,
+	CG_NET_READFLOAT
 } cgameImport_t;
 
 
@@ -231,8 +237,10 @@ typedef enum {
 
 	CG_MOUSE_EVENT,
 //	void	(*CG_MouseEvent)( int dx, int dy );
-	CG_EVENT_HANDLING
+	CG_EVENT_HANDLING,
 //	void (*CG_EventHandling)(int type);
+
+	CG_NETWORK_PLAYERSTATE_CHANGED
 } cgameExport_t;
 
 //----------------------------------------------

@@ -247,6 +247,8 @@ spawn_t	spawns[] = {
 	{"team_CTF_redspawn", SP_team_CTF_redspawn},
 	{"team_CTF_bluespawn", SP_team_CTF_bluespawn},
 
+	{"bots_goal", BOTS_Spawn_Goal},
+
 #ifdef MISSIONPACK
 	{"team_redobelisk", SP_team_redobelisk},
 	{"team_blueobelisk", SP_team_blueobelisk},
@@ -273,6 +275,8 @@ qboolean G_CallSpawn( gentity_t *ent ) {
 		G_Printf ("G_CallSpawn: NULL classname\n");
 		return qfalse;
 	}
+
+	BOTS_SpawnSetup(ent);
 
 	// check item spawn functions
 	for ( item=bg_itemlist+1 ; item->classname ; item++ ) {
@@ -308,7 +312,7 @@ char *G_NewString( const char *string ) {
 	
 	l = strlen(string) + 1;
 
-	newb = G_Alloc( l );
+	newb = (char *)G_Alloc( l );
 
 	new_p = newb;
 
@@ -544,14 +548,21 @@ qboolean G_ParseSpawnVars( void ) {
 		if ( level.numSpawnVars == MAX_SPAWN_VARS ) {
 			G_Error( "G_ParseSpawnVars: MAX_SPAWN_VARS" );
 		}
-		level.spawnVars[ level.numSpawnVars ][0] = G_AddSpawnVarToken( keyname );
-		level.spawnVars[ level.numSpawnVars ][1] = G_AddSpawnVarToken( com_token );
-		level.numSpawnVars++;
+
+		BOTS_RewriteSpawnVar(keyname, sizeof(keyname), com_token, sizeof(com_token));
+
+		G_SpawnAddVar(keyname, com_token);
 	}
 
 	return qtrue;
 }
 
+void G_SpawnAddVar(char *key, char *value)
+{
+	level.spawnVars[ level.numSpawnVars ][0] = G_AddSpawnVarToken( key );
+	level.spawnVars[ level.numSpawnVars ][1] = G_AddSpawnVarToken( value );
+	level.numSpawnVars++;
+}
 
 
 /*QUAKED worldspawn (0 0 0) ?

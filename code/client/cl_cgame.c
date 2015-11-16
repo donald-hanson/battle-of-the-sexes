@@ -25,6 +25,8 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 #include "../botlib/botlib.h"
 
+#include "../qcommon/netmsg.h"
+
 #ifdef USE_MUMBLE
 #include "libmumblelink.h"
 #endif
@@ -429,6 +431,8 @@ intptr_t CL_CgameSystemCalls( intptr_t *args ) {
 	case CG_CVAR_VARIABLESTRINGBUFFER:
 		Cvar_VariableStringBuffer( VMA(1), VMA(2), args[3] );
 		return 0;
+	case CG_CVAR_VARIABLEINTEGERVALUE:
+		return Cvar_VariableIntegerValue( VMA(1) );
 	case CG_ARGC:
 		return Cmd_Argc();
 	case CG_ARGV:
@@ -692,6 +696,15 @@ intptr_t CL_CgameSystemCalls( intptr_t *args ) {
 		return re.GetEntityToken( VMA(1), args[2] );
 	case CG_R_INPVS:
 		return re.inPVS( VMA(1), VMA(2) );
+
+	case CG_NET_READBITS:
+		return NET_ReadBits(args[1]);
+	case CG_NET_READBYTE:
+		return NET_ReadByte();
+	case CG_NET_READLONG:
+		return NET_ReadLong();
+	case CG_NET_READFLOAT:
+		return FloatAsInt(NET_ReadFloat());
 
 	default:
 	        assert(0);

@@ -213,8 +213,9 @@ Called on load to set the initial values from configure strings
 void CG_SetConfigValues( void ) {
 	const char *s;
 
-	cgs.scores1 = atoi( CG_ConfigString( CS_SCORES1 ) );
-	cgs.scores2 = atoi( CG_ConfigString( CS_SCORES2 ) );
+	cgs.redTeamInfo = BOTS_ParseTeamInfoConfigString(CG_ConfigString( CS_SCORES1 ), TEAM_RED);
+	cgs.blueTeamInfo = BOTS_ParseTeamInfoConfigString(CG_ConfigString( CS_SCORES2 ), TEAM_BLUE);
+
 	cgs.levelStartTime = atoi( CG_ConfigString( CS_LEVEL_START_TIME ) );
 	if( cgs.gametype == GT_CTF ) {
 		s = CG_ConfigString( CS_FLAGSTATUS );
@@ -297,9 +298,9 @@ static void CG_ConfigStringModified( void ) {
 	} else if ( num == CS_WARMUP ) {
 		CG_ParseWarmup();
 	} else if ( num == CS_SCORES1 ) {
-		cgs.scores1 = atoi( str );
+		cgs.redTeamInfo = BOTS_ParseTeamInfoConfigString(str, TEAM_RED);
 	} else if ( num == CS_SCORES2 ) {
-		cgs.scores2 = atoi( str );
+		cgs.blueTeamInfo = BOTS_ParseTeamInfoConfigString(str, TEAM_BLUE);
 	} else if ( num == CS_LEVEL_START_TIME ) {
 		cgs.levelStartTime = atoi( str );
 	} else if ( num == CS_VOTE_TIME ) {

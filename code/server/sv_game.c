@@ -23,6 +23,8 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 #include "server.h"
 
+#include "../qcommon/netmsg.h"
+
 #include "../botlib/botlib.h"
 
 botlib_export_t	*botlib_export;
@@ -836,6 +838,19 @@ intptr_t SV_GameSystemCalls( intptr_t *args ) {
 	case TRAP_CEIL:
 		return FloatAsInt( ceil( VMF(1) ) );
 
+
+	case G_NET_WRITEBITS:
+		NET_WriteBits(args[1], args[2]);
+		return 0;
+	case G_NET_WRITEBYTE:
+		NET_WriteByte(args[1]);
+		return 0;
+	case G_NET_WRITELONG:
+		NET_WriteLong(args[1]);
+		return 0;
+	case G_NET_WRITEFLOAT:
+		NET_WriteFloat(VMF(1));
+		return 0;
 
 	default:
 		Com_Error( ERR_DROP, "Bad game system trap: %ld", (long int) args[0] );

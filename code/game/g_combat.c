@@ -447,6 +447,8 @@ void player_die( gentity_t *self, gentity_t *inflictor, gentity_t *attacker, int
 		return;
 	}
 
+	BOTS_PlayerDeath(self, inflictor, attacker, damage, meansOfDeath);
+
 	// check for an almost capture
 	CheckAlmostCapture( self, attacker );
 	// check for a player that almost brought in cubes
@@ -837,10 +839,13 @@ void G_Damage( gentity_t *targ, gentity_t *inflictor, gentity_t *attacker,
 		attacker = &g_entities[ENTITYNUM_WORLD];
 	}
 
+	BOTS_Common_ApplyBodyguardProtection(&targ, attacker, &damage, mod);
+
 	// shootable doors / buttons don't actually have any health
 	if ( targ->s.eType == ET_MOVER ) {
 		if ( targ->use && targ->moverState == MOVER_POS1 ) {
-			targ->use( targ, inflictor, attacker );
+			if (BOTS_CanUseMover(targ, attacker))
+				targ->use( targ, inflictor, attacker );
 		}
 		return;
 	}
@@ -875,7 +880,8 @@ void G_Damage( gentity_t *targ, gentity_t *inflictor, gentity_t *attacker,
 		VectorNormalize(dir);
 	}
 
-	knockback = damage;
+	knockback = BOTS_Common_CalculateDamageKnockback(targ, attacker, damage);
+
 	if ( knockback > 200 ) {
 		knockback = 200;
 	}
@@ -944,6 +950,9 @@ void G_Damage( gentity_t *targ, gentity_t *inflictor, gentity_t *attacker,
 		}
 	}
 
+	if (BOTS_Common_AvoidDamage(attacker, targ, mod))
+		return;
+
 	// battlesuit protects from all radius damage (but takes knockback)
 	// and protects 50% against all damage
 	if ( client && client->ps.powerups[PW_BATTLESUIT] ) {
@@ -964,7 +973,6 @@ void G_Damage( gentity_t *targ, gentity_t *inflictor, gentity_t *attacker,
 		} else {
 			attacker->client->ps.persistant[PERS_HITS]++;
 		}
-		attacker->client->ps.persistant[PERS_ATTACKEE_ARMOR] = (targ->health<<8)|(client->ps.stats[STAT_ARMOR]);
 	}
 
 	// always give half damage if hurting self

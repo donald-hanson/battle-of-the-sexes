@@ -247,6 +247,9 @@ static void CG_Obituary( entityState_t *ent ) {
 
 	if ( attacker != ENTITYNUM_WORLD ) {
 		switch (mod) {
+		case MOD_POISON:
+			message = "was poisoned by";
+			break;
 		case MOD_GRAPPLE:
 			message = "was caught by";
 			break;
@@ -1231,6 +1234,22 @@ void CG_EntityEvent( centity_t *cent, vec3_t position ) {
 	case EV_DEBUG_LINE:
 		DEBUGNAME("EV_DEBUG_LINE");
 		CG_Beam( cent );
+		break;
+
+	case EV_STINGER:
+		DEBUGNAME("EV_STINGER");
+		cent->currentState.weapon = WP_STINGER;
+		BOTS_StingerTrail(ci, es->origin2, es->pos.trBase);
+		// if the end was on a nomark surface, don't make an explosion
+		if ( es->eventParm != 255 ) {
+			ByteToDir( es->eventParm, dir );
+			CG_MissileHitWall( es->weapon, es->clientNum, position, dir,IMPACTSOUND_DEFAULT );
+		}
+		break;
+
+	case EV_HEALRADIUS:
+		DEBUGNAME("EV_HEALRADIUS");
+		BOTS_HealRadius(es->clientNum,es->eventParm);
 		break;
 
 	default:

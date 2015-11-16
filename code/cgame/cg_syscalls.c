@@ -73,6 +73,10 @@ void trap_Cvar_VariableStringBuffer( const char *var_name, char *buffer, int buf
 	syscall( CG_CVAR_VARIABLESTRINGBUFFER, var_name, buffer, bufsize );
 }
 
+int trap_Cvar_VariableIntegerValue(const char *var_name ) {
+	return syscall(CG_CVAR_VARIABLEINTEGERVALUE, var_name);
+}
+
 int		trap_Argc( void ) {
 	return syscall( CG_ARGC );
 }
@@ -445,4 +449,22 @@ qboolean trap_GetEntityToken( char *buffer, int bufferSize ) {
 
 qboolean trap_R_inPVS( const vec3_t p1, const vec3_t p2 ) {
 	return syscall( CG_R_INPVS, p1, p2 );
+}
+
+int trap_Net_ReadBits(int bits) {
+	return syscall(CG_NET_READBITS, bits);
+}
+
+int trap_Net_ReadByte() {
+	return syscall(CG_NET_READBYTE);
+}
+
+int trap_Net_ReadLong() {
+	return syscall(CG_NET_READLONG);
+}
+
+float trap_Net_ReadFloat() {
+	floatint_t fi;
+	fi.i = syscall( CG_NET_READFLOAT );
+	return fi.f;
 }

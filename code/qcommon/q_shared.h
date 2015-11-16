@@ -25,18 +25,17 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 // q_shared.h -- included first by ALL program modules.
 // A user mod should never modify this file
+#define STANDALONE
 
 #ifdef STANDALONE
-  #define PRODUCT_NAME				"iofoo3"
-  #define BASEGAME					"foobar"
-  #define CLIENT_WINDOW_TITLE		"changeme"
-  #define CLIENT_WINDOW_MIN_TITLE	"changeme2"
-  #define HOMEPATH_NAME_UNIX		".foo"
-  #define HOMEPATH_NAME_WIN			"FooBar"
+  #define PRODUCT_NAME			"iobots3"
+  #define BASEGAME			"baseq3"
+  #define CLIENT_WINDOW_TITLE     	"iobots3"
+  #define CLIENT_WINDOW_MIN_TITLE 	"iobots3"
+  #define HOMEPATH_NAME_UNIX		".bts"
+  #define HOMEPATH_NAME_WIN		"iobots3"
   #define HOMEPATH_NAME_MACOSX		HOMEPATH_NAME_WIN
-//  #define STEAMPATH_NAME			"Foo Bar"
-//  #define STEAMPATH_APPID         ""
-  #define GAMENAME_FOR_MASTER		"foobar"	// must NOT contain whitespace
+  #define GAMENAME_FOR_MASTER		"iobots3"	// must NOT contain whitespace
 //  #define LEGACY_PROTOCOL	// You probably don't need this for your standalone game
 #else
   #define PRODUCT_NAME				"ioq3"
@@ -669,6 +668,7 @@ float Q_acos(float c);
 int		Q_rand( int *seed );
 float	Q_random( int *seed );
 float	Q_crandom( int *seed );
+float	Q_randomBetween(int *seed, int min, int max);
 
 #define random()	((rand () & 0x7fff) / ((float)0x7fff))
 #define crandom()	(2.0 * (random() - 0.5))
@@ -1188,6 +1188,7 @@ typedef struct playerState_s {
 	int			persistant[MAX_PERSISTANT];	// stats that aren't cleared on death
 	int			powerups[MAX_POWERUPS];	// level.time that the powerup runs out
 	int			ammo[MAX_WEAPONS];
+	int			maxammo[MAX_WEAPONS];
 
 	int			generic1;
 	int			loopSound;
@@ -1219,13 +1220,12 @@ typedef struct playerState_s {
 										// won't generate footsteps
 #define BUTTON_AFFIRMATIVE	32
 #define	BUTTON_NEGATIVE		64
-
 #define BUTTON_GETFLAG		128
 #define BUTTON_GUARDBASE	256
 #define BUTTON_PATROL		512
 #define BUTTON_FOLLOWME		1024
-
-#define	BUTTON_ANY			2048			// any key whatsoever
+#define BUTTON_GRENADE		2048
+#define	BUTTON_ANY			4096			// any key whatsoever
 
 #define	MOVE_RUN			120			// if forwardmove or rightmove are >= MOVE_RUN,
 										// then BUTTON_WALKING should be set

@@ -688,7 +688,7 @@ void Team_DroppedFlagThink(gentity_t *ent) {
 Team_DroppedFlagThink
 ==============
 */
-int Team_TouchOurFlag( gentity_t *ent, gentity_t *other, int team ) {
+int Team_TouchOurFlag( gentity_t *ent, gentity_t *other, gentity_t *pad, int team ) {
 	int			i;
 	gentity_t	*player;
 	gclient_t	*cl = other->client;
@@ -725,6 +725,10 @@ int Team_TouchOurFlag( gentity_t *ent, gentity_t *other, int team ) {
 	// flag, he's just won!
 	if (!cl->ps.powerups[enemy_flag])
 		return 0; // We don't have the flag
+
+	if (!BOTS_Goal_CanCapture(ent, other, pad))
+		return 0;
+
 #ifdef MISSIONPACK
 	if( g_gametype.integer == GT_1FCTF ) {
 		PrintMsg( NULL, "%s" S_COLOR_WHITE " captured the flag!\n", cl->pers.netname );
@@ -741,10 +745,6 @@ int Team_TouchOurFlag( gentity_t *ent, gentity_t *other, int team ) {
 	teamgame.last_flag_capture = level.time;
 	teamgame.last_capture_team = team;
 
-	// Increase the team's score
-	AddTeamScore(ent->s.pos.trBase, other->client->sess.sessionTeam, 1);
-	Team_ForceGesture(other->client->sess.sessionTeam);
-
 	other->client->pers.teamState.captures++;
 	// add the sprite over the player's head
 	other->client->ps.eFlags &= ~(EF_AWARD_IMPRESSIVE | EF_AWARD_EXCELLENT | EF_AWARD_GAUNTLET | EF_AWARD_ASSIST | EF_AWARD_DEFEND | EF_AWARD_CAP );
@@ -752,52 +752,10 @@ int Team_TouchOurFlag( gentity_t *ent, gentity_t *other, int team ) {
 	other->client->rewardTime = level.time + REWARD_SPRITE_TIME;
 	other->client->ps.persistant[PERS_CAPTURES]++;
 
-	// other gets another 10 frag bonus
-	AddScore(other, ent->r.currentOrigin, CTF_CAPTURE_BONUS);
+	BOTS_Goal_FlagCaptured( other, pad );
 
 	Team_CaptureFlagSound( ent, team );
 
-	// Ok, let's do the player loop, hand out the bonuses
-	for (i = 0; i < g_maxclients.integer; i++) {
-		player = &g_entities[i];
-
-		// also make sure we don't award assist bonuses to the flag carrier himself.
-		if (!player->inuse || player == other)
-			continue;
-
-		if (player->client->sess.sessionTeam !=
-			cl->sess.sessionTeam) {
-			player->client->pers.teamState.lasthurtcarrier = -5;
-		} else if (player->client->sess.sessionTeam ==
-			cl->sess.sessionTeam) {
-#ifdef MISSIONPACK
-			AddScore(player, ent->r.currentOrigin, CTF_TEAM_BONUS);
-#endif
-			// award extra points for capture assists
-			if (player->client->pers.teamState.lastreturnedflag + 
-				CTF_RETURN_FLAG_ASSIST_TIMEOUT > level.time) {
-				AddScore (player, ent->r.currentOrigin, CTF_RETURN_FLAG_ASSIST_BONUS);
-				other->client->pers.teamState.assists++;
-
-				player->client->ps.persistant[PERS_ASSIST_COUNT]++;
-				// add the sprite over the player's head
-				player->client->ps.eFlags &= ~(EF_AWARD_IMPRESSIVE | EF_AWARD_EXCELLENT | EF_AWARD_GAUNTLET | EF_AWARD_ASSIST | EF_AWARD_DEFEND | EF_AWARD_CAP );
-				player->client->ps.eFlags |= EF_AWARD_ASSIST;
-				player->client->rewardTime = level.time + REWARD_SPRITE_TIME;
-
-			} 
-			if (player->client->pers.teamState.lastfraggedcarrier + 
-				CTF_FRAG_CARRIER_ASSIST_TIMEOUT > level.time) {
-				AddScore(player, ent->r.currentOrigin, CTF_FRAG_CARRIER_ASSIST_BONUS);
-				other->client->pers.teamState.assists++;
-				player->client->ps.persistant[PERS_ASSIST_COUNT]++;
-				// add the sprite over the player's head
-				player->client->ps.eFlags &= ~(EF_AWARD_IMPRESSIVE | EF_AWARD_EXCELLENT | EF_AWARD_GAUNTLET | EF_AWARD_ASSIST | EF_AWARD_DEFEND | EF_AWARD_CAP );
-				player->client->ps.eFlags |= EF_AWARD_ASSIST;
-				player->client->rewardTime = level.time + REWARD_SPRITE_TIME;
-			}
-		}
-	}
 	Team_ResetFlags();
 
 	CalculateRanks();
@@ -892,7 +850,7 @@ int Pickup_Team( gentity_t *ent, gentity_t *other ) {
 #endif
 	// GT_CTF
 	if( team == cl->sess.sessionTeam) {
-		return Team_TouchOurFlag( ent, other, team );
+		return Team_TouchOurFlag( ent, other, NULL, team );
 	}
 	return Team_TouchEnemyFlag( ent, other, team );
 }
@@ -975,7 +933,7 @@ go to a random point that doesn't telefrag
 ================
 */
 #define	MAX_TEAM_SPAWN_POINTS	32
-gentity_t *SelectRandomTeamSpawnPoint( int teamstate, team_t team ) {
+gentity_t *SelectRandomTeamSpawnPoint( int teamstate, team_t team, class_t cls ) {
 	gentity_t	*spot;
 	int			count;
 	int			selection;
@@ -1002,12 +960,30 @@ gentity_t *SelectRandomTeamSpawnPoint( int teamstate, team_t team ) {
 	spot = NULL;
 
 	while ((spot = G_Find (spot, FOFS(classname), classname)) != NULL) {
-		if ( SpotWouldTelefrag( spot ) ) {
+		if ( SpotWouldTelefrag( spot ) )
 			continue;
-		}
+		else if (spot->bots_class == CLASS_NONE)
+			continue;
+		else if (spot->bots_class != cls)
+			continue;
+
 		spots[ count ] = spot;
 		if (++count == MAX_TEAM_SPAWN_POINTS)
 			break;
+	}
+
+	if (count == 0)
+	{
+		while ((spot = G_Find (spot, FOFS(classname), classname)) != NULL) {
+			if ( SpotWouldTelefrag( spot ) )
+				continue;
+			else if (spot->bots_class != CLASS_NONE)
+				continue;
+
+			spots[ count ] = spot;
+			if (++count == MAX_TEAM_SPAWN_POINTS)
+				break;
+		}
 	}
 
 	if ( !count ) {	// no spots that won't telefrag
@@ -1025,10 +1001,10 @@ SelectCTFSpawnPoint
 
 ============
 */
-gentity_t *SelectCTFSpawnPoint ( team_t team, int teamstate, vec3_t origin, vec3_t angles, qboolean isbot ) {
+gentity_t *SelectCTFSpawnPoint ( team_t team, class_t cls, int teamstate, vec3_t origin, vec3_t angles, qboolean isbot ) {
 	gentity_t	*spot;
 
-	spot = SelectRandomTeamSpawnPoint ( teamstate, team );
+	spot = SelectRandomTeamSpawnPoint ( teamstate, team, cls );
 
 	if (!spot) {
 		return SelectSpawnPoint( vec3_origin, origin, angles, isbot );

@@ -79,13 +79,13 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 #define TEAM_OVERLAY_MAXNAME_WIDTH	12
 #define TEAM_OVERLAY_MAXLOCATION_WIDTH	16
 
-#define	DEFAULT_MODEL			"sarge"
+#define	DEFAULT_MODEL			"male"
 #ifdef MISSIONPACK
 #define	DEFAULT_TEAM_MODEL		"james"
 #define	DEFAULT_TEAM_HEAD		"*james"
 #else
-#define	DEFAULT_TEAM_MODEL		"sarge"
-#define	DEFAULT_TEAM_HEAD		"sarge"
+#define	DEFAULT_TEAM_MODEL		"male"
+#define	DEFAULT_TEAM_HEAD		"male"
 #endif
 
 #define DEFAULT_REDTEAM_NAME		"Stroggs"
@@ -220,6 +220,9 @@ typedef enum {
 	LE_FADE_RGB,
 	LE_SCALE_FADE,
 	LE_SCOREPLUM,
+
+	LE_HEALRADIUS,
+
 #ifdef MISSIONPACK
 	LE_KAMIKAZE,
 	LE_INVULIMPACT,
@@ -371,6 +374,9 @@ typedef struct {
 	animation_t		animations[MAX_TOTALANIMATIONS];
 
 	sfxHandle_t		sounds[MAX_CUSTOM_SOUNDS];
+
+	char			className[MAX_TEAMNAME];
+	class_t			bots_class;
 } clientInfo_t;
 
 
@@ -984,6 +990,12 @@ typedef struct {
 
 } cgMedia_t;
 
+typedef struct teamInfo_s {
+	team_t		team;
+	int			points;
+	int			promopoints;
+	int			techpoints;
+} teamInfo_t;
 
 // The client game static (cgs) structure hold everything
 // loaded or calculated from the gamestate.  It will NOT
@@ -1027,7 +1039,9 @@ typedef struct {
 
 	int				levelStartTime;
 
-	int				scores1, scores2;		// from configstrings
+	//int				scores1, scores2;		// from configstrings
+	teamInfo_t		*redTeamInfo;
+	teamInfo_t		*blueTeamInfo;
 	int				redflag, blueflag;		// flag status from configstrings
 	int				flagStatus;
 
@@ -1491,6 +1505,7 @@ void		trap_Cvar_Register( vmCvar_t *vmCvar, const char *varName, const char *def
 void		trap_Cvar_Update( vmCvar_t *vmCvar );
 void		trap_Cvar_Set( const char *var_name, const char *value );
 void		trap_Cvar_VariableStringBuffer( const char *var_name, char *buffer, int bufsize );
+int			trap_Cvar_VariableIntegerValue(const char *var_name );
 
 // ServerCommand and ConsoleCommand parameter access
 int			trap_Argc( void );
@@ -1670,6 +1685,11 @@ qboolean	trap_getCameraInfo(int time, vec3_t *origin, vec3_t *angles);
 
 qboolean	trap_GetEntityToken( char *buffer, int bufferSize );
 
+int trap_Net_ReadBits(int bits);
+int trap_Net_ReadByte();
+int trap_Net_ReadLong();
+float trap_Net_ReadFloat();
+
 void	CG_ClearParticles (void);
 void	CG_AddParticles (void);
 void	CG_ParticleSnow (qhandle_t pshader, vec3_t origin, vec3_t origin2, int turb, float range, int snum);
@@ -1684,4 +1704,39 @@ void	CG_ParticleExplosion (char *animStr, vec3_t origin, vec3_t vel, int duratio
 extern qboolean		initparticles;
 int CG_NewParticleArea ( int num );
 
+// JS
+typedef struct jsWrapper_s {
+	qboolean inUse;
+	void *jsContext;
+	void *jsObject;
+	struct jsWrapper_s *parent;
+	void (*setPropertyInt)(struct jsWrapper_s *wrapper, char *propertyName, int value);
+	void (*setPropertyString)(struct jsWrapper_s *wrapper, char *propertyName, char *value);
+	void (*setPropertyBit)(struct jsWrapper_s  *wrapper, char *propertyName, int value);
+	void (*setPropertyFloat)(struct jsWrapper_s  *wrapper, char *propertyName, float value);
+	void (*setPropertyByte)(struct jsWrapper_s  *wrapper, char *propertyName, byte value);
+	struct jsWrapper_s *(*newObject)(struct jsWrapper_s  *wrapper);
+	void (*addObjects)(struct jsWrapper_s *wrapper, char *propertyName, struct jsWrapper_s **children, int length);
+} jsWrapper_t;
 
+void CG_JS_Init(void);
+void CG_JS_LoadFile(char *filename);
+void CG_JS_Eval(char *script);
+void CG_JS_Shutdown(void);
+
+
+//BotS
+void BOTS_StingerTrail(clientInfo_t *ci, vec3_t start, vec3_t end);
+void BOTS_LoadClientInfo(clientInfo_t *ci);
+void BOTS_Laser( centity_t* cent, int entType );
+void BOTS_Command_PlusGrenade();
+void BOTS_Command_MinusGrenade();
+qboolean BOTS_Grenade_IsDecoyGrenade(centity_t *cent);
+void BOTS_Grenade_PrepareDecoyGrenade(centity_t *cent);
+void BOTS_Init_RegisterGraphics();
+void BOTS_Grenade_ChangeGrenadeModel(centity_t *cent, refEntity_t *ent, entityState_t *s1);
+void Bots_Draw_Blind();
+void BOTS_Adjust_FOV(float *x, float *y);
+void BOTS_AddHealRadius( localEntity_t *le );
+teamInfo_t *BOTS_ParseTeamInfoConfigString(const char *configString, team_t team);
+void BOTS_JS_Object_SetClassState(jsWrapper_t *wrapper);

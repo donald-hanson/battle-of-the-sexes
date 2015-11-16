@@ -203,6 +203,7 @@ void Pmove (pmove_t *pmove);
 typedef enum {
 	STAT_HEALTH,
 	STAT_HOLDABLE_ITEM,
+	STAT_KEY,
 #ifdef MISSIONPACK
 	STAT_PERSISTANT_POWERUP,
 #endif
@@ -210,7 +211,8 @@ typedef enum {
 	STAT_ARMOR,				
 	STAT_DEAD_YAW,					// look this direction when dead (FIXME: get rid of?)
 	STAT_CLIENTS_READY,				// bit mask of clients wishing to exit the intermission (FIXME: configstring?)
-	STAT_MAX_HEALTH					// health / armor limit, changable by handicap
+	STAT_MAX_HEALTH,				// health limit
+	STAT_MAX_ARMOR					// armor limit
 } statIndex_t;
 
 
@@ -223,10 +225,11 @@ typedef enum {
 	PERS_HITS,						// total points damage inflicted so damage beeps can sound on change
 	PERS_RANK,						// player rank or team rank
 	PERS_TEAM,						// player team
+	PERS_CLASS,						// player class
+	PERS_LEVEL,						// player level
 	PERS_SPAWN_COUNT,				// incremented every respawn
 	PERS_PLAYEREVENTS,				// 16 bits that can be flipped for events
 	PERS_ATTACKER,					// clientnum of last damage inflicter
-	PERS_ATTACKEE_ARMOR,			// health/armor of last person we attacked
 	PERS_KILLED,					// count of the number of times you died
 	// player awards tracking
 	PERS_IMPRESSIVE_COUNT,			// two railgun hits in a row
@@ -278,15 +281,31 @@ typedef enum {
 	PW_BLUEFLAG,
 	PW_NEUTRALFLAG,
 
+#ifdef MISSIONPACK
 	PW_SCOUT,
 	PW_GUARD,
 	PW_DOUBLER,
 	PW_AMMOREGEN,
 	PW_INVULNERABILITY,
+#endif
+
+	PW_BLIND,
+	PW_POISON,
 
 	PW_NUM_POWERUPS
 
 } powerup_t;
+
+typedef enum {
+	KEY_NONE,
+
+	KEY_BLUE_PROMO,
+	KEY_RED_PROMO,
+	KEY_BLUE_TECH,
+	KEY_RED_TECH,
+
+	KEY_NUM_KEYS
+} key_t;
 
 typedef enum {
 	HI_NONE,
@@ -314,6 +333,8 @@ typedef enum {
 	WP_PLASMAGUN,
 	WP_BFG,
 	WP_GRAPPLING_HOOK,
+	WP_STINGER,
+
 #ifdef MISSIONPACK
 	WP_NAILGUN,
 	WP_PROX_LAUNCHER,
@@ -413,6 +434,7 @@ typedef enum {
 	EV_MISSILE_MISS_METAL,
 	EV_RAILTRAIL,
 	EV_SHOTGUN,
+	EV_STINGER,
 	EV_BULLET,				// otherEntity is the shooter
 
 	EV_PAIN,
@@ -447,7 +469,9 @@ typedef enum {
 	EV_TAUNT_FOLLOWME,
 	EV_TAUNT_GETFLAG,
 	EV_TAUNT_GUARDBASE,
-	EV_TAUNT_PATROL
+	EV_TAUNT_PATROL,
+
+	EV_HEALRADIUS,
 
 } entity_event_t;
 
@@ -550,6 +574,65 @@ typedef enum {
 	TEAM_NUM_TEAMS
 } team_t;
 
+typedef enum {
+	CLASS_NONE,
+
+	CLASS_CAPTAIN,
+	CLASS_BODYGUARD,
+	CLASS_SNIPER,
+	CLASS_SOLDIER,
+	CLASS_BERZERKER,
+	CLASS_INFILTRATOR,
+	CLASS_KAMIKAZEE,
+	CLASS_NURSE,
+	CLASS_SCIENTIST,
+
+	CLASS_NUM_CLASSES
+} class_t;
+
+typedef enum {
+	GRENADE_NORMAL,
+
+	GRENADE_PROXIMITY,
+	GRENADE_FLASH,
+	GRENADE_TELEPORT,
+	GRENADE_FREEZE,
+	GRENADE_DECOY,
+
+	GRENADE_NUM_GRENADES
+} grenadeType_t;
+
+typedef enum {
+	GRENADE_MODEL_NORMAL,
+
+	GRENADE_MODEL_PROXIMITY,
+	GRENADE_MODEL_FLASH,
+	GRENADE_MODEL_TELEPORT,
+	GRENADE_MODEL_FREEZE,
+
+	GRENADE_MODEL_SHOTGUN,
+	GRENADE_MODEL_GRENADE_LAUNCHER,
+	GRENADE_MODEL_ROCKET_LAUNCHER,
+	GRENADE_MODEL_LIGHTNING,
+	GRENADE_MODEL_RAILGUN,
+	GRENADE_MODEL_PLASMAGUN,
+	GRENADE_MODEL_BFG,
+
+	GRENADE_MODEL_NUM_GRENADES
+} grenadeModelType_t;
+
+typedef enum {
+	ROCKET_NORMAL,
+	ROCKET_RAPID,
+	ROCKET_TAG,
+	ROCKET_SPLIT1,
+	ROCKET_SPLIT2,
+	ROCKET_SPLIT3,
+	ROCKET_GUIDED1,
+	ROCKET_GUIDED2,
+	ROCKET_NUM_ROCKETMODES
+} rocketMode_t;
+
 // Time between location updates
 #define TEAM_LOCATION_UPDATE_TIME		1000
 
@@ -572,6 +655,7 @@ typedef enum {
 typedef enum {
 	MOD_UNKNOWN,
 	MOD_SHOTGUN,
+	MOD_STINGER,
 	MOD_GAUNTLET,
 	MOD_MACHINEGUN,
 	MOD_GRENADE,
@@ -600,7 +684,8 @@ typedef enum {
 	MOD_KAMIKAZE,
 	MOD_JUICED,
 #endif
-	MOD_GRAPPLE
+	MOD_GRAPPLE,
+	MOD_POISON
 } meansOfDeath_t;
 
 
@@ -618,7 +703,8 @@ typedef enum {
 	IT_HOLDABLE,			// single use, holdable item
 							// EFX: rotate + bob
 	IT_PERSISTANT_POWERUP,
-	IT_TEAM
+	IT_TEAM,
+	IT_KEY
 } itemType_t;
 
 #define MAX_ITEM_MODELS 4
@@ -648,6 +734,7 @@ gitem_t	*BG_FindItem( const char *pickupName );
 gitem_t	*BG_FindItemForWeapon( weapon_t weapon );
 gitem_t	*BG_FindItemForPowerup( powerup_t pw );
 gitem_t	*BG_FindItemForHoldable( holdable_t pw );
+int BG_FindItemIndexForWeapon(weapon_t weapon);
 #define	ITEM_INDEX(x) ((x)-bg_itemlist)
 
 qboolean	BG_CanItemBeGrabbed( int gametype, const entityState_t *ent, const playerState_t *ps );
@@ -678,6 +765,7 @@ typedef enum {
 	ET_MISSILE,
 	ET_MOVER,
 	ET_BEAM,
+	ET_BOTS_LASER,
 	ET_PORTAL,
 	ET_SPEAKER,
 	ET_PUSH_TRIGGER,

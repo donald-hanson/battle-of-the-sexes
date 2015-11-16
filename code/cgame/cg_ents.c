@@ -402,6 +402,8 @@ static void CG_Item( centity_t *cent ) {
 			}
 		}
 	}
+
+	BOTS_Nurse_ShowPoisonSprite(cent);
 }
 
 //============================================================================
@@ -494,6 +496,17 @@ static void CG_Missile( centity_t *cent ) {
 	if ( VectorNormalize2( s1->pos.trDelta, ent.axis[0] ) == 0 ) {
 		ent.axis[0][2] = 1;
 	}
+
+
+	if (BOTS_Grenade_IsDecoyGrenade(cent))
+	{
+		BOTS_Grenade_PrepareDecoyGrenade(cent);
+		CG_Item(cent);
+		return;
+	}
+	
+	BOTS_Grenade_ChangeGrenadeModel(cent, &ent, s1);
+
 
 	// spin as it moves
 	if ( s1->pos.trType != TR_STATIONARY ) {
@@ -989,6 +1002,9 @@ static void CG_AddCEntity( centity_t *cent ) {
 		break;
 	case ET_TEAM:
 		CG_TeamBase( cent );
+		break;
+	case ET_BOTS_LASER:
+		BOTS_Laser( cent, ET_BOTS_LASER );
 		break;
 	}
 }

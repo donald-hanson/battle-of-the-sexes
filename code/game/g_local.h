@@ -174,6 +174,14 @@ struct gentity_s {
 	float		random;
 
 	gitem_t		*item;			// for bonus items
+
+	team_t		bots_team;
+	class_t		bots_class;
+
+	team_t		next_team;	// the team the player wants to go to
+	class_t		next_class;	// the class the player wants to go to
+
+	int			keyDropTime;
 };
 
 
@@ -219,6 +227,7 @@ typedef struct {
 // MUST be dealt with in G_InitSessionData() / G_ReadSessionData() / G_WriteSessionData()
 typedef struct {
 	team_t		sessionTeam;
+	class_t		sessionClass;
 	int			spectatorNum;		// for determining next-in-line to play
 	spectatorState_t	spectatorState;
 	int			spectatorClient;	// for chasecam and follow mode
@@ -303,7 +312,8 @@ struct gclient_s {
 	qboolean	fireHeld;			// used for hook
 	gentity_t	*hook;				// grapple hook if out
 
-	int			switchTeamTime;		// time the player switched teams
+	int			switchTeamTime;		// time the player may switch teams again
+	int			switchClassTime;	// time the player may switch classes again
 
 	// timeResidual is used to handle events that happen every second
 	// like health / armor countdowns and regeneration
@@ -419,6 +429,7 @@ qboolean	G_SpawnFloat( const char *key, const char *defaultString, float *out );
 qboolean	G_SpawnInt( const char *key, const char *defaultString, int *out );
 qboolean	G_SpawnVector( const char *key, const char *defaultString, float *out );
 void		G_SpawnEntitiesFromString( void );
+void		G_SpawnAddVar(char *key, char *value);
 char *G_NewString( const char *string );
 
 //
@@ -512,10 +523,11 @@ void TossClientCubes( gentity_t *self );
 // g_missile.c
 //
 void G_RunMissile( gentity_t *ent );
+void G_ExplodeMissile( gentity_t *ent );
 
-gentity_t *fire_plasma (gentity_t *self, vec3_t start, vec3_t aimdir);
-gentity_t *fire_grenade (gentity_t *self, vec3_t start, vec3_t aimdir);
-gentity_t *fire_rocket (gentity_t *self, vec3_t start, vec3_t dir);
+gentity_t *fire_plasma (gentity_t *self, vec3_t start, vec3_t aimdir, int velocity);
+gentity_t *fire_grenade (gentity_t *self, vec3_t start, vec3_t aimdir, int velocity);
+gentity_t *fire_rocket (gentity_t *self, vec3_t start, vec3_t dir, int velocity);
 gentity_t *fire_bfg (gentity_t *self, vec3_t start, vec3_t dir);
 gentity_t *fire_grapple (gentity_t *self, vec3_t start, vec3_t dir);
 #ifdef MISSIONPACK
@@ -551,6 +563,7 @@ void DropPortalDestination( gentity_t *ent );
 //
 qboolean LogAccuracyHit( gentity_t *target, gentity_t *attacker );
 void CalcMuzzlePoint ( gentity_t *ent, vec3_t forward, vec3_t right, vec3_t up, vec3_t muzzlePoint );
+void CalcMuzzlePointOrigin ( gentity_t *ent, vec3_t origin, vec3_t forward, vec3_t right, vec3_t up, vec3_t muzzlePoint );
 void SnapVectorTowards( vec3_t v, vec3_t to );
 qboolean CheckGauntletAttack( gentity_t *ent );
 void Weapon_HookFree (gentity_t *ent);
@@ -951,3 +964,141 @@ int		trap_GeneticParentsAndChildSelection(int numranks, float *ranks, int *paren
 
 void	trap_SnapVector( float *v );
 
+void	trap_Net_WriteBits(int value, int bits);
+void	trap_Net_WriteByte(int c);
+void	trap_Net_WriteLong(int  c);
+void	trap_Net_WriteFloat(float value);
+
+int Team_TouchOurFlag( gentity_t *ent, gentity_t *other, gentity_t *pad, int team );
+
+// BotS - bots_client
+void		BOTS_InitGame(void);
+void		BOTS_SetClass(gentity_t *ent, char *s);
+void		BOTS_ClientSpawn(gentity_t *ent);
+void		BOTS_PlayerDeath(gentity_t *killed, gentity_t *killedBy, gentity_t *killer, int damage, int meansOfDeath);
+char *		BOTS_ClassName(class_t cls);
+class_t		BOTS_ClassNumber(char *s);
+team_t		BOTS_TeamNumber(char *s);
+void		BOTS_Print(int clientNum, char* text);
+void		BOTS_Print_Team(team_t team, char *text);
+qboolean	BOTS_IsClassName(char *s);
+qboolean	BOTS_CanPickupWeapon(gentity_t *weapon, gentity_t *player);
+qboolean	BOTS_CanPickupAmmo(gentity_t *ammo, gentity_t *player);
+gentity_t *	BOTS_GetTeamCaptain(team_t team);
+gentity_t *	BOTS_GetTeamScientist(team_t team);
+void		BOTS_ClientCommand(int clientNum);
+gentity_t *	BOTS_GetTeamPromotionKey(team_t team);
+gentity_t *	BOTS_GetTeamTechKey(team_t team);
+void		BOTS_SetTeamPromotionKey(team_t team, gentity_t *key);
+void		BOTS_SetTeamTechKey(team_t team, gentity_t *key);
+void		BOTS_AddPromotionPoints(team_t team, int points);
+void		BOTS_AddTechPoints(team_t team, int points);
+void		BOTS_SetPromotionPoints(team_t team, int points);
+void		BOTS_SetTechPoints(team_t team, int points);
+int			BOTS_GetPromotionPoints(team_t team);
+int			BOTS_GetTechPoints(team_t team);
+void		BOTS_UpdateCaptainLevel(team_t team);
+void		BOTS_ClientDisconnect(int clientNum);
+void		BOTS_AutoDemote(int clientNum);
+void		BOTS_ClientSkin(gentity_t *ent, char *model, char *headModel);
+char *		BOTS_BuildTeamInfoConfigString(team_t team);
+void		BOTS_SyncScoresConfigStrings();
+grenadeType_t BOTS_GetGrenadeType(class_t cls);
+qboolean	BOTS_Client_FireWeapon(gentity_t *ent);
+qboolean	BOTS_ClassState_Changed(int clientNum);
+void		BOTS_ClassState_Append(int clientNum);
+int			BOTS_Pickup_Ammo(gentity_t *ammo, gentity_t *player);
+
+// BotS - bots_common
+void		BOTS_Common_DropKey(int clientNum, qboolean launch, qboolean tech);
+void		BOTS_CommonCommand_Class(int clientNum);
+void		BOTS_CommonCommand_LocatePromo(int clientNum);
+void		BOTS_CommonCommand_LocateTech(int clientNum);
+void		BOTS_CommonCommand_SetLevel(int clientNum);
+void		BOTS_CommonCommand_SetPromos(int clientNum);
+void		BOTS_CommonCommand_SetTechs(int clientNum);
+void		BOTS_Common_ApplyStriping(gentity_t *killed, gentity_t *killer);
+qboolean	BOTS_CanUseTeleporter(gentity_t *teleporter, gentity_t *player);
+qboolean	BOTS_CanUseMover(gentity_t *mover, gentity_t *player);
+qboolean	BOTS_CanTouchMulti(gentity_t *multi, gentity_t *player);
+qboolean	BOTS_CanUseJumppad(gentity_t *jumppad, gentity_t *player);
+qboolean	BOTS_CanTouchHurt(gentity_t *hurt, gentity_t *player);
+void		BOTS_RewriteSpawnVar(char *key, int keySize, char *value, int valueSize);
+void		BOTS_Pickup_Key(gentity_t *key, gentity_t *player );
+void		BOTS_SpawnSetup(gentity_t *ent);
+void		BOTS_TryToPlay(gentity_t *ent);
+int			BOTS_Common_CalculateDamageKnockback(gentity_t *targ, gentity_t *attacker, int damage);
+void		BOTS_Common_ApplyBodyguardProtection(gentity_t **targ, gentity_t *attacker, int *damage, int mod);
+qboolean	BOTS_Common_Visible( gentity_t *ent1, gentity_t *ent2 );
+void		BOTS_Modify_EntityState();
+void		BOTS_Rollback_EntityState();
+qboolean	BOTS_Common_ApplyPoison(gentity_t *health, gentity_t *player, int quantity);
+qboolean	BOTS_Common_AvoidDamage(gentity_t *attacker, gentity_t *target, meansOfDeath_t mod);
+
+// BotS - bots_captain
+void		BOTS_CaptainCommand_DropPromote(int clientNum);
+void		BOTS_CaptainCommand_Promote(int clientNum);
+void		BOTS_CaptainCommand_Demote(int clientNum);
+void		BOTS_CaptainSpawn(gentity_t *ent);
+void		BOTS_CaptainDeath(gentity_t *killed, gentity_t *killedBy, gentity_t *killer, int damage, int meansOfDeath);
+
+// BotS - bots_scientist
+void		BOTS_ScientistCommand_DropTech(int clientNum);
+void		BOTS_ScientistSpawn(gentity_t *ent);
+void		BOTS_ScientistDeath(gentity_t *killed, gentity_t *killedBy, gentity_t *killer, int damage, int meansOfDeath);
+void		BOTS_ScientistKiller(gentity_t *killer, gentity_t *killedBy, gentity_t *killed, int damage, int meansOfDeath);
+
+// BotS - bots_bodyguard
+void		BOTS_BodyguardCommand_Laser(int clientNum);
+void		BOTS_BodyguardCommand_LaserOff(int clientNum);
+void		BOTS_BodyguardCommand_LaserOn(int clientNum);
+void		BOTS_BodyguardCommand_LaserKill(int clientNum);
+void		BOTS_BodyguardCommand_Protect(int clientNum);
+void		BOTS_BodyguardCommand_Decoy(int clientNum);
+void		BOTS_BodyguardCommand_Pulse(int clientNum);
+gentity_t	*BOTS_Bodyguard_FindNearByProtector(gentity_t *ent);
+void		BOTS_Bodyguard_Network(int clientNum);
+void		BOTS_Bodyguard_Modify_EntityState();
+void		BOTS_Bodyguard_Rollback_EntityState();
+
+// BotS - bots_soldier
+qboolean	BOTS_Soldier_FireWeapon(gentity_t *ent);
+void		BOTS_SoldierCommand_Rapid(int clientNum);
+void		BOTS_SoldierCommand_Guide1(int clientNum);
+void		BOTS_SoldierCommand_Guide2(int clientNum);
+void		BOTS_SoldierCommand_Tag(int clientNum);
+void		BOTS_SoldierCommand_Split1(int clientNum);
+void		BOTS_SoldierCommand_Split2(int clientNum);
+void		BOTS_SoldierCommand_Split3(int clientNum);
+qboolean	BOTS_Rocket_TryToTag(gentity_t *ent, gentity_t *other, trace_t *trace);
+void		BOTS_Soldier_Network(int clientNum);
+qboolean	BOTS_Soldier_GetConquerDistance(gentity_t *soldier, float *distance, float *maxDistance);
+
+// BotS - bots_infiltrator
+void		BOTS_Infiltrator_AdjustClientSkin(gentity_t *ent, team_t *team, class_t *cls);
+void		BOTS_InfiltratorCommand_Disguise(int clientNum);
+void		BOTS_InfiltratorCommand_Steal(int clientNum);
+qboolean	BOTS_Infiltrator_FireWeapon(gentity_t *ent);
+qboolean	BOTS_Infiltrator_PickupAmmo(gentity_t *ammo, gentity_t *player, int *respawnTime);
+void		BOTS_Infiltrator_Network(int clientNum);
+
+// BotS - bots_nurse
+void		BOTS_NurseSpawn(gentity_t *player);
+qboolean	BOTS_Nurse_PoisonHealth(gentity_t *health, gentity_t *player);
+void		BOTS_NurseCommand_Poison(int clientNum);
+void		BOTS_NurseCommand_HealRadius(int clientNum);
+void		BOTS_NurseCommand_CreateSmallHealth(int clientNum);
+void		BOTS_NurseCommand_CreateLargeHealth(int clientNum);
+void		BOTS_NurseCommand_CreateMegaHealth(int clientNum);
+void		BOTS_NurseCommand_CreateMedikitHealth(int clientNum);
+void		BOTS_NurseCommand_CreateRegenHealth(int clientNum);
+
+// BotS - bots_grenade
+void		BOTS_Grenade_HandleKeyPress(gentity_t *ent);
+void		BOTS_Grenade_ExplodeNearByGrenades(gentity_t *ent);
+qboolean	BOTS_Grenade_TryToStick(gentity_t *ent, gentity_t *other, trace_t *trace);
+
+// BotS - bots_goal
+void		BOTS_Spawn_Goal(gentity_t *ent);;
+qboolean	BOTS_Goal_CanCapture(gentity_t *flag, gentity_t *player, gentity_t *pad);
+void		BOTS_Goal_FlagCaptured(gentity_t *player, gentity_t *pad);

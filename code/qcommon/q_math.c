@@ -160,6 +160,11 @@ float	Q_crandom( int *seed ) {
 	return 2.0 * ( Q_random( seed ) - 0.5 );
 }
 
+float Q_randomBetween(int *seed, int min, int max)
+{
+	return ((max - min + 1) * Q_random(seed)) + min;
+}
+
 //=======================================================
 
 signed char ClampChar( int i ) {
@@ -366,7 +371,32 @@ void RotateAroundDirection( vec3_t axis[3], float yaw ) {
 	CrossProduct( axis[0], axis[1], axis[2] );
 }
 
+// This function will calculate the vector that splits 2 vectors at a given angle.
+// This function assumes a counter clockwise rotation.
+//
+// IN:
+//		vec3_t forward	- vector1
+//		vec3_t right	- vector2
+//		vec3_t up		- vector3
+//		float angle		- angle between right and new vector
+//
+// OUT:
+//		vec3_t out		- newly calculated vector
+void vectorFromAngle(vec3_t forward, vec3_t right, vec3_t up, float angle, vec3_t out)
+{
+	// this is right...
+	vec3_t tmp1;
+	vec3_t tmp2;
 
+	// first component
+	VectorScale(right, cos(angle*(M_PI*2 / 360)), tmp1);
+
+	// second component
+	CrossProduct(up, right, tmp2);
+	VectorScale(tmp2, sin(angle*(M_PI*2 / 360)), tmp2);
+
+	VectorAdd(tmp1, tmp2, out);
+}
 
 void vectoangles( const vec3_t value1, vec3_t angles ) {
 	float	forward;

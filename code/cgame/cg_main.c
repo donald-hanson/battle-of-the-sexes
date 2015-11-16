@@ -74,6 +74,9 @@ Q_EXPORT intptr_t vmMain( int command, int arg0, int arg1, int arg2, int arg3, i
 	case CG_EVENT_HANDLING:
 		CG_EventHandling(arg0);
 		return 0;
+	case CG_NETWORK_PLAYERSTATE_CHANGED:
+		BOTS_ClassState_Parse(arg0);
+		return 0;
 	default:
 		CG_Error( "vmMain: unknown command %i", command );
 		break;
@@ -1011,10 +1014,10 @@ static void CG_RegisterGraphics( void ) {
 	Q_strncpyz(items, CG_ConfigString(CS_ITEMS), sizeof(items));
 
 	for ( i = 1 ; i < bg_numItems ; i++ ) {
-		if ( items[ i ] == '1' || cg_buildScript.integer ) {
+//		if ( items[ i ] == '1' || cg_buildScript.integer ) {
 			CG_LoadingItem( i );
 			CG_RegisterItemVisuals( i );
-		}
+//		}
 	}
 
 	// wall marks
@@ -1079,6 +1082,8 @@ static void CG_RegisterGraphics( void ) {
 
 #endif
 	CG_ClearParticles ();
+
+	BOTS_Init_RegisterGraphics();
 /*
 	for (i=1; i<MAX_PARTICLES_AREAS; i++)
 	{
@@ -1867,6 +1872,11 @@ void CG_Init( int serverMessageNum, int serverCommandSequence, int clientNum ) {
 
 	CG_RegisterCvars();
 
+	CG_JS_Init();
+
+	CG_JS_LoadFile("js/Client/Main.js");
+	CG_JS_Eval(va("Game.Init(%d,%d,%d)", serverMessageNum, serverCommandSequence, clientNum));
+
 	CG_InitConsoleCommands();
 
 	cg.weaponSelect = WP_MACHINEGUN;
@@ -1957,6 +1967,8 @@ Called before every level change or subsystem restart
 void CG_Shutdown( void ) {
 	// some mods may need to do cleanup work here,
 	// like closing files or archiving session data
+
+	CG_JS_Shutdown();
 }
 
 
