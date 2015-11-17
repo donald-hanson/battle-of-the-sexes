@@ -145,3 +145,40 @@ void BOTS_CaptainCommand_Demote(int clientNum)
 		BOTS_Print(clientNum, va("usage: %s playerid", cmd));
 	}
 }
+
+void BOTS_Captain_SendScoutMessage(int clientNum, qboolean teamMembers) 
+{
+	gentity_t*  ent = g_entities + clientNum;
+	char*		stats;
+
+	stats = va("Class           Female Male\n");
+	stats = va("%s-----           ------ ----\n", stats);
+	stats = va("%sCaptain         %3i    %3i \n", stats, BOTS_CountPlayers(TEAM_BLUE, CLASS_CAPTAIN), BOTS_CountPlayers(TEAM_RED, CLASS_CAPTAIN));
+	stats = va("%sBodyguard       %3i    %3i \n", stats, BOTS_CountPlayers(TEAM_BLUE, CLASS_BODYGUARD), BOTS_CountPlayers(TEAM_RED, CLASS_BODYGUARD));
+	stats = va("%sSniper          %3i    %3i \n", stats, BOTS_CountPlayers(TEAM_BLUE, CLASS_SNIPER), BOTS_CountPlayers(TEAM_RED, CLASS_SNIPER));
+	stats = va("%sSoldier         %3i    %3i \n", stats, BOTS_CountPlayers(TEAM_BLUE, CLASS_SOLDIER), BOTS_CountPlayers(TEAM_RED, CLASS_SOLDIER));
+	stats = va("%sBerzerker       %3i    %3i \n", stats, BOTS_CountPlayers(TEAM_BLUE, CLASS_BERZERKER), BOTS_CountPlayers(TEAM_RED, CLASS_BERZERKER));
+	stats = va("%sInfiltrator     %3i    %3i \n", stats, BOTS_CountPlayers(TEAM_BLUE, CLASS_INFILTRATOR), BOTS_CountPlayers(TEAM_RED, CLASS_INFILTRATOR));
+	stats = va("%sKamikazee       %3i    %3i \n", stats, BOTS_CountPlayers(TEAM_BLUE, CLASS_KAMIKAZEE), BOTS_CountPlayers(TEAM_RED, CLASS_KAMIKAZEE));
+	stats = va("%sNurse           %3i    %3i \n", stats, BOTS_CountPlayers(TEAM_BLUE, CLASS_NURSE), BOTS_CountPlayers(TEAM_RED, CLASS_NURSE));
+	stats = va("%sScientist       %3i    %3i \n", stats, BOTS_CountPlayers(TEAM_BLUE, CLASS_SCIENTIST), BOTS_CountPlayers(TEAM_RED, CLASS_SCIENTIST));
+
+	if (teamMembers == qtrue) 
+	{
+		BOTS_Print_Team(ent->bots_team, stats);
+	} 
+	else 
+	{
+		BOTS_Print(clientNum, stats);
+	}
+}
+
+void BOTS_CaptainCommand_ScoutAll(int clientNum) 
+{
+	BOTS_Captain_SendScoutMessage(clientNum, qtrue);
+}
+
+void BOTS_CaptainCommand_Scout(int clientNum) 
+{
+	BOTS_Captain_SendScoutMessage(clientNum, qfalse);
+}

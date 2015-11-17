@@ -43,6 +43,8 @@ classCommandInfo_t g_captainCommands[] = {
 	{ "droppromote",	BOTS_CaptainCommand_DropPromote },
 	{ "promote",		BOTS_CaptainCommand_Promote },
 	{ "demote",			BOTS_CaptainCommand_Demote },
+	{ "scout",			BOTS_CaptainCommand_Scout },
+	{ "scoutall",		BOTS_CaptainCommand_ScoutAll },
 	{ NULL, NULL }
 };
 classCommandInfo_t g_bodyguardCommands[] = {
@@ -393,6 +395,24 @@ team_t BOTS_TeamNumber(char *s)
 	else if(Q_stricmp(s, "blue") == 0)
 		return TEAM_BLUE;
 	return TEAM_FREE;
+}
+
+int BOTS_CountPlayers(team_t team, class_t cls) {
+	int count = 0;
+	int i;
+
+	for (i = 0; i < level.maxclients; i++)
+	{
+		gentity_t* player = g_entities + i;
+		if (!player->client)
+			continue;
+		if (player->client->sess.sessionTeam != team)
+			continue;
+		if (player->bots_class != cls)
+			continue;
+		count++;
+	}
+	return count;
 }
 
 void BOTS_Print(int clientNum, char* text)

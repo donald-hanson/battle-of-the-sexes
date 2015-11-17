@@ -979,6 +979,7 @@ void		BOTS_PlayerDeath(gentity_t *killed, gentity_t *killedBy, gentity_t *killer
 char *		BOTS_ClassName(class_t cls);
 class_t		BOTS_ClassNumber(char *s);
 team_t		BOTS_TeamNumber(char *s);
+int			BOTS_CountPlayers(team_t team, class_t cls);
 void		BOTS_Print(int clientNum, char* text);
 void		BOTS_Print_Team(team_t team, char *text);
 qboolean	BOTS_IsClassName(char *s);
@@ -1039,6 +1040,8 @@ qboolean	BOTS_Common_AvoidDamage(gentity_t *attacker, gentity_t *target, meansOf
 void		BOTS_CaptainCommand_DropPromote(int clientNum);
 void		BOTS_CaptainCommand_Promote(int clientNum);
 void		BOTS_CaptainCommand_Demote(int clientNum);
+void		BOTS_CaptainCommand_Scout(int clientNum);
+void		BOTS_CaptainCommand_ScoutAll(int clientNum);
 void		BOTS_CaptainSpawn(gentity_t *ent);
 void		BOTS_CaptainDeath(gentity_t *killed, gentity_t *killedBy, gentity_t *killer, int damage, int meansOfDeath);
 
