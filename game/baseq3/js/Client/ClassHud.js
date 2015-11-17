@@ -25,6 +25,10 @@ ClassHud = {
     Captain: {
         DrawTopRight: function(ps)
         {
+            var cs = Sys.GetClassState();
+            var bfgMode = Constants.GetName(Constants.BFGMode, cs.bfgMode);
+            var bfgModeName = Constants.GetValue(Constants.BFGModeNames, bfgMode);
+            Hud.DrawSmallString(640, 32, "Mode: " + bfgModeName, 1.0, Constants.Hud.Alignment.Right);		
         }
     },
 

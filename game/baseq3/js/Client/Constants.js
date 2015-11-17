@@ -208,8 +208,21 @@ Constants = {
 	    Split3 : "Split #3",
 	    Guided1 :"Guided #1",
 	    Guided2 : "Guided #2"
-        
     },
+	
+	BFGMode : {
+		Normal : 0,
+		Split1 : 1,
+		Split2 : 2,
+		Split3 : 3
+	},
+	
+	BFGModeNames : {
+		Normal : "Normal",
+		Split1 : "Split #1",
+		Split2 : "Split #2",
+		Split3 : "Split #3"
+	},
     
     Colors : {
         Red : [ 1.0, 0.0, 0.0, 1.0 ],

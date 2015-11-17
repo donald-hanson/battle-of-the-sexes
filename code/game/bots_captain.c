@@ -1,5 +1,26 @@
 #include "g_local.h"
 
+typedef struct captainState_s {
+	bfgMode_t bfgMode;
+} captainState_t;
+
+captainState_t captainStates[MAX_CLIENTS];
+
+captainState_t *BOTS_Captain_GetState(int clientNum)
+{
+	return &captainStates[clientNum];
+}
+
+void BOTS_Captain_Network(int clientNum)
+{
+	gentity_t *ent = g_entities + clientNum;
+	float distance = 0.0f;
+	float maxDistance = 0.0f;
+	captainState_t *state = BOTS_Captain_GetState(clientNum);
+
+	trap_Net_WriteBits((int)state->bfgMode, 4);
+}
+
 void BOTS_Captain_DropPromote(int clientNum, qboolean launch)
 {
 	BOTS_Common_DropKey(clientNum, launch, qfalse);
@@ -181,4 +202,113 @@ void BOTS_CaptainCommand_ScoutAll(int clientNum)
 void BOTS_CaptainCommand_Scout(int clientNum) 
 {
 	BOTS_Captain_SendScoutMessage(clientNum, qfalse);
+}
+
+void BOTS_BFG_FireSplit(gentity_t *ent, int horizontal, int vertical)
+{
+	gentity_t *m1, *m2, *m3;
+	vec3_t	forward, right, up, forward2, forward3;
+	vec3_t	muzzle;
+	// set aiming directions
+	AngleVectors(ent->client->ps.viewangles, forward, right, up);
+	CalcMuzzlePointOrigin(ent, ent->client->oldOrigin, forward, right, up, muzzle);
+	m1 = fire_bfg(ent, muzzle, forward, 900);
+
+	VectorScale(forward, 1000, forward2);
+	VectorMA(forward2, horizontal, right, forward2);
+	VectorMA(forward2, vertical, up, forward2);
+	m2 = fire_bfg(ent, muzzle, forward2, 900);
+
+	VectorScale(forward, 1000, forward3);
+	VectorMA(forward3, -1 * horizontal, right, forward3);
+	VectorMA(forward3, vertical, up, forward3);
+	m3 = fire_bfg(ent, muzzle, forward3, 900);
+}
+
+void BOTS_BFG_FireSplit1(gentity_t *ent)
+{
+	BOTS_BFG_FireSplit(ent, 60, -60);
+}
+
+void BOTS_BFG_FireSplit2(gentity_t *ent)
+{
+	BOTS_BFG_FireSplit(ent, 70, -20);
+}
+
+void BOTS_BFG_FireSplit3(gentity_t *ent)
+{
+	BOTS_BFG_FireSplit(ent, 95, -20);
+}
+
+typedef struct bfgModeInfo_s {
+	bfgMode_t bfgMode;
+	void(*handler)(gentity_t *ent);
+} bfgModeInfo_t;
+
+bfgModeInfo_t bfgModeInfos[] = {
+	{ BFG_NORMAL,				NULL },
+	{ BFG_SPLIT1,				BOTS_BFG_FireSplit1 },
+	{ BFG_SPLIT2,				BOTS_BFG_FireSplit2 },
+	{ BFG_SPLIT3,				BOTS_BFG_FireSplit3 },
+	{ BFG_NUM_BFGMODES,	NULL },
+};
+
+qboolean BOTS_Captain_FireWeapon(gentity_t *ent)
+{
+	captainState_t *state = BOTS_Captain_GetState(ent->s.clientNum);
+	bfgModeInfo_t *info = &bfgModeInfos[state->bfgMode];
+	if (ent->s.weapon == WP_BFG && info->handler)
+	{
+		info->handler(ent);
+		return qtrue;
+	}
+	return qfalse;
+}
+
+void BOTS_Captain_SetBFGMode(int clientNum, bfgMode_t bfgMode)
+{
+	captainState_t *state = BOTS_Captain_GetState(clientNum);
+	if (state->bfgMode == bfgMode)
+		state->bfgMode = BFG_NORMAL;
+	else
+		state->bfgMode = bfgMode;
+}
+
+void BOTS_CaptainCommand_Split1(int clientNum)
+{
+	gentity_t *ent = g_entities + clientNum;
+	int pLevel = ent->client->ps.persistant[PERS_LEVEL];
+	if (pLevel < 4)
+	{
+		BOTS_Print(clientNum, "You must be level 4 to use split.");
+		return;
+	}
+
+	BOTS_Captain_SetBFGMode(clientNum, BFG_SPLIT1);
+}
+
+void BOTS_CaptainCommand_Split2(int clientNum)
+{
+	gentity_t *ent = g_entities + clientNum;
+	int pLevel = ent->client->ps.persistant[PERS_LEVEL];
+	if (pLevel < 4)
+	{
+		BOTS_Print(clientNum, "You must be level 4 to use split.");
+		return;
+	}
+
+	BOTS_Captain_SetBFGMode(clientNum, BFG_SPLIT2);
+}
+
+void BOTS_CaptainCommand_Split3(int clientNum)
+{
+	gentity_t *ent = g_entities + clientNum;
+	int pLevel = ent->client->ps.persistant[PERS_LEVEL];
+	if (pLevel < 4)
+	{
+		BOTS_Print(clientNum, "You must be level 4 to use split.");
+		return;
+	}
+
+	BOTS_Captain_SetBFGMode(clientNum, BFG_SPLIT3);
 }

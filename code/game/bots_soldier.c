@@ -353,30 +353,78 @@ void BOTS_SoldierCommand_Rapid(int clientNum)
 
 void BOTS_SoldierCommand_Guide1(int clientNum)
 {
+	gentity_t *ent = g_entities + clientNum;
+	int pLevel = ent->client->ps.persistant[PERS_LEVEL];
+	if (pLevel < 4)
+	{
+		BOTS_Print(clientNum, "You must be level 4 to use guide.");
+		return;
+	}
+
 	BOTS_Solder_SetRocketMode(clientNum, ROCKET_GUIDED1);
 }
 
 void BOTS_SoldierCommand_Guide2(int clientNum)
 {
+	gentity_t *ent = g_entities + clientNum;
+	int pLevel = ent->client->ps.persistant[PERS_LEVEL];
+	if (pLevel < 4)
+	{
+		BOTS_Print(clientNum, "You must be level 4 to use guide.");
+		return;
+	}
+
 	BOTS_Solder_SetRocketMode(clientNum, ROCKET_GUIDED2);
 }
 
 void BOTS_SoldierCommand_Tag(int clientNum)
 {
+	gentity_t *ent = g_entities + clientNum;
+	int pLevel = ent->client->ps.persistant[PERS_LEVEL];
+	if (pLevel < 2)
+	{
+		BOTS_Print(clientNum, "You must be level 2 to use tag.");
+		return;
+	}
+
 	BOTS_Solder_SetRocketMode(clientNum, ROCKET_TAG);
 }
 
 void BOTS_SoldierCommand_Split1(int clientNum)
 {
+	gentity_t *ent = g_entities + clientNum;
+	int pLevel = ent->client->ps.persistant[PERS_LEVEL];
+	if (pLevel < 3)
+	{
+		BOTS_Print(clientNum, "You must be level 3 to use split.");
+		return;
+	}
+
 	BOTS_Solder_SetRocketMode(clientNum, ROCKET_SPLIT1);
 }
 
 void BOTS_SoldierCommand_Split2(int clientNum)
 {
+	gentity_t *ent = g_entities + clientNum;
+	int pLevel = ent->client->ps.persistant[PERS_LEVEL];
+	if (pLevel < 3)
+	{
+		BOTS_Print(clientNum, "You must be level 3 to use split.");
+		return;
+	}
+
 	BOTS_Solder_SetRocketMode(clientNum, ROCKET_SPLIT2);
 }
 
 void BOTS_SoldierCommand_Split3(int clientNum)
 {
+	gentity_t *ent = g_entities + clientNum;
+	int pLevel = ent->client->ps.persistant[PERS_LEVEL];
+	if (pLevel < 3)
+	{
+		BOTS_Print(clientNum, "You must be level 3 to use split.");
+		return;
+	}
+
 	BOTS_Solder_SetRocketMode(clientNum, ROCKET_SPLIT3);
 }

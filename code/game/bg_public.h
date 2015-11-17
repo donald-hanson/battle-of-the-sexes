@@ -633,6 +633,14 @@ typedef enum {
 	ROCKET_NUM_ROCKETMODES
 } rocketMode_t;
 
+typedef enum {
+	BFG_NORMAL,
+	BFG_SPLIT1,
+	BFG_SPLIT2,
+	BFG_SPLIT3,
+	BFG_NUM_BFGMODES
+} bfgMode_t;
+
 // Time between location updates
 #define TEAM_LOCATION_UPDATE_TIME		1000
 

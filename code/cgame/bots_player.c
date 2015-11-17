@@ -306,6 +306,9 @@ typedef struct gameStateInfo_s {
 	void (*clientStateHandler)(jsWrapper_t *wrapper);
 } gameStateInfo_t;
 
+void BOTS_Captain_Network(int clientNum);
+void BOTS_Captain_ClassState(jsWrapper_t *wrapper);
+
 void BOTS_Bodyguard_Network(int clientNum);
 void BOTS_Bodyguard_ClassState(jsWrapper_t *wrapper);
 
@@ -317,7 +320,7 @@ void BOTS_Infiltrator_ClassState(jsWrapper_t *wrapper);
 
 gameStateInfo_t gameStateInfos[] = {
 	{ CLASS_NONE,			NULL, NULL },
-	{ CLASS_CAPTAIN,		NULL, NULL  },
+	{ CLASS_CAPTAIN,		BOTS_Captain_Network, BOTS_Captain_ClassState },
 	{ CLASS_BODYGUARD,		BOTS_Bodyguard_Network, BOTS_Bodyguard_ClassState },
 	{ CLASS_SNIPER,			NULL, NULL  },
 	{ CLASS_SOLDIER,		BOTS_Soldier_Network, BOTS_Soldier_ClassState  },

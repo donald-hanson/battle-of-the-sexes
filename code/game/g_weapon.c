@@ -247,7 +247,7 @@ BFG
 void BFG_Fire ( gentity_t *ent ) {
 	gentity_t	*m;
 
-	m = fire_bfg (ent, muzzle, forward);
+	m = fire_bfg (ent, muzzle, forward, 2000);
 	m->damage *= s_quadFactor;
 	m->splashDamage *= s_quadFactor;
 

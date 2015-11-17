@@ -45,6 +45,9 @@ classCommandInfo_t g_captainCommands[] = {
 	{ "demote",			BOTS_CaptainCommand_Demote },
 	{ "scout",			BOTS_CaptainCommand_Scout },
 	{ "scoutall",		BOTS_CaptainCommand_ScoutAll },
+	{ "split1",			BOTS_CaptainCommand_Split1 },
+	{ "split2",			BOTS_CaptainCommand_Split2 },
+	{ "split3",			BOTS_CaptainCommand_Split3 },
 	{ NULL, NULL }
 };
 classCommandInfo_t g_bodyguardCommands[] = {
@@ -99,7 +102,7 @@ classCommandInfo_t g_scientistCommands[] = {
 classInfo_t g_classList[] = {
 	// value,			name,			primaryWeapon,		hasHook,hasStinger,	offhandGrenadeType,	fireWeaponHandler,			spawnHandler,		deathHandler,		killerHandler,			networkHandler,				modifyEntityHandler,				rollbackEntityHandler,					pickupAmmoHandler,				commandList
 	{ CLASS_NONE,		"None",			WP_NONE,			-1,		qfalse,		GRENADE_NORMAL,		NULL,						NULL,				NULL,				NULL,					NULL,						NULL,								NULL,									NULL,							g_noneCommands			},
-	{ CLASS_CAPTAIN,	"Captain",		WP_BFG,				2,		qtrue,		GRENADE_PROXIMITY,	NULL,						BOTS_CaptainSpawn,	BOTS_CaptainDeath,	NULL,					NULL,						NULL,								NULL,									NULL,							g_captainCommands		},
+	{ CLASS_CAPTAIN,	"Captain",		WP_BFG,				2,		qtrue,		GRENADE_PROXIMITY,	BOTS_Captain_FireWeapon,	BOTS_CaptainSpawn,	BOTS_CaptainDeath,	NULL,					BOTS_Captain_Network,		NULL,								NULL,									NULL,							g_captainCommands		},
 	{ CLASS_BODYGUARD,	"Bodyguard",	WP_SHOTGUN,			0,		qtrue,		GRENADE_PROXIMITY,	NULL,						NULL,				NULL,				NULL,					BOTS_Bodyguard_Network,		BOTS_Bodyguard_Modify_EntityState,	BOTS_Bodyguard_Rollback_EntityState,	NULL,							g_bodyguardCommands		},
 	{ CLASS_SNIPER,		"Sniper",		WP_RAILGUN,			0,		qtrue,		GRENADE_NORMAL,		NULL,						NULL,				NULL,				NULL,					NULL,						NULL,								NULL,									NULL,							g_sniperCommands		},
 	{ CLASS_SOLDIER,	"Soldier",		WP_ROCKET_LAUNCHER,	-1,		qtrue,		GRENADE_NORMAL,		BOTS_Soldier_FireWeapon,	NULL,				NULL,				NULL,					BOTS_Soldier_Network,		NULL,								NULL,									NULL,							g_soldierCommands		},

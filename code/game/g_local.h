@@ -528,7 +528,7 @@ void G_ExplodeMissile( gentity_t *ent );
 gentity_t *fire_plasma (gentity_t *self, vec3_t start, vec3_t aimdir, int velocity);
 gentity_t *fire_grenade (gentity_t *self, vec3_t start, vec3_t aimdir, int velocity);
 gentity_t *fire_rocket (gentity_t *self, vec3_t start, vec3_t dir, int velocity);
-gentity_t *fire_bfg (gentity_t *self, vec3_t start, vec3_t dir);
+gentity_t *fire_bfg (gentity_t *self, vec3_t start, vec3_t dir, int velocity);
 gentity_t *fire_grapple (gentity_t *self, vec3_t start, vec3_t dir);
 #ifdef MISSIONPACK
 gentity_t *fire_nail( gentity_t *self, vec3_t start, vec3_t forward, vec3_t right, vec3_t up );
@@ -1037,13 +1037,18 @@ qboolean	BOTS_Common_ApplyPoison(gentity_t *health, gentity_t *player, int quant
 qboolean	BOTS_Common_AvoidDamage(gentity_t *attacker, gentity_t *target, meansOfDeath_t mod);
 
 // BotS - bots_captain
+qboolean	BOTS_Captain_FireWeapon(gentity_t *ent);
 void		BOTS_CaptainCommand_DropPromote(int clientNum);
 void		BOTS_CaptainCommand_Promote(int clientNum);
 void		BOTS_CaptainCommand_Demote(int clientNum);
 void		BOTS_CaptainCommand_Scout(int clientNum);
 void		BOTS_CaptainCommand_ScoutAll(int clientNum);
+void		BOTS_CaptainCommand_Split1(int clientNum);
+void		BOTS_CaptainCommand_Split2(int clientNum);
+void		BOTS_CaptainCommand_Split3(int clientNum);
 void		BOTS_CaptainSpawn(gentity_t *ent);
 void		BOTS_CaptainDeath(gentity_t *killed, gentity_t *killedBy, gentity_t *killer, int damage, int meansOfDeath);
+void		BOTS_Captain_Network(int clientNum);
 
 // BotS - bots_scientist
 void		BOTS_ScientistCommand_DropTech(int clientNum);
