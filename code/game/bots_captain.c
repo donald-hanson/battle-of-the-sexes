@@ -1,7 +1,12 @@
 #include "g_local.h"
 
+#define WARCRY_MIN_FLAG_DISTANCE 800.0f
+#define WARCRY_RADIUS 400.0f
+
 typedef struct captainState_s {
 	bfgMode_t bfgMode;
+	int warcry;
+	int warcryCooldown;
 } captainState_t;
 
 captainState_t captainStates[MAX_CLIENTS];
@@ -19,6 +24,22 @@ void BOTS_Captain_Network(int clientNum)
 	captainState_t *state = BOTS_Captain_GetState(clientNum);
 
 	trap_Net_WriteBits((int)state->bfgMode, 4);
+
+	if (state->warcry > level.time)
+	{
+		trap_Net_WriteBits(1, 1);
+		trap_Net_WriteBits((state->warcry - level.time) / 1000, 8);
+	}
+	else if (state->warcry + state->warcryCooldown > level.time)
+	{
+		trap_Net_WriteBits(0, 1);
+		trap_Net_WriteBits((state->warcry + state->warcryCooldown - level.time) / 1000, 8);
+	}
+	else
+	{
+		trap_Net_WriteBits(0, 1);
+		trap_Net_WriteBits(0, 8);
+	}
 }
 
 void BOTS_Captain_DropPromote(int clientNum, qboolean launch)
@@ -311,4 +332,93 @@ void BOTS_CaptainCommand_Split3(int clientNum)
 	}
 
 	BOTS_Captain_SetBFGMode(clientNum, BFG_SPLIT3);
+}
+
+void BOTS_Captain_ApplyNearbyWarcry(gentity_t *captain, int duration)
+{
+	int i;
+	for (i = 0; i<level.maxclients; i++)
+	{
+		gentity_t*	player = g_entities + i;
+		vec3_t		v;
+
+		if (!player->client)
+			continue;
+		if (player == captain)
+			continue;
+		if (!OnSameTeam(captain, player))
+			continue;
+		if (!BOTS_Common_Visible(captain, player))
+			continue;
+
+		v[0] = captain->s.pos.trBase[0] - (player->s.pos.trBase[0] + (player->r.mins[0] + player->r.maxs[0])*0.5);
+		v[1] = captain->s.pos.trBase[1] - (player->s.pos.trBase[1] + (player->r.mins[1] + player->r.maxs[1])*0.5);
+		v[2] = captain->s.pos.trBase[2] - (player->s.pos.trBase[2] + (player->r.mins[2] + player->r.maxs[2])*0.5);
+
+		if (VectorLength(v) > WARCRY_RADIUS) 
+		{
+			continue;
+		}
+
+		player->client->ps.powerups[PW_HASTE] = level.time + duration * 1000;
+		player->client->ps.powerups[PW_WARCRY] = level.time + duration * 1000;
+	}
+}
+
+void BOTS_CaptainCommand_Warcry(int clientNum)
+{
+	vec3_t distance;
+	int activeTime = 0;
+	int cooldownTime = 0;
+	gentity_t *flag = (gentity_t *)NULL;
+	gentity_t *ent = g_entities + clientNum;
+	int pLevel = ent->client->ps.persistant[PERS_LEVEL];
+	captainState_t *state = BOTS_Captain_GetState(clientNum);
+
+	if (state->warcry > level.time)
+	{
+		trap_SendServerCommand(clientNum, "print \"Warcry currently active.\n\"");
+	}
+	else if (state->warcry + state->warcryCooldown > level.time)
+	{
+		trap_SendServerCommand(clientNum, "print \"Warcry currently on cooldown.\n\"");
+	}
+	else
+	{
+		flag = BOTS_GetTeamFlag(ent->bots_team);
+		if (flag) {
+
+			VectorSubtract(ent->r.currentOrigin, flag->r.currentOrigin, distance);
+			if (VectorLength(distance) < WARCRY_MIN_FLAG_DISTANCE) {
+				trap_SendServerCommand(clientNum, "print \"Too close to your flag to use warcry.\n\"");
+				return;
+			}
+		}
+
+		switch (pLevel) {
+			case 0:
+			case 1:
+				activeTime = 5;
+				cooldownTime = 90;
+				break;
+			case 2:
+				activeTime = 7;
+				cooldownTime = 60;
+				break;
+			case 3:
+				activeTime = 9;
+				cooldownTime = 30;
+			case 4:
+				activeTime = 11;
+				cooldownTime = 20;
+				break;
+		}
+
+		state->warcry = level.time + activeTime * 1000;
+		state->warcryCooldown = cooldownTime * 1000;
+
+		BOTS_Captain_ApplyNearbyWarcry(ent, activeTime);
+
+		trap_SendServerCommand(clientNum, "print \"Warcry enabled.\n\"");
+	}
 }

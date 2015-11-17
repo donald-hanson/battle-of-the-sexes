@@ -291,6 +291,7 @@ typedef enum {
 
 	PW_BLIND,
 	PW_POISON,
+	PW_WARCRY,
 
 	PW_NUM_POWERUPS
 

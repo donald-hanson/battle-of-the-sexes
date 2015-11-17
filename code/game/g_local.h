@@ -1009,6 +1009,7 @@ qboolean	BOTS_Client_FireWeapon(gentity_t *ent);
 qboolean	BOTS_ClassState_Changed(int clientNum);
 void		BOTS_ClassState_Append(int clientNum);
 int			BOTS_Pickup_Ammo(gentity_t *ammo, gentity_t *player);
+gentity_t *	BOTS_GetTeamFlag(team_t team);
 
 // BotS - bots_common
 void		BOTS_Common_DropKey(int clientNum, qboolean launch, qboolean tech);
@@ -1046,6 +1047,7 @@ void		BOTS_CaptainCommand_ScoutAll(int clientNum);
 void		BOTS_CaptainCommand_Split1(int clientNum);
 void		BOTS_CaptainCommand_Split2(int clientNum);
 void		BOTS_CaptainCommand_Split3(int clientNum);
+void		BOTS_CaptainCommand_Warcry(int clientNum);
 void		BOTS_CaptainSpawn(gentity_t *ent);
 void		BOTS_CaptainDeath(gentity_t *killed, gentity_t *killedBy, gentity_t *killer, int damage, int meansOfDeath);
 void		BOTS_Captain_Network(int clientNum);

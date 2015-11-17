@@ -48,6 +48,7 @@ classCommandInfo_t g_captainCommands[] = {
 	{ "split1",			BOTS_CaptainCommand_Split1 },
 	{ "split2",			BOTS_CaptainCommand_Split2 },
 	{ "split3",			BOTS_CaptainCommand_Split3 },
+	{ "warcry",			BOTS_CaptainCommand_Warcry },
 	{ NULL, NULL }
 };
 classCommandInfo_t g_bodyguardCommands[] = {
@@ -817,4 +818,31 @@ qboolean BOTS_Common_ApplyPoison(gentity_t *health, gentity_t *player, int quant
 		return qtrue;
 	}
 	return qfalse;
+}
+
+gentity_t *BOTS_GetTeamFlag(team_t team) 
+{
+	char *classname = (char *)NULL;
+	gentity_t *flag = (gentity_t *)NULL;
+
+	if (team == TEAM_RED) 
+	{
+		classname = "team_CTF_redflag";
+	}
+	else if (team == TEAM_BLUE) 
+	{
+		classname = "team_CTF_blueflag";
+	}
+	else 
+	{
+		return (gentity_t *)NULL;
+	}
+	
+	flag = G_Find(NULL, FOFS(classname), classname);
+	if (flag && !(flag->flags & FL_DROPPED_ITEM))
+	{
+		return flag;
+	}
+
+	return (gentity_t *)NULL;
 }

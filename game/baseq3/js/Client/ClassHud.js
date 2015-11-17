@@ -26,9 +26,21 @@ ClassHud = {
         DrawTopRight: function(ps)
         {
             var cs = Sys.GetClassState();
+			
+			var messages = [];
+			
             var bfgMode = Constants.GetName(Constants.BFGMode, cs.bfgMode);
             var bfgModeName = Constants.GetValue(Constants.BFGModeNames, bfgMode);
-            Hud.DrawSmallString(640, 32, "Mode: " + bfgModeName, 1.0, Constants.Hud.Alignment.Right);		
+			
+			messages.push("Mode: " + bfgModeName);
+						
+			if (cs.warcryActive)
+				messages.push("Warcry: On  (" + cs.warcryTime.toString() + "s)");
+			else
+				messages.push("Warcry: Off (" + cs.warcryTime.toString() + "s)");			
+					
+            for(i=0;i<messages.length;i++)
+                Hud.DrawSmallString(640, 32 + (i * 16), messages[i], 1.0, Constants.Hud.Alignment.Right);					
         }
     },
 

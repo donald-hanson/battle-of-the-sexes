@@ -586,6 +586,23 @@ void BOTS_Common_ApplyBodyguardProtection(gentity_t **targ, gentity_t *attacker,
 	}
 }
 
+void BOTS_Common_ApplyWarcryMultiplier(gentity_t *target, gentity_t *attacker, int *damage) 
+{
+	int finalDamage = *damage;
+
+	if (attacker && attacker->client && attacker->inuse && attacker->health > 0 && attacker->client->ps.powerups[PW_WARCRY])
+	{
+		finalDamage *= 1.5f;
+	}
+
+	if (target && target->client && target->inuse && target->health > 0 && target->client->ps.powerups[PW_WARCRY]) 
+	{
+		finalDamage *= 0.75f;
+	}
+	
+	*damage = finalDamage;
+}
+
 /////////////////////////////////////////////////////////////////
 // visible - totally ripped from:
 // http://quakestyle.telefragged.com/quake3/tutorial11.htm
