@@ -1,7 +1,8 @@
 #include "g_local.h"
 
-#define CHARGE_TIME		2500
-#define CHARGE_DELAY	30000
+#define CHARGE_TIME				2500
+#define CHARGE_DELAY			30000
+#define CHARGE_DELAY_REDUCTION	2500
 
 typedef struct berzerkerState_s {
 	int charge;
@@ -90,7 +91,7 @@ void BOTS_BerzerkerCommand_Charge(int clientNum)
 	}
 	else
 	{
-		cooldownTime = CHARGE_DELAY * (1.0f + (pLevel / 4.0f));
+		cooldownTime = CHARGE_DELAY - (CHARGE_DELAY_REDUCTION * pLevel);
 
 		if (pLevel == 0)
 			pLevel = 1;
