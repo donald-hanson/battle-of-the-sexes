@@ -1,7 +1,11 @@
 #include "g_local.h"
 
+#define CHARGE_TIME		2500
+#define CHARGE_DELAY	30000
+
 typedef struct berzerkerState_s {
-	int x;
+	int charge;
+	int chargeCooldown;
 } berzerkerState_t;
 
 berzerkerState_t berzerkerStates[MAX_CLIENTS];
@@ -9,6 +13,29 @@ berzerkerState_t berzerkerStates[MAX_CLIENTS];
 berzerkerState_t *BOTS_Berzerker_GetState(int clientNum)
 {
 	return &berzerkerStates[clientNum];
+}
+
+void BOTS_Berzerker_Network(int clientNum)
+{
+	gentity_t *ent = g_entities + clientNum;
+	berzerkerState_t *state = BOTS_Berzerker_GetState(clientNum);
+	int i = 0;
+
+	if (state->charge > level.time)
+	{
+		trap_Net_WriteBits(1, 1);
+		trap_Net_WriteBits((state->charge - level.time) / 1000, 8);
+	}
+	else if (state->charge + state->chargeCooldown > level.time)
+	{
+		trap_Net_WriteBits(0, 1);
+		trap_Net_WriteBits((state->charge + state->chargeCooldown - level.time) / 1000, 8);
+	}
+	else
+	{
+		trap_Net_WriteBits(0, 1);
+		trap_Net_WriteBits(0, 8);
+	}
 }
 
 void BOTS_BerzerkerSpawn(gentity_t *player)
@@ -38,4 +65,41 @@ void BOTS_Berzerker_ModifyDamage(gentity_t *target, gentity_t *inflictor, gentit
 		finalDamage *= 1.0f + (0.25f * currentLevel);
 	}
 	*damage = finalDamage;
+}
+
+void BOTS_BerzerkerCommand_Charge(int clientNum)
+{
+	vec3_t distance;
+	int activeTime = 0;
+	int cooldownTime = 0;
+	gentity_t *ent = g_entities + clientNum;
+	int pLevel = ent->client->ps.persistant[PERS_LEVEL];
+	berzerkerState_t *state = BOTS_Berzerker_GetState(clientNum);
+
+	if (state->charge > level.time)
+	{
+		trap_SendServerCommand(clientNum, "print \"Charge currently active.\n\"");
+	}
+	else if (state->charge + state->chargeCooldown > level.time)
+	{
+		trap_SendServerCommand(clientNum, "print \"Charge currently on cooldown.\n\"");
+	}
+	else if (ent->client->ps.powerups[PW_REDFLAG] || ent->client->ps.powerups[PW_BLUEFLAG]) 
+	{
+		trap_SendServerCommand(clientNum, "print \"You cannot charge with the flag.\n\"");
+	}
+	else
+	{
+		cooldownTime = CHARGE_DELAY * (1.0f + (pLevel / 4.0f));
+
+		if (pLevel == 0)
+			pLevel = 1;
+
+		activeTime = (CHARGE_TIME * pLevel);
+		
+		ent->client->ps.powerups[PW_HASTE] = state->charge = level.time + activeTime;
+		state->chargeCooldown = cooldownTime;
+
+		trap_SendServerCommand(clientNum, "print \"Charge enabled.\n\"");
+	}
 }

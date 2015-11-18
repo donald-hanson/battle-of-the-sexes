@@ -318,13 +318,16 @@ void BOTS_Soldier_ClassState(jsWrapper_t *wrapper);
 void BOTS_Infiltrator_Network(int clientNum);
 void BOTS_Infiltrator_ClassState(jsWrapper_t *wrapper);
 
+void BOTS_Berzerker_Network(int clientNum);
+void BOTS_Berzerker_ClassState(jsWrapper_t *wrapper);
+
 gameStateInfo_t gameStateInfos[] = {
 	{ CLASS_NONE,			NULL, NULL },
 	{ CLASS_CAPTAIN,		BOTS_Captain_Network, BOTS_Captain_ClassState },
 	{ CLASS_BODYGUARD,		BOTS_Bodyguard_Network, BOTS_Bodyguard_ClassState },
 	{ CLASS_SNIPER,			NULL, NULL  },
 	{ CLASS_SOLDIER,		BOTS_Soldier_Network, BOTS_Soldier_ClassState  },
-	{ CLASS_BERZERKER,		NULL, NULL  },
+	{ CLASS_BERZERKER,		BOTS_Berzerker_Network, BOTS_Berzerker_ClassState },
 	{ CLASS_INFILTRATOR,	BOTS_Infiltrator_Network, BOTS_Infiltrator_ClassState },
 	{ CLASS_KAMIKAZEE,		NULL, NULL  },
 	{ CLASS_NURSE,			NULL, NULL  },

@@ -76,6 +76,7 @@ classCommandInfo_t g_soldierCommands[] = {
 	{ NULL, NULL }
 };
 classCommandInfo_t g_berzerkerCommands[] = {
+	{"charge",	BOTS_BerzerkerCommand_Charge },
 	{ NULL, NULL }
 };
 classCommandInfo_t g_infiltratorCommands[] = {
@@ -108,7 +109,7 @@ classInfo_t g_classList[] = {
 	{ CLASS_BODYGUARD,	"Bodyguard",	WP_SHOTGUN,			0,		qtrue,		GRENADE_PROXIMITY,	NULL,						NULL,				NULL,				NULL,					BOTS_Bodyguard_Network,		BOTS_Bodyguard_Modify_EntityState,	BOTS_Bodyguard_Rollback_EntityState,	NULL,							NULL,						g_bodyguardCommands		},
 	{ CLASS_SNIPER,		"Sniper",		WP_RAILGUN,			0,		qtrue,		GRENADE_NORMAL,		NULL,						NULL,				NULL,				NULL,					NULL,						NULL,								NULL,									NULL,							NULL,						g_sniperCommands		},
 	{ CLASS_SOLDIER,	"Soldier",		WP_ROCKET_LAUNCHER,	-1,		qtrue,		GRENADE_NORMAL,		BOTS_Soldier_FireWeapon,	NULL,				NULL,				NULL,					BOTS_Soldier_Network,		NULL,								NULL,									NULL,							NULL,						g_soldierCommands		},
-	{ CLASS_BERZERKER,	"Berzerker",	WP_GAUNTLET,		-1,		qfalse,		GRENADE_NORMAL,		NULL,						BOTS_BerzerkerSpawn,NULL,				NULL,					NULL,						NULL,								NULL,									NULL,							BOTS_Berzerker_ModifyDamage,g_berzerkerCommands		},
+	{ CLASS_BERZERKER,	"Berzerker",	WP_GAUNTLET,		-1,		qfalse,		GRENADE_NORMAL,		NULL,						BOTS_BerzerkerSpawn,NULL,				NULL,					BOTS_Berzerker_Network,		NULL,								NULL,									NULL,							BOTS_Berzerker_ModifyDamage,g_berzerkerCommands		},
 	{ CLASS_INFILTRATOR,"Infiltrator",	WP_PLASMAGUN,		0,		qtrue,		GRENADE_DECOY,		BOTS_Infiltrator_FireWeapon,NULL,				NULL,				NULL,					BOTS_Infiltrator_Network,	NULL,								NULL,									BOTS_Infiltrator_PickupAmmo,	NULL,						g_infiltratorCommands	},
 	{ CLASS_KAMIKAZEE,	"Kamikazee",	WP_GRENADE_LAUNCHER,0,		qtrue,		GRENADE_NORMAL,		NULL,						NULL,				NULL,				NULL,					NULL,						NULL,								NULL,									NULL,							NULL,						g_kamikazeeCommands		},
 	{ CLASS_NURSE,		"Nurse",		WP_MACHINEGUN,		0,		qtrue,		GRENADE_FLASH,		NULL,						BOTS_NurseSpawn,	NULL,				NULL,					NULL,						NULL,								NULL,									NULL,							NULL,						g_nurseCommands			},

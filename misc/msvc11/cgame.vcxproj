@@ -541,6 +541,7 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="..\..\code\cgame\bots_berzerker.c" />
     <ClCompile Include="..\..\code\cgame\bots_bodyguard.c" />
     <ClCompile Include="..\..\code\cgame\bots_captain.c" />
     <ClCompile Include="..\..\code\cgame\bots_infiltrator.c" />
