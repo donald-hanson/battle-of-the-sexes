@@ -571,7 +571,6 @@ int BOTS_Common_CalculateDamageKnockback(gentity_t *targ, gentity_t *attacker, i
 
 void BOTS_Common_ApplyBodyguardProtection(gentity_t **targ, gentity_t *attacker, int *damage, int mod)
 {
-	int newDamage;
 	gentity_t *bodyguard;
 	int level = 0;
 	gentity_t *currentTarget = *targ;

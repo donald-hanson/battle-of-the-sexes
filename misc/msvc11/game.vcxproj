@@ -786,6 +786,7 @@
       <PreprocessorDefinitions Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">WIN32;NDEBUG;_WINDOWS;GLOBALRANK;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <PreprocessorDefinitions Condition="'$(Configuration)|$(Platform)'=='Release|x64'">WIN32;NDEBUG;_WINDOWS;GLOBALRANK;%(PreprocessorDefinitions)</PreprocessorDefinitions>
     </ClCompile>
+    <ClCompile Include="..\..\code\game\bots_berzerker.c" />
     <ClCompile Include="..\..\code\game\bots_bodyguard.c" />
     <ClCompile Include="..\..\code\game\bots_captain.c" />
     <ClCompile Include="..\..\code\game\bots_client.c" />

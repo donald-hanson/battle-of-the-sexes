@@ -1010,6 +1010,7 @@ qboolean	BOTS_ClassState_Changed(int clientNum);
 void		BOTS_ClassState_Append(int clientNum);
 int			BOTS_Pickup_Ammo(gentity_t *ammo, gentity_t *player);
 gentity_t *	BOTS_GetTeamFlag(team_t team);
+void		BOTS_Client_ModifyDamage(gentity_t **targ, gentity_t *inflictor, gentity_t *attacker, int *damage, int mod);
 
 // BotS - bots_common
 void		BOTS_Common_DropKey(int clientNum, qboolean launch, qboolean tech);
@@ -1102,6 +1103,9 @@ void		BOTS_NurseCommand_CreateLargeHealth(int clientNum);
 void		BOTS_NurseCommand_CreateMegaHealth(int clientNum);
 void		BOTS_NurseCommand_CreateMedikitHealth(int clientNum);
 void		BOTS_NurseCommand_CreateRegenHealth(int clientNum);
+
+// BotS - bots_berzerker
+void		BOTS_Berzerker_ModifyDamage(gentity_t *target, gentity_t *inflictor, gentity_t *attacker, int *damage, int mod);
 
 // BotS - bots_grenade
 void		BOTS_Grenade_HandleKeyPress(gentity_t *ent);

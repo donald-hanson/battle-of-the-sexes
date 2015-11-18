@@ -839,9 +839,7 @@ void G_Damage( gentity_t *targ, gentity_t *inflictor, gentity_t *attacker,
 		attacker = &g_entities[ENTITYNUM_WORLD];
 	}
 
-	BOTS_Common_ApplyWarcryMultiplier(targ, attacker, &damage);
-
-	BOTS_Common_ApplyBodyguardProtection(&targ, attacker, &damage, mod);
+	BOTS_Client_ModifyDamage(&targ, inflictor, attacker, &damage, mod);
 
 	// shootable doors / buttons don't actually have any health
 	if ( targ->s.eType == ET_MOVER ) {
