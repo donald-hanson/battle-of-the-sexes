@@ -1106,6 +1106,7 @@ void		BOTS_NurseCommand_CreateRegenHealth(int clientNum);
 
 // BotS - bots_berzerker
 void		BOTS_Berzerker_ModifyDamage(gentity_t *target, gentity_t *inflictor, gentity_t *attacker, int *damage, int mod);
+void		BOTS_BerzerkerSpawn(gentity_t *player);
 
 // BotS - bots_grenade
 void		BOTS_Grenade_HandleKeyPress(gentity_t *ent);

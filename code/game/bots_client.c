@@ -108,7 +108,7 @@ classInfo_t g_classList[] = {
 	{ CLASS_BODYGUARD,	"Bodyguard",	WP_SHOTGUN,			0,		qtrue,		GRENADE_PROXIMITY,	NULL,						NULL,				NULL,				NULL,					BOTS_Bodyguard_Network,		BOTS_Bodyguard_Modify_EntityState,	BOTS_Bodyguard_Rollback_EntityState,	NULL,							NULL,						g_bodyguardCommands		},
 	{ CLASS_SNIPER,		"Sniper",		WP_RAILGUN,			0,		qtrue,		GRENADE_NORMAL,		NULL,						NULL,				NULL,				NULL,					NULL,						NULL,								NULL,									NULL,							NULL,						g_sniperCommands		},
 	{ CLASS_SOLDIER,	"Soldier",		WP_ROCKET_LAUNCHER,	-1,		qtrue,		GRENADE_NORMAL,		BOTS_Soldier_FireWeapon,	NULL,				NULL,				NULL,					BOTS_Soldier_Network,		NULL,								NULL,									NULL,							NULL,						g_soldierCommands		},
-	{ CLASS_BERZERKER,	"Berzerker",	WP_GAUNTLET,		-1,		qfalse,		GRENADE_NORMAL,		NULL,						NULL,				NULL,				NULL,					NULL,						NULL,								NULL,									NULL,							BOTS_Berzerker_ModifyDamage,g_berzerkerCommands		},
+	{ CLASS_BERZERKER,	"Berzerker",	WP_GAUNTLET,		-1,		qfalse,		GRENADE_NORMAL,		NULL,						BOTS_BerzerkerSpawn,NULL,				NULL,					NULL,						NULL,								NULL,									NULL,							BOTS_Berzerker_ModifyDamage,g_berzerkerCommands		},
 	{ CLASS_INFILTRATOR,"Infiltrator",	WP_PLASMAGUN,		0,		qtrue,		GRENADE_DECOY,		BOTS_Infiltrator_FireWeapon,NULL,				NULL,				NULL,					BOTS_Infiltrator_Network,	NULL,								NULL,									BOTS_Infiltrator_PickupAmmo,	NULL,						g_infiltratorCommands	},
 	{ CLASS_KAMIKAZEE,	"Kamikazee",	WP_GRENADE_LAUNCHER,0,		qtrue,		GRENADE_NORMAL,		NULL,						NULL,				NULL,				NULL,					NULL,						NULL,								NULL,									NULL,							NULL,						g_kamikazeeCommands		},
 	{ CLASS_NURSE,		"Nurse",		WP_MACHINEGUN,		0,		qtrue,		GRENADE_FLASH,		NULL,						BOTS_NurseSpawn,	NULL,				NULL,					NULL,						NULL,								NULL,									NULL,							NULL,						g_nurseCommands			},
@@ -310,7 +310,7 @@ void BOTS_ClientSpawn(gentity_t *ent)
 			client->ps.stats[STAT_MAX_HEALTH] = client->pers.maxHealth = teamInfo.classHealthLimits[classInfo.value] * (1.0f + (currentLevel / 4.0f));
 			//if they are level 1 or higher start them with more health
 			if (currentLevel > 0)
-				ent->health = client->ps.stats[STAT_HEALTH] = teamInfo.classHealthLimits[classInfo.value];
+				ent->health = client->ps.stats[STAT_HEALTH] = client->ps.stats[STAT_MAX_HEALTH];
 			else
 				ent->health = client->ps.stats[STAT_HEALTH] = 100;
 		}
@@ -326,7 +326,7 @@ void BOTS_ClientSpawn(gentity_t *ent)
 			client->ps.stats[STAT_MAX_ARMOR] = teamInfo.classArmorLimits[classInfo.value] * (1.0f + (currentLevel / 4.0f));
 			//if they are level 1 or higher give them a bit of armor to start with
 			if (currentLevel > 0)
-				client->ps.stats[STAT_ARMOR] = teamInfo.classArmorLimits[classInfo.value];
+				client->ps.stats[STAT_ARMOR] = client->ps.stats[STAT_MAX_ARMOR];
 		}
 
 		if (classInfo.spawnHandler)
