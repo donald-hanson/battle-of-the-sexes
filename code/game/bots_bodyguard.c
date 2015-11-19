@@ -8,16 +8,22 @@
 #define	DECOY_ACTIVE_SECONDS	15000
 
 typedef struct laserState_s {
-	qboolean active;	//has the laser base been placed in the game world?
-	qboolean on;		// is the laser currently on?
-	gentity_t *base;	//pointer to the laser base entity
-	gentity_t *beam;	//pointer to the laser beam entity
-	int onTime;	// time the laser was turned on
+	qboolean active;		// has the laser base been placed in the game world?
+	qboolean on;			// is the laser currently on?
+	gentity_t *base;		// pointer to the laser base entity
+	gentity_t *beam;		// pointer to the laser beam entity
+	gentity_t *reflection;	// pointer to the laser beam reflection entity
+	int onTime;				// time the laser was turned on
+	gentity_t *bodyguard;	// pointer to the bodyguard that owns the laser
+	vec3_t initialAngle;	// initial angle for reflection
+	vec3_t overrideAngle;	// override angle for reflection
 	void (*enable)(struct laserState_s *state);
 	void (*disable)(struct laserState_s *state);
 	void (*kill)(struct laserState_s *state);
 	void (*pulseOn)(struct laserState_s *state);
 	void (*pulseOff)(struct laserState_s *state);
+	qboolean (*applyAngle)(struct laserState_s *state, gentity_t *ent);
+	void (*resetAngle)(struct laserState_s *state);
 } laserState_t;
 
 typedef struct bodyguardState_s {
@@ -87,21 +93,80 @@ laserState_t *BOTS_Bodyguard_GetLaserState(gentity_t *beam)
 		{
 			return laserState;
 		}
+
+		if (laserState->reflection != (gentity_t *)NULL && laserState->reflection == beam) 
+		{
+			return laserState;
+		}
 	}
 	return (laserState_t *)NULL;
+}
+
+laserState_t *BOTS_Bodyguard_FindLaserState_ByNumber(bodyguardState_t *bodyguardState, int number)
+{
+	number -= 1;
+	if (number >= 0 && number < MAX_LASERS) {
+		return &bodyguardState->lasers[number];
+	}
+	return (laserState_t *)NULL;
+}
+
+void BOTS_Bodyguard_LaserBeam_Attack(gentity_t *inflictor, gentity_t *bodyguard, vec3_t origin, vec3_t angle, int passEntityNum, int damage, vec3_t *finalStart, vec3_t *finalEnd)
+{
+	gentity_t *unlinkedEntities[MAX_LASER_HITS];
+	int unlinked = 0;
+	int i;
+	vec3_t end;
+	trace_t tr;
+
+	// fire forward and see what we hit
+	VectorMA(origin, 8192, angle, end);
+
+	do
+	{
+		gentity_t* traceEnt;
+
+		trap_Trace(&tr, origin, NULL, NULL, end, passEntityNum, MASK_SHOT);
+
+		if (tr.entityNum >= ENTITYNUM_MAX_NORMAL)
+			break;
+
+		traceEnt = &g_entities[tr.entityNum];
+
+		// hurt it if we can
+		if (traceEnt->takedamage && traceEnt->client && !OnSameTeam(bodyguard, traceEnt))
+			G_Damage(traceEnt, inflictor, bodyguard, angle, tr.endpos, damage, DAMAGE_NO_KNOCKBACK, MOD_TARGET_LASER);
+
+		// we hit something solid enough to stop the beam
+		if (tr.contents & CONTENTS_SOLID)
+			break;
+
+		// unlink this entity, so the next trace will go past it
+		trap_UnlinkEntity(traceEnt);
+		unlinkedEntities[unlinked] = traceEnt;
+		unlinked++;
+	} while (unlinked < MAX_LASER_HITS);
+
+	// link back in any entities we unlinked
+	for (i = 0; i < unlinked; i++)
+		trap_LinkEntity(unlinkedEntities[i]);
+
+	// save net bandwidth
+	SnapVector(tr.endpos);
+
+	// set endpoint of laser
+	VectorCopy(origin, *finalStart);
+	VectorCopy(tr.endpos, *finalEnd);
 }
 
 void BOTS_Bodyguard_LaserBeam_Think(gentity_t* self) 
 {
 	gentity_t *bodyguard = self->parent;
-	gentity_t *unlinkedEntities[MAX_LASER_HITS];
-	int unlinked = 0;
-	vec3_t end;
-	trace_t tr;
-	int i;
-	int elapsed;
 	bodyguardState_t *state = BOTS_Bodyguard_GetState(bodyguard->s.clientNum);
 	laserState_t *laserState = BOTS_Bodyguard_GetLaserState(self);
+	int elapsed;
+	qboolean hitSolidSurface;
+	vec3_t reflectedAngle;
 
 	if (laserState == (laserState_t *)NULL)
 		return;
@@ -126,52 +191,27 @@ void BOTS_Bodyguard_LaserBeam_Think(gentity_t* self)
 		}
 	}
 
-	// fire forward and see what we hit
-	VectorMA (self->s.pos.trBase, 8192, self->movedir, end);
+	BOTS_Bodyguard_LaserBeam_Attack(self, bodyguard, self->s.pos.trBase, self->movedir, self->s.number, self->damage, &self->s.origin, &self->s.origin2);
 
-	do 
-	{
-		gentity_t* traceEnt;
-
-		trap_Trace (&tr, self->s.pos.trBase, NULL, NULL, end, self->s.number, MASK_SHOT );
-
-		if ( tr.entityNum >= ENTITYNUM_MAX_NORMAL )
-			break;
-
-		traceEnt = &g_entities[ tr.entityNum ];
-
-		// hurt it if we can
-		if ( traceEnt->takedamage && traceEnt->client && !OnSameTeam (bodyguard, traceEnt))
-			G_Damage (traceEnt, self, self->activator, self->movedir, tr.endpos, self->damage, DAMAGE_NO_KNOCKBACK, MOD_TARGET_LASER);
-
-		// we hit something solid enough to stop the beam
-		if ( tr.contents & CONTENTS_SOLID ) 
-			break;		
-
-		// unlink this entity, so the next trace will go past it
-		trap_UnlinkEntity( traceEnt );
-		unlinkedEntities[unlinked] = traceEnt;
-		unlinked++;
-	} 
-	while ( unlinked < MAX_LASER_HITS );
-
-	// link back in any entities we unlinked
-	for ( i = 0 ; i < unlinked ; i++ )
-		trap_LinkEntity( unlinkedEntities[i] );
-
-	// save net bandwidth
-	SnapVector( tr.endpos );
-
-	// set endpoint of laser
-	VectorCopy (self->s.pos.trBase, self->s.origin);
-	VectorCopy (tr.endpos, self->s.origin2);
 	trap_LinkEntity( self );
 
 	self->nextthink = level.time + FRAMETIME;
 }
 
-gentity_t *BOTS_Bodyguard_CreateLaserBeam(gentity_t *ent, vec3_t wallp, trace_t tr)
+void BOTS_Bodyguard_LaserBeamReflection_Think(gentity_t *self) 
 {
+	gentity_t *bodyguard = self->parent;
+
+	BOTS_Bodyguard_LaserBeam_Attack(self, bodyguard, self->s.pos.trBase, self->movedir, self->s.number, self->damage, &self->s.origin, &self->s.origin2);
+
+	trap_LinkEntity(self);
+
+	self->nextthink = level.time + FRAMETIME;
+}
+
+gentity_t *BOTS_Bodyguard_CreateLaserBeam(gentity_t *ent, trace_t tr)
+{
+	vec3_t wallp;
 	gentity_t *laser;
 	// Make the laser beam
 	laser = G_Spawn();
@@ -179,7 +219,7 @@ gentity_t *BOTS_Bodyguard_CreateLaserBeam(gentity_t *ent, vec3_t wallp, trace_t 
 	laser->s.modelindex	= 1;
 	laser->s.modelindex2 = 0; // This is non-zero if it's a dropped item
 	laser->s.number	= laser - g_entities;
-	laser->s.frame= 2;	// beam diameter
+	laser->s.frame = 2;	// beam diameter
 	laser->classname = "bots_laser";
 	laser->damage = 10000;
 	laser->activator = ent;
@@ -199,6 +239,57 @@ gentity_t *BOTS_Bodyguard_CreateLaserBeam(gentity_t *ent, vec3_t wallp, trace_t 
 	VectorCopy(tr.plane.normal, laser->s.angles);
 
 	trap_LinkEntity (laser);
+
+	return laser;
+}
+
+gentity_t *BOTS_Bodyguard_CreateLaserBeam_Reflection(gentity_t *parentBeam, gentity_t *bodyguard) 
+{
+	trace_t tr;
+	vec3_t traceEnd;
+	vec3_t newOrigin;
+	vec3_t newEnd;
+	gentity_t *laser;
+
+	VectorMA(parentBeam->s.pos.trBase, 8192, parentBeam->s.angles, traceEnd);
+
+	trap_Trace(&tr, parentBeam->s.pos.trBase, NULL, NULL, traceEnd, parentBeam->s.number, MASK_SOLID);
+
+	if (tr.surfaceFlags & SURF_SKY) {
+		return (gentity_t *)NULL;
+	}
+
+	// save net bandwidth
+	SnapVector(tr.endpos);
+
+	// set endpoint of laser
+	VectorCopy(tr.endpos, newOrigin);
+
+	// Make the laser beam
+	laser = G_Spawn();
+	laser->s.eType = ET_BOTS_LASER;
+	laser->s.modelindex = 1;
+	laser->s.modelindex2 = 0; // This is non-zero if it's a dropped item
+	laser->s.number = laser - g_entities;
+	laser->s.frame = 2;	// beam diameter
+	laser->classname = "bots_laser";
+	laser->damage = 10000;
+	laser->activator = bodyguard;
+	laser->parent = bodyguard;
+	laser->s.pos.trTime = level.time;
+	laser->nextthink = 0;
+	laser->think = BOTS_Bodyguard_LaserBeamReflection_Think;
+	laser->s.clientNum = bodyguard->s.clientNum;
+	laser->s.pos.trType = TR_LINEAR;
+
+	// Set orgin of laser to the end of the lasermount model (aprox 10u)
+	G_SetOrigin(laser, newOrigin);
+
+	// setup laser movedir (projection of laser)
+	VectorCopy(tr.plane.normal, laser->movedir);
+	VectorCopy(tr.plane.normal, laser->s.angles);
+
+	trap_LinkEntity(laser);
 
 	return laser;
 }
@@ -241,10 +332,16 @@ gentity_t *BOTS_Bodyguard_CreateLaserBase(gentity_t *ent, trace_t tr)
 
 void BOTS_Bodyguard_LaserEnable(laserState_t *laserState)
 {
+	int pLevel = laserState->bodyguard->client->ps.persistant[PERS_LEVEL];
+
 	if (laserState->active && !laserState->on)
 	{
 		laserState->onTime = level.time;
 		laserState->beam->nextthink = level.time + FRAMETIME;
+		if (laserState->reflection && pLevel >= 3) 
+		{
+			laserState->reflection->nextthink = level.time + FRAMETIME;
+		}
 		laserState->on = qtrue;
 	}
 }
@@ -253,9 +350,14 @@ void BOTS_Bodyguard_LaserDisable(laserState_t *laserState)
 {
 	if (laserState->active && laserState->on)
 	{
-		trap_UnlinkEntity(laserState->beam);
 		laserState->onTime = 0;
+		trap_UnlinkEntity(laserState->beam);
 		laserState->beam->nextthink = 0;
+		if (laserState->reflection)
+		{
+			trap_UnlinkEntity(laserState->reflection);
+			laserState->reflection->nextthink = 0;
+		}
 		laserState->on = qfalse;
 	}
 }
@@ -266,11 +368,18 @@ void BOTS_Bodyguard_LaserKill(laserState_t *laserState)
 	{
 		G_FreeEntity(laserState->base);
 		G_FreeEntity(laserState->beam);
+		if (laserState->reflection) 
+		{
+			G_FreeEntity(laserState->reflection);
+		}
 		laserState->base = (gentity_t *)NULL;
 		laserState->beam = (gentity_t *)NULL;
+		laserState->reflection = (gentity_t *)NULL;
 		laserState->onTime = 0;
 		laserState->on = qfalse;
 		laserState->active = qfalse;
+		VectorClear(laserState->initialAngle);
+		VectorClear(laserState->overrideAngle);
 	}
 }
 
@@ -284,9 +393,38 @@ void BOTS_Bodyguard_LaserPulseOff(laserState_t *laserState)
 {
 	if (laserState->active)
 	{
-		trap_UnlinkEntity(laserState->beam);
 		laserState->on = qfalse;
+		trap_UnlinkEntity(laserState->beam);
 		laserState->beam->nextthink = level.time + FRAMETIME;
+		if (laserState->reflection) 
+		{
+			trap_UnlinkEntity(laserState->reflection);
+			laserState->reflection->nextthink = level.time + FRAMETIME;
+		}
+	}
+}
+
+qboolean BOTS_Bodyguard_LaserApplyAngle(laserState_t *laserState, gentity_t *ent) 
+{
+	vec3_t forward;
+	if (laserState->reflection) 
+	{
+		AngleVectors(ent->client->ps.viewangles, forward, NULL, NULL);
+		VectorCopy(forward, laserState->overrideAngle);
+		VectorCopy(forward, laserState->reflection->movedir);
+		VectorCopy(forward, laserState->reflection->s.angles);
+		return qtrue;
+	}
+	return qfalse;
+}
+
+void BOTS_Bodyguard_LaserResetAngle(laserState_t *laserState) 
+{
+	if (laserState->reflection) 
+	{
+		VectorCopy(laserState->initialAngle, laserState->reflection->movedir);
+		VectorCopy(laserState->initialAngle, laserState->reflection->s.angles);
+		VectorClear(laserState->overrideAngle);
 	}
 }
 
@@ -299,6 +437,7 @@ void BOTS_Bodyguard_PlaceLaser(gentity_t *ent, laserState_t *laserState)
 	trace_t		tr;
 	gentity_t *laser;
 	gentity_t *laser_mount;
+	gentity_t *reflection;
 
 	// set aiming directions
 	AngleVectors (ent->client->ps.viewangles, forward, right, up);
@@ -335,18 +474,34 @@ void BOTS_Bodyguard_PlaceLaser(gentity_t *ent, laserState_t *laserState)
 	// save net bandwidth
 	SnapVector( tr.endpos );
 
-	laser = BOTS_Bodyguard_CreateLaserBeam(ent, wallp, tr);
+	laser = BOTS_Bodyguard_CreateLaserBeam(ent, tr);
 	laser_mount = BOTS_Bodyguard_CreateLaserBase(ent, tr);
+	reflection = BOTS_Bodyguard_CreateLaserBeam_Reflection(laser, ent);
 	
+	laserState->bodyguard = ent;
 	laserState->active = qtrue;
 	laserState->beam = laser;
 	laserState->base = laser_mount;
+	laserState->reflection = reflection;
 	laserState->on = qfalse;
 	laserState->enable = BOTS_Bodyguard_LaserEnable;
 	laserState->disable = BOTS_Bodyguard_LaserDisable;
 	laserState->kill = BOTS_Bodyguard_LaserKill;
 	laserState->pulseOn = BOTS_Bodyguard_LaserPulseOn;
 	laserState->pulseOff = BOTS_Bodyguard_LaserPulseOff;
+	laserState->applyAngle = BOTS_Bodyguard_LaserApplyAngle;
+	laserState->resetAngle = BOTS_Bodyguard_LaserResetAngle;
+
+
+	if (reflection)
+	{
+		VectorCopy(reflection->movedir, laserState->initialAngle);
+	}
+	else
+	{
+		VectorClear(laserState->initialAngle);
+	}
+	VectorClear(laserState->overrideAngle);
 }
 
 void BOTS_BodyguardCommand_Laser(int clientNum)
@@ -398,11 +553,22 @@ void BOTS_BodyguardCommand_LaserOn(int clientNum)
 	laserState_t *laserState;
 	bodyguardState_t *state = BOTS_Bodyguard_GetState(clientNum);
 
-	for (i=0;i<MAX_LASERS;i++)
+	if (trap_Argc() == 2)
 	{
-		laserState = &state->lasers[i];
-		if (laserState->active)
+		char cmd[MAX_TOKEN_CHARS];
+		trap_Argv(1, cmd, sizeof(cmd));
+		laserState = BOTS_Bodyguard_FindLaserState_ByNumber(state, atoi(cmd));
+		if (laserState && laserState->active)
 			laserState->enable(laserState);
+	}
+	else 
+	{
+		for (i = 0;i < MAX_LASERS;i++)
+		{
+			laserState = &state->lasers[i];
+			if (laserState->active)
+				laserState->enable(laserState);
+		}
 	}
 }
 
@@ -412,11 +578,22 @@ void BOTS_BodyguardCommand_LaserOff(int clientNum)
 	laserState_t *laserState;
 	bodyguardState_t *state = BOTS_Bodyguard_GetState(clientNum);
 
-	for (i=0;i<MAX_LASERS;i++)
+	if (trap_Argc() == 2)
 	{
-		laserState = &state->lasers[i];
-		if (laserState->active)
+		char cmd[MAX_TOKEN_CHARS];
+		trap_Argv(1, cmd, sizeof(cmd));
+		laserState = BOTS_Bodyguard_FindLaserState_ByNumber(state, atoi(cmd));
+		if (laserState && laserState->active)
 			laserState->disable(laserState);
+	}
+	else 
+	{
+		for (i = 0;i<MAX_LASERS;i++)
+		{
+			laserState = &state->lasers[i];
+			if (laserState->active)
+				laserState->disable(laserState);
+		}
 	}
 }
 
@@ -426,11 +603,49 @@ void BOTS_BodyguardCommand_LaserKill(int clientNum)
 	laserState_t *laserState;
 	bodyguardState_t *state = BOTS_Bodyguard_GetState(clientNum);
 
-	for (i=0;i<MAX_LASERS;i++)
+	if (trap_Argc() == 2)
 	{
-		laserState = &state->lasers[i];
-		if (laserState->active)
+		char cmd[MAX_TOKEN_CHARS];
+		trap_Argv(1, cmd, sizeof(cmd));
+		laserState = BOTS_Bodyguard_FindLaserState_ByNumber(state, atoi(cmd));
+		if (laserState && laserState->active)
 			laserState->kill(laserState);
+	}
+	else 
+	{
+		for (i = 0;i < MAX_LASERS;i++)
+		{
+			laserState = &state->lasers[i];
+			if (laserState->active)
+				laserState->kill(laserState);
+		}
+	}
+}
+
+void BOTS_BodyguardCommand_Angle(int clientNum)
+{
+	gentity_t *ent = g_entities + clientNum;
+	bodyguardState_t *state = BOTS_Bodyguard_GetState(clientNum);
+	int pLevel = ent->client->ps.persistant[PERS_LEVEL];
+	laserState_t *laserState;
+
+	if (pLevel < 3) 
+	{
+		BOTS_Print(clientNum, "You must be level 3 to angle your lasers.");
+	}
+	else if (trap_Argc() == 2)
+	{
+		char cmd[MAX_TOKEN_CHARS];
+		trap_Argv(1, cmd, sizeof(cmd));
+		laserState = BOTS_Bodyguard_FindLaserState_ByNumber(state, atoi(cmd));
+		if (laserState && laserState->active) 
+			laserState->applyAngle(laserState, ent);
+	}
+	else
+	{
+		char cmd[MAX_TOKEN_CHARS];
+		trap_Argv(0, cmd, sizeof(cmd));
+		BOTS_Print(clientNum, va("usage: %s number", cmd));
 	}
 }
 

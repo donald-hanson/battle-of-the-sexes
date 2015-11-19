@@ -1065,6 +1065,7 @@ void		BOTS_BodyguardCommand_Laser(int clientNum);
 void		BOTS_BodyguardCommand_LaserOff(int clientNum);
 void		BOTS_BodyguardCommand_LaserOn(int clientNum);
 void		BOTS_BodyguardCommand_LaserKill(int clientNum);
+void		BOTS_BodyguardCommand_Angle(int clientNum);
 void		BOTS_BodyguardCommand_Protect(int clientNum);
 void		BOTS_BodyguardCommand_Decoy(int clientNum);
 void		BOTS_BodyguardCommand_Pulse(int clientNum);

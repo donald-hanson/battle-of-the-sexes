@@ -58,6 +58,7 @@ classCommandInfo_t g_bodyguardCommands[] = {
 	{ "laseroff",	BOTS_BodyguardCommand_LaserOff },
 	{ "laseron",	BOTS_BodyguardCommand_LaserOn },
 	{ "laserkill",	BOTS_BodyguardCommand_LaserKill },
+	{ "angle",		BOTS_BodyguardCommand_Angle },
 	{ "protect",	BOTS_BodyguardCommand_Protect },
 	{ "decoy",		BOTS_BodyguardCommand_Decoy },
 	{ "pulse",		BOTS_BodyguardCommand_Pulse },
