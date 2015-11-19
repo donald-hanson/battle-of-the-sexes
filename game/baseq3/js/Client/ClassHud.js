@@ -144,14 +144,19 @@ ClassHud = {
 			var messages = [];
 									
 			if (cs.chargeActive)
-				messages.push("Charge: On  (" + cs.chargeTime.toString() + "s)");
+				messages.push("Charge: On (" + cs.chargeTime.toString() + "s)");
 			else
 				messages.push("Charge: Off (" + cs.chargeTime.toString() + "s)");			
 				
 			if (cs.rageActive)
-				messages.push("Rage: On  (" + cs.rageTime.toString() + "s)");
+				messages.push("Rage: On (" + cs.rageTime.toString() + "s)");
 			else
-				messages.push("Rage: Off (" + cs.rageTime.toString() + "s)");							
+				messages.push("Rage: Off (" + cs.rageTime.toString() + "s)");
+				
+			if (cs.autoQuadActive)
+				messages.push("Auto Quad: On (" + cs.autoQuadTime.toString() + "s)");
+			else
+				messages.push("Auto Quad: Off");
 					
             for(i=0;i<messages.length;i++)
                 Hud.DrawSmallString(640, 32 + (i * 16), messages[i], 1.0, Constants.Hud.Alignment.Right);							

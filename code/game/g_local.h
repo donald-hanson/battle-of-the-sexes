@@ -1111,6 +1111,7 @@ void		BOTS_BerzerkerSpawn(gentity_t *player);
 void		BOTS_Berzerker_Network(int clientNum);
 void		BOTS_BerzerkerCommand_Charge(int clientNum);
 void		BOTS_BerzerkerCommand_Rage(int clientNum);
+void		BOTS_BerzerkerCommand_TogQuad(int clientNum);
 void		BOTS_Berzerker_Think(gentity_t *player, usercmd_t *ucmd);
 
 // BotS - bots_grenade

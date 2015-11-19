@@ -79,6 +79,7 @@ classCommandInfo_t g_soldierCommands[] = {
 classCommandInfo_t g_berzerkerCommands[] = {
 	{"charge",	BOTS_BerzerkerCommand_Charge },
 	{"rage",	BOTS_BerzerkerCommand_Rage },
+	{"togquad",	BOTS_BerzerkerCommand_TogQuad },
 	{ NULL, NULL }
 };
 classCommandInfo_t g_infiltratorCommands[] = {
