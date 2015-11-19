@@ -1011,6 +1011,7 @@ void		BOTS_ClassState_Append(int clientNum);
 int			BOTS_Pickup_Ammo(gentity_t *ammo, gentity_t *player);
 gentity_t *	BOTS_GetTeamFlag(team_t team);
 void		BOTS_Client_ModifyDamage(gentity_t **targ, gentity_t *inflictor, gentity_t *attacker, int *damage, int mod);
+void		BOTS_ClientThink_Real(gentity_t *player, usercmd_t *ucmd);
 
 // BotS - bots_common
 void		BOTS_Common_DropKey(int clientNum, qboolean launch, qboolean tech);
@@ -1109,6 +1110,8 @@ void		BOTS_Berzerker_ModifyDamage(gentity_t *target, gentity_t *inflictor, genti
 void		BOTS_BerzerkerSpawn(gentity_t *player);
 void		BOTS_Berzerker_Network(int clientNum);
 void		BOTS_BerzerkerCommand_Charge(int clientNum);
+void		BOTS_BerzerkerCommand_Rage(int clientNum);
+void		BOTS_Berzerker_Think(gentity_t *player, usercmd_t *ucmd);
 
 // BotS - bots_grenade
 void		BOTS_Grenade_HandleKeyPress(gentity_t *ent);

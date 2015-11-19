@@ -7,6 +7,8 @@
 typedef struct berzerkerState_s {
 	int charge;
 	int chargeCooldown;
+	qboolean rageActive;
+	int rageStopTime;
 } berzerkerState_t;
 
 berzerkerState_t berzerkerStates[MAX_CLIENTS];
@@ -33,6 +35,17 @@ void BOTS_Berzerker_Network(int clientNum)
 		trap_Net_WriteBits((state->charge + state->chargeCooldown - level.time) / 1000, 8);
 	}
 	else
+	{
+		trap_Net_WriteBits(0, 1);
+		trap_Net_WriteBits(0, 8);
+	}
+
+	if (state->rageActive) 
+	{
+		trap_Net_WriteBits(1, 1);
+		trap_Net_WriteBits((state->rageStopTime - level.time) / 1000, 8);
+	}
+	else 
 	{
 		trap_Net_WriteBits(0, 1);
 		trap_Net_WriteBits(0, 8);
@@ -102,5 +115,60 @@ void BOTS_BerzerkerCommand_Charge(int clientNum)
 		state->chargeCooldown = cooldownTime;
 
 		trap_SendServerCommand(clientNum, "print \"Charge enabled.\n\"");
+	}
+}
+
+void BOTS_BerzerkerCommand_Rage(int clientNum)
+{
+	vec3_t distance;
+	int activeTime = 0;
+	int cooldownTime = 0;
+	gentity_t *ent = g_entities + clientNum;
+	int pLevel = ent->client->ps.persistant[PERS_LEVEL];
+	berzerkerState_t *state = BOTS_Berzerker_GetState(clientNum);
+
+	if (state->rageStopTime > level.time)
+	{
+		trap_SendServerCommand(clientNum, "print \"Rage currently active.\n\"");
+	}
+	else if (ent->client->ps.powerups[PW_REDFLAG] || ent->client->ps.powerups[PW_BLUEFLAG])
+	{
+		trap_SendServerCommand(clientNum, "print \"You cannot use rage with the flag.\n\"");
+	}
+	else
+	{
+		if (ent->bots_team == TEAM_RED && ent->health >= 75) 
+		{
+			trap_SendServerCommand(clientNum, "print \"You have too much health to use rage.\n\"");
+		} 
+		else if (ent->health >= 100) 
+		{
+			trap_SendServerCommand(clientNum, "print \"You have too much health to use rage.\n\"");
+		}
+		else 
+		{
+			trap_SendServerCommand(clientNum, "print \"Rage enabled.\n\"");
+			state->rageActive = qtrue;
+			state->rageStopTime = level.time + (200 * ent->health);
+		}
+	}
+}
+
+
+void BOTS_Berzerker_Think(gentity_t *player, usercmd_t *ucmd)
+{
+	berzerkerState_t *state = BOTS_Berzerker_GetState(player->s.clientNum);
+	if (state->rageActive) 
+	{
+		if (state->rageStopTime > level.time)
+		{
+			player->takedamage = qfalse;
+		}
+		else
+		{
+			state->rageActive = qfalse;
+			player->takedamage = qtrue;
+			G_Damage(player, player, player, NULL, NULL, 100000, 0, MOD_SUICIDE);
+		}
 	}
 }

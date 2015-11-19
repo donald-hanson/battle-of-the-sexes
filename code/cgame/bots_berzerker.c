@@ -4,6 +4,8 @@
 typedef struct berzerkerState_s {
 	qboolean chargeActive;
 	int chargeTime;
+	qboolean rageActive;
+	int rageTime;
 } berzerkerState_t;
 
 berzerkerState_t berzerkerState;
@@ -20,6 +22,8 @@ void BOTS_Berzerker_Network(int clientNum)
 
 	state->chargeActive = (qboolean)trap_Net_ReadBits(1);
 	state->chargeTime = trap_Net_ReadBits(8);
+	state->rageActive = (qboolean)trap_Net_ReadBits(1);
+	state->rageTime = trap_Net_ReadBits(8);
 }
 
 void BOTS_Berzerker_ClassState(jsWrapper_t *wrapper)
@@ -29,4 +33,6 @@ void BOTS_Berzerker_ClassState(jsWrapper_t *wrapper)
 
 	wrapper->setPropertyBit(wrapper, "chargeActive", state->chargeActive);
 	wrapper->setPropertyInt(wrapper, "chargeTime", state->chargeTime);
+	wrapper->setPropertyBit(wrapper, "rageActive", state->rageActive);
+	wrapper->setPropertyInt(wrapper, "rageTime", state->rageTime);
 }

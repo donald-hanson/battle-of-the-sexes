@@ -16,6 +16,7 @@ typedef struct classInfo_s {
 	qboolean hasStinger;
 	grenadeType_t offhandGrenadeType;
 	qboolean (*fireWeaponHandler)(gentity_t *ent);
+	void (*thinkHandler)(gentity_t *player, usercmd_t *ucmd);
 	void (*spawnHandler)(gentity_t *ent);
 	void (*deathHandler)(gentity_t *killed, gentity_t *killedBy, gentity_t *killer, int damage, int meansOfDeath);
 	void (*killerHandler)(gentity_t *killer, gentity_t *killedBy, gentity_t *killed, int damage, int meansOfDeath);
@@ -77,6 +78,7 @@ classCommandInfo_t g_soldierCommands[] = {
 };
 classCommandInfo_t g_berzerkerCommands[] = {
 	{"charge",	BOTS_BerzerkerCommand_Charge },
+	{"rage",	BOTS_BerzerkerCommand_Rage },
 	{ NULL, NULL }
 };
 classCommandInfo_t g_infiltratorCommands[] = {
@@ -103,18 +105,18 @@ classCommandInfo_t g_scientistCommands[] = {
 };
 
 classInfo_t g_classList[] = {
-	// value,			name,			primaryWeapon,		hasHook,hasStinger,	offhandGrenadeType,	fireWeaponHandler,			spawnHandler,		deathHandler,		killerHandler,			networkHandler,				modifyEntityHandler,				rollbackEntityHandler,					pickupAmmoHandler,				modifyDamageHandler,	commandList
-	{ CLASS_NONE,		"None",			WP_NONE,			-1,		qfalse,		GRENADE_NORMAL,		NULL,						NULL,				NULL,				NULL,					NULL,						NULL,								NULL,									NULL,							NULL,						g_noneCommands			},
-	{ CLASS_CAPTAIN,	"Captain",		WP_BFG,				2,		qtrue,		GRENADE_PROXIMITY,	BOTS_Captain_FireWeapon,	BOTS_CaptainSpawn,	BOTS_CaptainDeath,	NULL,					BOTS_Captain_Network,		NULL,								NULL,									NULL,							NULL,						g_captainCommands		},
-	{ CLASS_BODYGUARD,	"Bodyguard",	WP_SHOTGUN,			0,		qtrue,		GRENADE_PROXIMITY,	NULL,						NULL,				NULL,				NULL,					BOTS_Bodyguard_Network,		BOTS_Bodyguard_Modify_EntityState,	BOTS_Bodyguard_Rollback_EntityState,	NULL,							NULL,						g_bodyguardCommands		},
-	{ CLASS_SNIPER,		"Sniper",		WP_RAILGUN,			0,		qtrue,		GRENADE_NORMAL,		NULL,						NULL,				NULL,				NULL,					NULL,						NULL,								NULL,									NULL,							NULL,						g_sniperCommands		},
-	{ CLASS_SOLDIER,	"Soldier",		WP_ROCKET_LAUNCHER,	-1,		qtrue,		GRENADE_NORMAL,		BOTS_Soldier_FireWeapon,	NULL,				NULL,				NULL,					BOTS_Soldier_Network,		NULL,								NULL,									NULL,							NULL,						g_soldierCommands		},
-	{ CLASS_BERZERKER,	"Berzerker",	WP_GAUNTLET,		-1,		qfalse,		GRENADE_NORMAL,		NULL,						BOTS_BerzerkerSpawn,NULL,				NULL,					BOTS_Berzerker_Network,		NULL,								NULL,									NULL,							BOTS_Berzerker_ModifyDamage,g_berzerkerCommands		},
-	{ CLASS_INFILTRATOR,"Infiltrator",	WP_PLASMAGUN,		0,		qtrue,		GRENADE_DECOY,		BOTS_Infiltrator_FireWeapon,NULL,				NULL,				NULL,					BOTS_Infiltrator_Network,	NULL,								NULL,									BOTS_Infiltrator_PickupAmmo,	NULL,						g_infiltratorCommands	},
-	{ CLASS_KAMIKAZEE,	"Kamikazee",	WP_GRENADE_LAUNCHER,0,		qtrue,		GRENADE_NORMAL,		NULL,						NULL,				NULL,				NULL,					NULL,						NULL,								NULL,									NULL,							NULL,						g_kamikazeeCommands		},
-	{ CLASS_NURSE,		"Nurse",		WP_MACHINEGUN,		0,		qtrue,		GRENADE_FLASH,		NULL,						BOTS_NurseSpawn,	NULL,				NULL,					NULL,						NULL,								NULL,									NULL,							NULL,						g_nurseCommands			},
-	{ CLASS_SCIENTIST,	"Scientist",	WP_LIGHTNING,		0,		qtrue,		GRENADE_TELEPORT,	NULL,						BOTS_ScientistSpawn,BOTS_ScientistDeath,BOTS_ScientistKiller,	NULL,						NULL,								NULL,									NULL,							NULL,						g_scientistCommands		},
-	{ CLASS_NUM_CLASSES,NULL,			WP_NUM_WEAPONS,		-1,		qfalse,		GRENADE_NORMAL,		NULL,						NULL,				NULL,				NULL,					NULL,						NULL,								NULL,									NULL,							NULL,						g_noneCommands			}
+	// value,			name,			primaryWeapon,		hasHook,hasStinger,	offhandGrenadeType,	fireWeaponHandler,			thinkHandler,			spawnHandler,		deathHandler,		killerHandler,			networkHandler,				modifyEntityHandler,				rollbackEntityHandler,					pickupAmmoHandler,				modifyDamageHandler,	commandList
+	{ CLASS_NONE,		"None",			WP_NONE,			-1,		qfalse,		GRENADE_NORMAL,		NULL,						NULL,					NULL,				NULL,				NULL,					NULL,						NULL,								NULL,									NULL,							NULL,						g_noneCommands },
+	{ CLASS_CAPTAIN,	"Captain",		WP_BFG,				2,		qtrue,		GRENADE_PROXIMITY,	BOTS_Captain_FireWeapon,	NULL,					BOTS_CaptainSpawn,	BOTS_CaptainDeath,	NULL,					BOTS_Captain_Network,		NULL,								NULL,									NULL,							NULL,						g_captainCommands },
+	{ CLASS_BODYGUARD,	"Bodyguard",	WP_SHOTGUN,			0,		qtrue,		GRENADE_PROXIMITY,	NULL,						NULL,					NULL,				NULL,				NULL,					BOTS_Bodyguard_Network,		BOTS_Bodyguard_Modify_EntityState,	BOTS_Bodyguard_Rollback_EntityState,	NULL,							NULL,						g_bodyguardCommands },
+	{ CLASS_SNIPER,		"Sniper",		WP_RAILGUN,			0,		qtrue,		GRENADE_NORMAL,		NULL,						NULL,					NULL,				NULL,				NULL,					NULL,						NULL,								NULL,									NULL,							NULL,						g_sniperCommands },
+	{ CLASS_SOLDIER,	"Soldier",		WP_ROCKET_LAUNCHER,	-1,		qtrue,		GRENADE_NORMAL,		BOTS_Soldier_FireWeapon,	NULL,					NULL,				NULL,				NULL,					BOTS_Soldier_Network,		NULL,								NULL,									NULL,							NULL,						g_soldierCommands },
+	{ CLASS_BERZERKER,	"Berzerker",	WP_GAUNTLET,		-1,		qfalse,		GRENADE_NORMAL,		NULL,						BOTS_Berzerker_Think,	BOTS_BerzerkerSpawn,NULL,				NULL,					BOTS_Berzerker_Network,		NULL,								NULL,									NULL,							BOTS_Berzerker_ModifyDamage,g_berzerkerCommands },
+	{ CLASS_INFILTRATOR,"Infiltrator",	WP_PLASMAGUN,		0,		qtrue,		GRENADE_DECOY,		BOTS_Infiltrator_FireWeapon,NULL,					NULL,				NULL,				NULL,					BOTS_Infiltrator_Network,	NULL,								NULL,									BOTS_Infiltrator_PickupAmmo,	NULL,						g_infiltratorCommands },
+	{ CLASS_KAMIKAZEE,	"Kamikazee",	WP_GRENADE_LAUNCHER,0,		qtrue,		GRENADE_NORMAL,		NULL,						NULL,					NULL,				NULL,				NULL,					NULL,						NULL,								NULL,									NULL,							NULL,						g_kamikazeeCommands },
+	{ CLASS_NURSE,		"Nurse",		WP_MACHINEGUN,		0,		qtrue,		GRENADE_FLASH,		NULL,						NULL,					BOTS_NurseSpawn,	NULL,				NULL,					NULL,						NULL,								NULL,									NULL,							NULL,						g_nurseCommands },
+	{ CLASS_SCIENTIST,	"Scientist",	WP_LIGHTNING,		0,		qtrue,		GRENADE_TELEPORT,	NULL,						NULL,					BOTS_ScientistSpawn,BOTS_ScientistDeath,BOTS_ScientistKiller,	NULL,						NULL,								NULL,									NULL,							NULL,						g_scientistCommands },
+	{ CLASS_NUM_CLASSES,NULL,			WP_NUM_WEAPONS,		-1,		qfalse,		GRENADE_NORMAL,		NULL,						NULL,					NULL,				NULL,				NULL,					NULL,						NULL,								NULL,									NULL,							NULL,						g_noneCommands			}
 };
 
 //the health/armor values are based on the following:
@@ -734,6 +736,12 @@ void BOTS_SyncScoresConfigStrings()
 	trap_SetConfigstring( CS_SCORES2, BOTS_BuildTeamInfoConfigString(TEAM_BLUE) );
 }
 
+void BOTS_ClientThink_Real(gentity_t *player, usercmd_t *ucmd) 
+{
+	classInfo_t *info = &g_classList[player->bots_class];
+	if (info->thinkHandler) 
+		info->thinkHandler(player, ucmd);
+}
 
 qboolean BOTS_ClassState_Changed(int clientNum)
 {

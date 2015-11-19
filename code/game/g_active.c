@@ -847,6 +847,8 @@ void ClientThink_real( gentity_t *ent ) {
 		Weapon_HookFree(client->hook);
 	}
 
+	BOTS_ClientThink_Real(ent, ucmd);
+
 	// set up for pmove
 	oldEventSequence = client->ps.eventSequence;
 
