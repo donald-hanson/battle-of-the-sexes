@@ -337,7 +337,7 @@ qboolean BOTS_Soldier_FireWeapon(gentity_t *ent)
 	return qfalse;
 }
 
-void BOTS_Solder_SetRocketMode(int clientNum, rocketMode_t rocketMode)
+void BOTS_Soldier_SetRocketMode(int clientNum, rocketMode_t rocketMode)
 {
 	soldierState_t *state = BOTS_Soldier_GetState(clientNum);
 	if (state->rocketMode == rocketMode)
@@ -348,7 +348,7 @@ void BOTS_Solder_SetRocketMode(int clientNum, rocketMode_t rocketMode)
 
 void BOTS_SoldierCommand_Rapid(int clientNum)
 {
-	BOTS_Solder_SetRocketMode(clientNum, ROCKET_RAPID);
+	BOTS_Soldier_SetRocketMode(clientNum, ROCKET_RAPID);
 }
 
 void BOTS_SoldierCommand_Guide1(int clientNum)
@@ -361,7 +361,7 @@ void BOTS_SoldierCommand_Guide1(int clientNum)
 		return;
 	}
 
-	BOTS_Solder_SetRocketMode(clientNum, ROCKET_GUIDED1);
+	BOTS_Soldier_SetRocketMode(clientNum, ROCKET_GUIDED1);
 }
 
 void BOTS_SoldierCommand_Guide2(int clientNum)
@@ -374,7 +374,7 @@ void BOTS_SoldierCommand_Guide2(int clientNum)
 		return;
 	}
 
-	BOTS_Solder_SetRocketMode(clientNum, ROCKET_GUIDED2);
+	BOTS_Soldier_SetRocketMode(clientNum, ROCKET_GUIDED2);
 }
 
 void BOTS_SoldierCommand_Tag(int clientNum)
@@ -387,7 +387,7 @@ void BOTS_SoldierCommand_Tag(int clientNum)
 		return;
 	}
 
-	BOTS_Solder_SetRocketMode(clientNum, ROCKET_TAG);
+	BOTS_Soldier_SetRocketMode(clientNum, ROCKET_TAG);
 }
 
 void BOTS_SoldierCommand_Split1(int clientNum)
@@ -400,7 +400,7 @@ void BOTS_SoldierCommand_Split1(int clientNum)
 		return;
 	}
 
-	BOTS_Solder_SetRocketMode(clientNum, ROCKET_SPLIT1);
+	BOTS_Soldier_SetRocketMode(clientNum, ROCKET_SPLIT1);
 }
 
 void BOTS_SoldierCommand_Split2(int clientNum)
@@ -413,7 +413,7 @@ void BOTS_SoldierCommand_Split2(int clientNum)
 		return;
 	}
 
-	BOTS_Solder_SetRocketMode(clientNum, ROCKET_SPLIT2);
+	BOTS_Soldier_SetRocketMode(clientNum, ROCKET_SPLIT2);
 }
 
 void BOTS_SoldierCommand_Split3(int clientNum)
@@ -426,5 +426,5 @@ void BOTS_SoldierCommand_Split3(int clientNum)
 		return;
 	}
 
-	BOTS_Solder_SetRocketMode(clientNum, ROCKET_SPLIT3);
+	BOTS_Soldier_SetRocketMode(clientNum, ROCKET_SPLIT3);
 }

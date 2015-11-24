@@ -545,6 +545,7 @@
     <ClCompile Include="..\..\code\cgame\bots_bodyguard.c" />
     <ClCompile Include="..\..\code\cgame\bots_captain.c" />
     <ClCompile Include="..\..\code\cgame\bots_infiltrator.c" />
+    <ClCompile Include="..\..\code\cgame\bots_kamikazee.c" />
     <ClCompile Include="..\..\code\cgame\bots_nurse.c" />
     <ClCompile Include="..\..\code\cgame\bots_player.c" />
     <ClCompile Include="..\..\code\cgame\bots_soldier.c" />

@@ -227,6 +227,9 @@ grenadeModelTypeInfo_t grenadeModelTypeInfos[] = {
 	{GRENADE_MODEL_TELEPORT,			qfalse,		qfalse,				4.0f,		0,		WP_NONE, },
 	{GRENADE_MODEL_FREEZE,				qfalse,		qfalse,				4.0f,		0,		WP_NONE, },
 
+	{GRENADE_MODEL_NUKE,				qfalse,		qfalse,				4.0f,		0,		WP_NONE, },
+	{GRENADE_MODEL_DETPIPE,				qfalse,		qfalse,				4.0f,		0,		WP_NONE, },
+
 	{GRENADE_MODEL_SHOTGUN,				qtrue,		qfalse,				0.0f,		0,		WP_SHOTGUN, },
 	{GRENADE_MODEL_GRENADE_LAUNCHER,	qtrue,		qfalse,				0.0f,		0,		WP_GRENADE_LAUNCHER, },
 	{GRENADE_MODEL_ROCKET_LAUNCHER,		qtrue,		qfalse,				0.0f,		0,		WP_ROCKET_LAUNCHER, },
@@ -291,6 +294,9 @@ void BOTS_Init_RegisterGraphics()
 	BOTS_Grenade_RegisterModel(GRENADE_MODEL_TELEPORT, "models/bots/temp_gren.md3");
 	BOTS_Grenade_RegisterModel(GRENADE_MODEL_FREEZE, "models/bots/temp_gren.md3");
 
+	BOTS_Grenade_RegisterModel(GRENADE_MODEL_NUKE, "models/bots/nuke.md3");
+	BOTS_Grenade_RegisterModel(GRENADE_MODEL_DETPIPE, "models/bots/pipe_bomb.md3");
+
 	BOTS_Grenade_RegisterModel(GRENADE_MODEL_SHOTGUN, "models/weapons2/shotgun/shotgun.md3");
 	BOTS_Grenade_RegisterModel(GRENADE_MODEL_GRENADE_LAUNCHER, "models/weapons2/grenadel/grenadel.md3");
 	BOTS_Grenade_RegisterModel(GRENADE_MODEL_ROCKET_LAUNCHER, "models/weapons2/rocketl/rocketl.md3");
@@ -315,6 +321,9 @@ void BOTS_Bodyguard_ClassState(jsWrapper_t *wrapper);
 void BOTS_Soldier_Network(int clientNum);
 void BOTS_Soldier_ClassState(jsWrapper_t *wrapper);
 
+void BOTS_Kamikazee_Network(int clientNum);
+void BOTS_Kamikazee_ClassState(jsWrapper_t *wrapper);
+
 void BOTS_Infiltrator_Network(int clientNum);
 void BOTS_Infiltrator_ClassState(jsWrapper_t *wrapper);
 
@@ -329,7 +338,7 @@ gameStateInfo_t gameStateInfos[] = {
 	{ CLASS_SOLDIER,		BOTS_Soldier_Network, BOTS_Soldier_ClassState  },
 	{ CLASS_BERZERKER,		BOTS_Berzerker_Network, BOTS_Berzerker_ClassState },
 	{ CLASS_INFILTRATOR,	BOTS_Infiltrator_Network, BOTS_Infiltrator_ClassState },
-	{ CLASS_KAMIKAZEE,		NULL, NULL  },
+	{ CLASS_KAMIKAZEE,		BOTS_Kamikazee_Network, BOTS_Kamikazee_ClassState },
 	{ CLASS_NURSE,			NULL, NULL  },
 	{ CLASS_SCIENTIST,		NULL, NULL  },
 	{ CLASS_NUM_CLASSES,	NULL, NULL  }

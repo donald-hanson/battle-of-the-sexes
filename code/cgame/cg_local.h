@@ -1715,6 +1715,7 @@ typedef struct jsWrapper_s {
 	void (*setPropertyBit)(struct jsWrapper_s  *wrapper, char *propertyName, int value);
 	void (*setPropertyFloat)(struct jsWrapper_s  *wrapper, char *propertyName, float value);
 	void (*setPropertyByte)(struct jsWrapper_s  *wrapper, char *propertyName, byte value);
+	void(*setPropertyArray)(struct jsWrapper_s  *wrapper, char *propertyName, int *values, int count);
 	struct jsWrapper_s *(*newObject)(struct jsWrapper_s  *wrapper);
 	void (*addObjects)(struct jsWrapper_s *wrapper, char *propertyName, struct jsWrapper_s **children, int length);
 } jsWrapper_t;

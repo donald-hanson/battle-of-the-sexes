@@ -223,6 +223,36 @@ Constants = {
 		Split2 : "Split #2",
 		Split3 : "Split #3"
 	},
+	
+    GrenadeLauncherMode : {
+        Normal : 0,
+        DetPipes : 1,
+	    Cluster : 2,
+	    LongRange : 3,
+	    Sticky : 4,
+	    Nuke : 5
+    },
+    
+    GrenadeLauncherModeNames : {
+        Normal : "Normal",
+        DetPipes : "Det-Pipes",
+	    Cluster : "Cluster",
+	    LongRange : "Long Range",
+	    Sticky : "Sticky",
+	    Nuke : "Nuke"
+    },	
+	
+	DetpipeMode : {
+        Auto : 0,
+        Trap1 : 1,
+	    Trap2 : 2
+    },
+    
+    DetpipeModeNames : {
+        Auto : "Auto",
+        Trap1 : "Trap #1",
+		Trap2 : "Trap #2"
+    },		
     
     Colors : {
         Red : [ 1.0, 0.0, 0.0, 1.0 ],

@@ -250,6 +250,9 @@ static void CG_Obituary( entityState_t *ent ) {
 		case MOD_POISON:
 			message = "was poisoned by";
 			break;
+		case MOD_NUKE:
+			message = "was introduced to the nuclear family by";
+			break;
 		case MOD_GRAPPLE:
 			message = "was caught by";
 			break;

@@ -89,6 +89,13 @@ classCommandInfo_t g_infiltratorCommands[] = {
 	{ NULL, NULL }
 };
 classCommandInfo_t g_kamikazeeCommands[] = {
+	{ "detmode",	BOTS_KamikazeeCommand_DetPipes },
+	{ "longrange",	BOTS_KamikazeeCommand_LongRange },
+	{ "cluster",	BOTS_KamikazeeCommand_Cluster },
+	{ "stickmode",	BOTS_KamikazeeCommand_Sticky },
+	{ "nuke",		BOTS_KamikazeeCommand_Nuke },
+	{ "dettrap",	BOTS_KamikazeeCommand_DetTrap },
+	{ "settrap",	BOTS_KamikazeeCommand_SetTrap },
 	{ NULL, NULL }
 };
 classCommandInfo_t g_nurseCommands[] = {
@@ -115,10 +122,10 @@ classInfo_t g_classList[] = {
 	{ CLASS_SOLDIER,	"Soldier",		WP_ROCKET_LAUNCHER,	-1,		qtrue,		GRENADE_NORMAL,		BOTS_Soldier_FireWeapon,	NULL,					NULL,				NULL,				NULL,					BOTS_Soldier_Network,		NULL,								NULL,									NULL,							NULL,						g_soldierCommands },
 	{ CLASS_BERZERKER,	"Berzerker",	WP_GAUNTLET,		-1,		qfalse,		GRENADE_NORMAL,		NULL,						BOTS_Berzerker_Think,	BOTS_BerzerkerSpawn,NULL,				NULL,					BOTS_Berzerker_Network,		NULL,								NULL,									NULL,							BOTS_Berzerker_ModifyDamage,g_berzerkerCommands },
 	{ CLASS_INFILTRATOR,"Infiltrator",	WP_PLASMAGUN,		0,		qtrue,		GRENADE_DECOY,		BOTS_Infiltrator_FireWeapon,NULL,					NULL,				NULL,				NULL,					BOTS_Infiltrator_Network,	NULL,								NULL,									BOTS_Infiltrator_PickupAmmo,	NULL,						g_infiltratorCommands },
-	{ CLASS_KAMIKAZEE,	"Kamikazee",	WP_GRENADE_LAUNCHER,0,		qtrue,		GRENADE_NORMAL,		NULL,						NULL,					NULL,				NULL,				NULL,					NULL,						NULL,								NULL,									NULL,							NULL,						g_kamikazeeCommands },
+	{ CLASS_KAMIKAZEE,	"Kamikazee",	WP_GRENADE_LAUNCHER,0,		qtrue,		GRENADE_NORMAL,		BOTS_Kamikazee_FireWeapon,	NULL,					NULL,				NULL,				NULL,					BOTS_Kamikazee_Network,		NULL,								NULL,									NULL,							NULL,						g_kamikazeeCommands },
 	{ CLASS_NURSE,		"Nurse",		WP_MACHINEGUN,		0,		qtrue,		GRENADE_FLASH,		NULL,						NULL,					BOTS_NurseSpawn,	NULL,				NULL,					NULL,						NULL,								NULL,									NULL,							NULL,						g_nurseCommands },
 	{ CLASS_SCIENTIST,	"Scientist",	WP_LIGHTNING,		0,		qtrue,		GRENADE_TELEPORT,	NULL,						NULL,					BOTS_ScientistSpawn,BOTS_ScientistDeath,BOTS_ScientistKiller,	NULL,						NULL,								NULL,									NULL,							NULL,						g_scientistCommands },
-	{ CLASS_NUM_CLASSES,NULL,			WP_NUM_WEAPONS,		-1,		qfalse,		GRENADE_NORMAL,		NULL,						NULL,					NULL,				NULL,				NULL,					NULL,						NULL,								NULL,									NULL,							NULL,						g_noneCommands			}
+	{ CLASS_NUM_CLASSES,NULL,			WP_NUM_WEAPONS,		-1,		qfalse,		GRENADE_NORMAL,		NULL,						NULL,					NULL,				NULL,				NULL,					NULL,						NULL,								NULL,									NULL,							NULL,						g_noneCommands }
 };
 
 //the health/armor values are based on the following:

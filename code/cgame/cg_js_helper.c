@@ -353,6 +353,10 @@ void JS_Wrapper_SetPropertyByte(jsWrapper_t *wrapper, char *propertyName, byte v
 	JS_Object_SetPropertyByte((JSContext *)wrapper->jsContext, (JSObject *)wrapper->jsObject, propertyName, value);
 }
 
+void JS_Wrapper_SetPropertyArray(jsWrapper_t *wrapper, char *propertyName, int *values, int count) {
+	JS_Object_SetPropertyArray((JSContext *)wrapper->jsContext, (JSObject *)wrapper->jsObject, propertyName, values, count);
+}
+
 jsWrapper_t *JS_FindOpenWrapper(JSContext *jsContext, JSObject *jsObject, jsWrapper_t *parent);
 
 jsWrapper_t *JS_Wrapper_NewObject(jsWrapper_t *wrapper)
@@ -387,6 +391,7 @@ void JS_PrepareFunctionPointers(jsWrapper_t *js_wrapper)
 	js_wrapper->setPropertyBit = JS_Wrapper_SetPropertyBit;
 	js_wrapper->setPropertyFloat = JS_Wrapper_SetPropertyFloat;
 	js_wrapper->setPropertyByte = JS_Wrapper_SetPropertyByte;
+	js_wrapper->setPropertyArray = JS_Wrapper_SetPropertyArray;
 	js_wrapper->newObject = JS_Wrapper_NewObject;
 	js_wrapper->addObjects = JS_Wrapper_AddObjects;
 }

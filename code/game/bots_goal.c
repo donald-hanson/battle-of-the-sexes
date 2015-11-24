@@ -9,7 +9,7 @@ typedef struct gcappad_s {
 	int waitTime;
 	qboolean alternates;
 	gentity_t *goal;
-	gentity_t *soldier;	//enemy solder holding this pad conquered
+	gentity_t *soldier;	//enemy soldier holding this pad conquered
 } gcappad_t;
 
 gcappad_t	cappads[MAX_CAPPADS];

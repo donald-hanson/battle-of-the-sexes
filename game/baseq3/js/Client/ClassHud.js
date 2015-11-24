@@ -193,6 +193,27 @@ ClassHud = {
     Kamikazee: {
         DrawTopRight: function(ps)
         {
+            var cs = Sys.GetClassState();
+			
+			var messages = [];
+			
+            var grenadeLauncherMode = Constants.GetName(Constants.GrenadeLauncherMode, cs.grenadeLauncherMode);
+            var grenadeLauncherModeName = Constants.GetValue(Constants.GrenadeLauncherModeNames, grenadeLauncherMode);
+			
+			messages.push("Launcher Mode: " + grenadeLauncherModeName);
+			
+			var detpipeMode = Constants.GetName(Constants.DetpipeMode, cs.detpipeMode);
+			var detpipeModeName = Constants.GetValue(Constants.DetpipeModeNames, detpipeMode);
+			
+			messages.push("DetPipe Mode: " + detpipeModeName);
+			
+			var t1 = cs.detpipeCount[0].toString();
+			var t2 = cs.detpipeCount[1].toString();
+			var l = cs.detpipeLimit.toString()
+			messages.push("DetPipes: " + t1 + "+" + t2 + "/" + l);
+			
+            for(i=0;i<messages.length;i++)
+                Hud.DrawSmallString(640, 32 + (i * 16), messages[i], 1.0, Constants.Hud.Alignment.Right);										
         }
     },
     

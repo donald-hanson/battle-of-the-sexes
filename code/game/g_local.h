@@ -1115,6 +1115,17 @@ void		BOTS_BerzerkerCommand_Rage(int clientNum);
 void		BOTS_BerzerkerCommand_TogQuad(int clientNum);
 void		BOTS_Berzerker_Think(gentity_t *player, usercmd_t *ucmd);
 
+// BotS - bots_kamikazee
+void		BOTS_KamikazeeCommand_DetPipes(int clientNum);
+void		BOTS_KamikazeeCommand_LongRange(int clientNum);
+void		BOTS_KamikazeeCommand_Cluster(int clientNum);
+void		BOTS_KamikazeeCommand_Sticky(int clientNum);
+void		BOTS_KamikazeeCommand_Nuke(int clientNum);
+void		BOTS_KamikazeeCommand_DetTrap(int clientNum);
+void		BOTS_KamikazeeCommand_SetTrap(int clientNum);
+qboolean	BOTS_Kamikazee_FireWeapon(gentity_t *ent);
+void		BOTS_Kamikazee_Network(int clientNum);
+
 // BotS - bots_grenade
 void		BOTS_Grenade_HandleKeyPress(gentity_t *ent);
 void		BOTS_Grenade_ExplodeNearByGrenades(gentity_t *ent);
