@@ -684,6 +684,9 @@
     <ClCompile Include="..\..\code\renderergl1\tr_world.c">
       <Filter>renderergl1</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\code\renderergl1\tr_celshading.c">
+      <Filter>renderergl1</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\code\game\bg_public.h">

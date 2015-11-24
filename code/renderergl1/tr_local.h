@@ -1053,6 +1053,9 @@ extern	cvar_t	*r_printShaders;
 
 extern cvar_t	*r_marksOnTriangleMeshes;
 
+extern	cvar_t	*r_celshadalgo;					// Cell shading, chooses method: 0 = disabled, 1 = kuwahara, 2 = whiteTexture
+extern	cvar_t	*r_celoutline;					//. cel outline. 1 on, 0 off. (maybe other options later)
+
 //====================================================================
 
 void R_SwapBuffers( int );
@@ -1577,5 +1580,6 @@ size_t RE_SaveJPGToBuffer(byte *buffer, size_t bufSize, int quality,
 void RE_TakeVideoFrame( int width, int height,
 		byte *captureBuffer, byte *encodeBuffer, qboolean motionJpeg );
 
+void R_ApplyCelShading(int *width, int *height, byte **pic);
 
 #endif //TR_LOCAL_H

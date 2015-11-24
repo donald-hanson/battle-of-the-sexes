@@ -1064,6 +1064,8 @@ image_t	*R_FindImageFile( const char *name, imgType_t type, imgFlags_t flags )
 		return NULL;
 	}
 
+	R_ApplyCelShading(&width, &height, &pic);
+
 	image = R_CreateImage( ( char * ) name, pic, width, height, type, flags, 0 );
 	ri.Free( pic );
 	return image;
